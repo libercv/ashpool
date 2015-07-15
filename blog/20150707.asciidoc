@@ -1,0 +1,4 @@
+2015/07/07
+
+Para empezar con ejemplos a la vez que leo bibliografía, intento usar OpenGL Development Cookbook, pero veo que me resulta más complicado de lo que me gustaría. Entro a http://learnopengl.com y me descargo el libro pdf offline. 
+Hago una prueba con el código que viene de ejemplo con los dos shaders básicos. Funciona. Empiezo a trabajar sobre eso.

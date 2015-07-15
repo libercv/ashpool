@@ -1,0 +1,2 @@
+#!/bin/sh
+cppcheck *.cpp *.h --enable=all
