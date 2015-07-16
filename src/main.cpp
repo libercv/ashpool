@@ -6,7 +6,6 @@ int main() {
 
 	Window window;
 	Scene scene;
-	scene.init();
 
 	while (!window.shouldClose()) {
 		window.pollEvents();

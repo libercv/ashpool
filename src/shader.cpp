@@ -3,7 +3,7 @@
 Shader::Shader() {
 }
 
-void Shader::load(const GLchar *vertexPath, const GLchar *fragmentPath) {
+bool Shader::load(const GLchar *vertexPath, const GLchar *fragmentPath) {
 	std::string vertexCode;
 	std::string fragmentCode;
 	std::ifstream vShaderFile;
@@ -23,7 +23,8 @@ void Shader::load(const GLchar *vertexPath, const GLchar *fragmentPath) {
 		vertexCode = vShaderStream.str();
 		fragmentCode = fShaderStream.str();
 	} catch (std::ifstream::failure &e) {
-		std::cout << "ERROR::SHADER::FILE_NOT_SUCCESFULLY_READ" << std::endl;
+		std::cerr << "ERROR::SHADER::FILE_NOT_SUCCESFULLY_READ\n";
+		return false;
 	}
 
 	const GLchar* vShaderCode=vertexCode.c_str();
@@ -39,7 +40,8 @@ void Shader::load(const GLchar *vertexPath, const GLchar *fragmentPath) {
 	glGetShaderiv(vertex, GL_COMPILE_STATUS, &success);
 	if(!success) {
 		glGetShaderInfoLog(vertex, 512, NULL, infoLog);
-		std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" << infoLog;
+		std::cerr << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" << infoLog;
+		return false;
 	}
 
 	fragment = glCreateShader(GL_FRAGMENT_SHADER);
@@ -48,7 +50,8 @@ void Shader::load(const GLchar *vertexPath, const GLchar *fragmentPath) {
 	glGetShaderiv(fragment, GL_COMPILE_STATUS, &success);
 	if(!success) {
 		glGetShaderInfoLog(fragment, 512, NULL, infoLog);
-		std::cout << "ERROR::SHADER::SHADER::COMPILATION_FAILED\n" << infoLog;
+		std::cerr << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n" << infoLog;
+		return false;
 	}
 	this->program = glCreateProgram();
 	glAttachShader(this->program, vertex);
@@ -58,11 +61,12 @@ void Shader::load(const GLchar *vertexPath, const GLchar *fragmentPath) {
 	glGetProgramiv(this->program, GL_LINK_STATUS, &success);
 	if(!success) {
 		glGetProgramInfoLog(this->program, 512, NULL, infoLog);
-		std::cout << "ERROR::SHADER::PROGRAM::LINKING_FAILED\n" << infoLog << std::endl;
+		std::cerr << "ERROR::SHADER::PROGRAM::LINKING_FAILED\n" << infoLog << std::endl;
+		return false;
 	}
 	glDeleteShader(vertex);
 	glDeleteShader(fragment);
-
+	return true;
 }
 
 void Shader::use() { 

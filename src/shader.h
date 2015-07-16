@@ -14,7 +14,7 @@ class Shader {
 public:
 	Shader();
 	void use();
-	void load(const GLchar *vertexSourcePath, const GLchar *fragmentSourcePath);
+	bool load(const GLchar *vertexSourcePath, const GLchar *fragmentSourcePath);
 private:
 	GLuint program;
 };

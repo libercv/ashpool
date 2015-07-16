@@ -5,13 +5,13 @@
 #include "scene.h"
 
 Scene::Scene() {
-};
-
-void Scene::init() {
 	// Set up shaders
 	shader = std::make_unique<Shader>();
-	shader->load("shaders/shader.vert", 
-			"shaders/shader.frag");
+	if (!shader->load("shaders/shader.vert", 
+			"shaders/shader.frag")) {
+		std::cerr << "Error reading or processing shaders" << std::endl;
+		std::exit(1);
+	};
 
 	// Set up vertex data (and buffer(s)) and attribute pointers
 	GLfloat vertices[] = {
@@ -45,7 +45,7 @@ void Scene::init() {
 void Scene::clear() {
 	glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT);
-};
+}
 	
 void Scene::render() {
 	shader->use();
@@ -57,5 +57,5 @@ void Scene::render() {
 Scene::~Scene() { 
 	glDeleteVertexArrays(1, &VAO);
 	glDeleteBuffers(1, &VBO);
-};
+}
 

@@ -13,7 +13,6 @@ private:
 public:
 	Scene();
 	~Scene();
-	void init();
 	void render();
 	void clear();
 };
