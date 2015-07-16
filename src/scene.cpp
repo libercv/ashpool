@@ -6,12 +6,9 @@
 
 Scene::Scene() {
 	// Set up shaders
-	shader = std::make_unique<Shader>();
-	if (!shader->load("shaders/shader.vert", 
-			"shaders/shader.frag")) {
-		std::cerr << "Error reading or processing shaders" << std::endl;
-		std::exit(1);
-	};
+	shader = std::make_unique<Shader>(
+			"shaders/shader.vert", 
+			"shaders/shader.frag");
 
 	// Set up vertex data (and buffer(s)) and attribute pointers
 	GLfloat vertices[] = {

@@ -12,11 +12,13 @@ using namespace std;
 
 class Shader {
 public:
-	Shader();
+	Shader(const GLchar *vertexSourcePath, const GLchar *fragmentSourcePath);
 	void use();
-	bool load(const GLchar *vertexSourcePath, const GLchar *fragmentSourcePath);
 private:
 	GLuint program;
+	string readFile(const GLchar *name);
+	GLuint compileShader(const GLchar* code, GLuint);
+	void createProgram(GLuint, GLuint);
 };
 
 
