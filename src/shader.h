@@ -6,17 +6,16 @@
 #include <sstream>
 #include <iostream>
 
-using namespace std;
 
 #include <GL/glew.h>
 
 class Shader {
 public:
 	Shader(const GLchar *vertexSourcePath, const GLchar *fragmentSourcePath);
-	void use();
+	void use() const;
 private:
 	GLuint program;
-	string readFile(const GLchar *name);
+	std::string readFile(const GLchar *name);
 	GLuint compileShader(const GLchar* code, GLuint);
 	void createProgram(GLuint, GLuint);
 };

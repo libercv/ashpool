@@ -3,11 +3,11 @@
 #include <cmath>
 
 Shader::Shader(const GLchar *vertexPath, const GLchar *fragmentPath) {
-	string vertexCodeStr = readFile(vertexPath); 
+	auto vertexCodeStr = readFile(vertexPath); 
 	const GLchar* vShaderCode=vertexCodeStr.c_str();
 	GLuint vertex = compileShader(vShaderCode, GL_VERTEX_SHADER);
 	
-	string fragmentCodeStr = readFile(fragmentPath);
+	auto fragmentCodeStr = readFile(fragmentPath);
 	const GLchar* fShaderCode=fragmentCodeStr.c_str();
 	GLuint fragment = compileShader(fShaderCode, GL_FRAGMENT_SHADER);
 
@@ -36,7 +36,7 @@ void Shader::createProgram(GLuint vertexId, GLuint fragmentId) {
 }
 	
 
-void Shader::use() { 
+void Shader::use() const { 
 /*
 	GLfloat timeValue = glfwGetTime();
 	GLfloat greenValue = (sin(timeValue) / 2) + 0.5;
@@ -65,7 +65,7 @@ GLuint Shader::compileShader(const GLchar* code, GLuint shader_type) {
 }
 	
 std::string Shader::readFile(const GLchar *name) {
-	std::string code;
+	std::string code {""};
 	try {
 		std::ifstream file;
 		file.exceptions (std::ifstream::failbit | std::ifstream::badbit);
