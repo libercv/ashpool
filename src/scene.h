@@ -4,10 +4,12 @@
 #include <memory>
 
 class Shader;
+class Camera;
 
 class Scene {
 private:
 	std::unique_ptr<Shader> shader;
+	std::unique_ptr<Camera> camera;
 	GLuint VAO, VBO;
 
 public:

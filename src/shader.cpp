@@ -17,7 +17,12 @@ Shader::Shader(const GLchar *vertexPath, const GLchar *fragmentPath) {
 	glDeleteShader(fragment);
 }
 
+GLuint Shader::getUniformLocation(const std::string& name) const { 
+	return glGetUniformLocation(this->program, name.data());
+}
 
+
+//Shader::setUniform(GLuint location, 
 void Shader::createProgram(GLuint vertexId, GLuint fragmentId) {
 	GLint success;
 	GLchar infoLog[512];

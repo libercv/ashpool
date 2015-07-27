@@ -1,6 +1,14 @@
 #include <iostream>
 #include <memory>
 
+#include <GL/glew.h>
+#include <GLFW/glfw3.h>
+
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+
+#include "camera.h"
 #include "shader.h"
 #include "scene.h"
 
@@ -37,6 +45,12 @@ Scene::Scene() {
 
 	// Unbind VAO
 	glBindVertexArray(0); 
+
+	auto pos=glm::vec3(2.0f, 2.0f, -3.0f);
+	auto target=glm::vec3(0.0f, 0.0f, 4.0f);
+	camera = std::make_unique<Camera>(pos, target, &*shader); 
+
+//	glm::mat4 proj {glm::perspective(45.0f, (GLfloat)WIDTH
 }
 
 void Scene::clear() {
@@ -45,7 +59,16 @@ void Scene::clear() {
 }
 	
 void Scene::render() {
+	// Model - View - Projection
+	glm::mat4 model;
+	model = glm::rotate(model, -55.0f, glm::vec3(1.0f, 0.0f, 0.0f));
+	auto modelLoc=shader->getUniformLocation("model");
+	glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+	camera->applyProjectionMatrix();
+	camera->applyViewMatrix();
+
 	shader->use();
+
 	glBindVertexArray(VAO);
 	glDrawArrays(GL_TRIANGLES, 0, 3);
 	glBindVertexArray(0);

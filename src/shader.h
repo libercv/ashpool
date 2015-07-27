@@ -13,6 +13,7 @@ class Shader {
 public:
 	Shader(const GLchar *vertexSourcePath, const GLchar *fragmentSourcePath);
 	void use() const;
+	GLuint getUniformLocation(const std::string& name) const;
 private:
 	GLuint program;
 	std::string readFile(const GLchar *name);
