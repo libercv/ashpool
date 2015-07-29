@@ -38,6 +38,8 @@ Window::Window() {
 
 	// Define the viewport dimensions
 	glViewport(0, 0, WIDTH, HEIGHT);
+
+	glEnable(GL_DEPTH_TEST);
 }
 
 Window::~Window() {

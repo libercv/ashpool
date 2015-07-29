@@ -7,7 +7,9 @@ add_executable(ashpool main.cpp
 		camera.h camera.cpp
 		shader.cpp shader.h 
 		window.cpp window.h
-		scene.cpp scene.h)
+		scene.cpp scene.h
+		model.cpp model.h
+		mesh.cpp mesh.h)
 find_package(PkgConfig REQUIRED)
 find_package(SOIL  REQUIRED)
 pkg_search_module(GLFW REQUIRED glfw3)
