@@ -12,11 +12,8 @@
 #include "shader.h"
 #include "scene.h"
 
-Scene::Scene() {
-	// Set up shaders
-	shader = std::make_unique<Shader>(
-			"shaders/shader.vert", 
-			"shaders/shader.frag");
+Scene::Scene() : 
+	shader { "shaders/shader.vert", "shaders/shader.frag"} {
 
 	// Set up vertex data (and buffer(s)) and attribute pointers
 	GLfloat vertices[] = {
@@ -46,11 +43,9 @@ Scene::Scene() {
 	// Unbind VAO
 	glBindVertexArray(0); 
 
-	auto pos=glm::vec3(2.0f, 2.0f, -3.0f);
-	auto target=glm::vec3(0.0f, 0.0f, 4.0f);
-	camera = std::make_unique<Camera>(pos, target, &*shader); 
-
-//	glm::mat4 proj {glm::perspective(45.0f, (GLfloat)WIDTH
+	// Camera
+	camera.lookAt(glm::vec3(2.0f, 2.0f, -3.0f),
+			glm::vec3(0.0f, 0.0f, 4.0f));
 }
 
 void Scene::clear() {
@@ -62,12 +57,12 @@ void Scene::render() {
 	// Model - View - Projection
 	glm::mat4 model;
 	model = glm::rotate(model, -55.0f, glm::vec3(1.0f, 0.0f, 0.0f));
-	auto modelLoc=shader->getUniformLocation("model");
+	auto modelLoc=shader.getUniformLocation("model");
 	glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
-	camera->applyProjectionMatrix();
-	camera->applyViewMatrix();
+	camera.applyProjectionMatrix(&shader);
+	camera.applyViewMatrix(&shader);
 
-	shader->use();
+	shader.use();
 
 	glBindVertexArray(VAO);
 	glDrawArrays(GL_TRIANGLES, 0, 3);

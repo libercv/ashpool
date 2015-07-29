@@ -3,13 +3,15 @@
 
 #include <memory>
 
-class Shader;
-class Camera;
+//class Shader;
+#include "shader.h"
+#include "camera.h"
+//class Camera;
 
 class Scene {
 private:
-	std::unique_ptr<Shader> shader;
-	std::unique_ptr<Camera> camera;
+	Shader shader;
+	Camera camera;
 	GLuint VAO, VBO;
 
 public:
