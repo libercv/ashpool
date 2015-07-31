@@ -20,7 +20,7 @@
 
 GLint TextureFromFile(const char* path, std::string directory);
 
-Model::Model(GLchar* path) {
+Model::Model(const GLchar* path) {
 	this->loadModel(path);
 }
 
@@ -51,16 +51,14 @@ void Model::loadModel(const std::string& path) {
 // Processes a node in a recursive fashion. Processes each individual mesh located at the node and repeats this process on its children nodes (if any).
 void Model::processNode(aiNode* node, const aiScene* scene) {
 	// Process each mesh located at the current node
-	for(GLuint i = 0; i < node->mNumMeshes; i++)
-	{
+	for(GLuint i = 0; i < node->mNumMeshes; i++) {
 		// The node object only contains indices to index the actual objects in the scene. 
 		// The scene contains all the data, node is just to keep stuff organized (like relations between nodes).
 		aiMesh* mesh = scene->mMeshes[node->mMeshes[i]]; 
 		this->meshes.push_back(this->processMesh(mesh, scene));			
 	}
 	// After we've processed all of the meshes (if any) we then recursively process each of the children nodes
-	for(GLuint i = 0; i < node->mNumChildren; i++)
-	{
+	for(GLuint i = 0; i < node->mNumChildren; i++) {
 		this->processNode(node->mChildren[i], scene);
 	}
 
@@ -72,12 +70,13 @@ Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene) {
 	std::vector<GLuint> indices;
 	std::vector<Texture> textures;
 
+	vertices.reserve(mesh->mNumVertices);
 	// Walk through each of the mesh's vertices
 	for(GLuint i = 0; i < mesh->mNumVertices; i++) {
 		Vertex vertex;
 		glm::vec3 vector; 	// We declare a placeholder vector since assimp uses its own vector 
-					// class that doesn't directly convert to glm's vec3 class so we 
-					// transfer the data to this placeholder glm::vec3 first.
+		// class that doesn't directly convert to glm's vec3 class so we 
+		// transfer the data to this placeholder glm::vec3 first.
 		// Positions
 		vector.x = mesh->mVertices[i].x;
 		vector.y = mesh->mVertices[i].y;
@@ -89,30 +88,29 @@ Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene) {
 		vector.z = mesh->mNormals[i].z;
 		vertex.Normal = vector;
 		// Texture Coordinates
-		if(mesh->mTextureCoords[0]) // Does the mesh contain texture coordinates?
-		{
+		if(mesh->mTextureCoords[0])  { // Does the mesh contain texture coordinates?  
 			glm::vec2 vec;
 			// A vertex can contain up to 8 different texture coordinates. We thus make the assumption that we won't 
 			// use models where a vertex can have multiple texture coordinates so we always take the first set (0).
 			vec.x = mesh->mTextureCoords[0][i].x; 
 			vec.y = mesh->mTextureCoords[0][i].y;
 			vertex.TexCoords = vec;
-		}
-		else
+		} else {
 			vertex.TexCoords = glm::vec2(0.0f, 0.0f);
+		}
 		vertices.push_back(vertex);
 	}
 	// Now wak through each of the mesh's faces (a face is a mesh its triangle) and retrieve the corresponding vertex indices.
-	for(GLuint i = 0; i < mesh->mNumFaces; i++)
-	{
+	indices.reserve( 3*mesh->mNumFaces );
+	for(GLuint i = 0; i < mesh->mNumFaces; i++) {
 		aiFace face = mesh->mFaces[i];
 		// Retrieve all indices of the face and store them in the indices vector
-		for(GLuint j = 0; j < face.mNumIndices; j++)
+		for(GLuint j = 0; j < face.mNumIndices; j++) 
 			indices.push_back(face.mIndices[j]);
+
 	}
 	// Process materials
-	if(mesh->mMaterialIndex >= 0)
-	{
+	if(mesh->mMaterialIndex >= 0) {
 		aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
 		// We assume a convention for sampler names in the shaders. Each diffuse texture should be named
 		// as 'texture_diffuseN' where N is a sequential number ranging from 1 to MAX_SAMPLER_NUMBER. 
@@ -137,8 +135,7 @@ Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene) {
 // The required info is returned as a Texture struct.
 std::vector<Texture> Model::loadMaterialTextures(aiMaterial* mat, aiTextureType type, std::string typeName) {
 	std::vector<Texture> textures;
-	for(GLuint i = 0; i < mat->GetTextureCount(type); i++)
-	{
+	for(GLuint i = 0; i < mat->GetTextureCount(type); i++) {
 		aiString str;
 		mat->GetTexture(type, i, &str);
 		// Check if texture was loaded before and if so, continue to next iteration: skip loading a new texture

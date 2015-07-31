@@ -1,6 +1,9 @@
 #include "shader.h"
 #include <GLFW/glfw3.h>
 #include <cmath>
+#include <fstream>
+#include <sstream>
+#include <iostream>
 
 Shader::Shader(const GLchar *vertexPath, const GLchar *fragmentPath) {
 	auto vertexCodeStr = readFile(vertexPath); 
@@ -22,7 +25,6 @@ GLuint Shader::getUniformLocation(const std::string& name) const {
 }
 
 
-//Shader::setUniform(GLuint location, 
 void Shader::createProgram(GLuint vertexId, GLuint fragmentId) {
 	GLint success;
 	GLchar infoLog[512];
@@ -42,14 +44,7 @@ void Shader::createProgram(GLuint vertexId, GLuint fragmentId) {
 	
 
 void Shader::use() const { 
-/*
-	GLfloat timeValue = glfwGetTime();
-	GLfloat greenValue = (sin(timeValue) / 2) + 0.5;
-	GLint vertexColorLocation = glGetUniformLocation(
-			this->program, "ourColor");
-*/
 	glUseProgram(this->program); 
-//	glUniform4f(vertexColorLocation, 0.0f, greenValue, 0.0f, 1.0f);
 }
 
 GLuint Shader::compileShader(const GLchar* code, GLuint shader_type) {

@@ -14,7 +14,7 @@
 
 Scene::Scene() : 
 	shader { "shaders/shader.vert", "shaders/shader.frag"},
-	nanosuit {"models/kolumny/kolumny.obj"} {
+	model  {"models/kolumny/kolumny.obj"} {
 	
 	// Camera
 	camera.lookAt(glm::vec3(1.0f, 1.0f, -4.0f),
@@ -29,21 +29,17 @@ void Scene::clear() {
 	
 void Scene::render() {
 	// Model - View - Projection
-	glm::mat4 model=glm::mat4();
-	//model = glm::rotate(model, 3.14f, glm::vec3(0.0f, 1.0f, 0.0f));
-	//model = glm::translate(model, glm::vec3(0.0f, -1.75f, 0.0f)); 
-	//model = glm::scale(model, glm::vec3(0.2f, 0.2f, 0.2f));	
+	auto modelMatrix { glm::mat4() };
 	auto modelLoc=shader.getUniformLocation("model");
-	glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
-	camera.applyProjectionMatrix(&shader);
-	camera.applyViewMatrix(&shader);
-	
-	nanosuit.Draw(shader);
+	glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(modelMatrix));
+	camera.applyProjectionMatrix(shader);
+	camera.applyViewMatrix(shader);
+	model.Draw(shader);
 	shader.use();
 }
 
 Scene::~Scene() { 
-	glDeleteVertexArrays(1, &VAO);
-	glDeleteBuffers(1, &VBO);
+	//glDeleteVertexArrays(1, &VAO);
+	//glDeleteBuffers(1, &VBO);
 }
 
