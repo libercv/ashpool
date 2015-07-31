@@ -3,15 +3,19 @@
 
 #include <memory>
 
+//class Shader;
 #include "shader.h"
 #include "camera.h"
 #include "model.h"
+
+//class Camera;
 
 class Scene {
 private:
 	Shader shader;
 	Camera camera;
-	Model model;
+	Model nanosuit;
+	GLuint VAO, VBO;
 
 public:
 	Scene();
