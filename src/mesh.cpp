@@ -2,8 +2,8 @@
 #include "shader.h"
 
 
-Mesh::Mesh(std::vector<Vertex> vertices, std::vector<GLuint> indices, std::vector<Texture> textures) :
-	vertices {vertices}, indices {indices}, textures {textures} {
+Mesh::Mesh(std::vector<Vertex> Vertices, std::vector<GLuint> Indices, std::vector<Texture> Textures) :
+	vertices {Vertices}, indices {Indices}, textures {Textures} {
 		// Now that we have all the required data, set the vertex buffers and its attribute pointers.
 	this->setupMesh();
 }
