@@ -22,6 +22,7 @@ Window::Window() {
 		exit(1);
 	}
 	glfwMakeContextCurrent(window);
+	glfwSwapInterval(1);
 
 	// Set the required callback functions
 	glfwSetKeyCallback(window, key_callback);

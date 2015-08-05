@@ -9,9 +9,9 @@ int main() {
 
 	while (!window.shouldClose()) {
 		window.pollEvents();
+		window.swapBuffers();
 		scene.clear();
 		scene.render();
-		window.swapBuffers();
 	}
 
 	return 0;

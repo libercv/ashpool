@@ -15,14 +15,18 @@
 
 Scene::Scene() :
 	shader { "shaders/shader.vert", "shaders/shader.frag"},
-	model {"models/sibenik/sibenik.obj" } {
+	model {"models/sponza/sponza.obj" } {
+	//model {"models/sibenik/sibenik.obj" } {
 	
 	// Camera
-	camera.lookAt(glm::vec3(-13.0f, -12.0f, -0.0f), //Pos
-			glm::vec3(20.0f, -2.0f, 0.0f)); //lookat
-
+	// sibenik cerca
+	//camera.lookAt(glm::vec3(-13.0f, -12.0f, -0.0f), //Pos
+	//		glm::vec3(20.0f, -2.0f, 0.0f)); //lookat
+	// sibenik lejos
 	//camera.lookAt(glm::vec3(-19.0f, -12.0f, -0.0f), //Pos
 	//		glm::vec3(20.0f, -17.0f, 0.0f)); //lookat
+	camera.lookAt(glm::vec3(0.0f, 0.5f, 0.0f), //Pos
+			glm::vec3(5.0f, 1.5f, 0.0f)); //lookat
 }
 
 void Scene::clear() {
@@ -36,6 +40,13 @@ void Scene::render() {
 	glm::mat4 modelMatrix=glm::mat4();
 	auto modelLoc=shader.getUniformLocation("model");
 	glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(modelMatrix));
+
+	
+	glm::vec3 la(3.0f*sin((GLfloat)glfwGetTime()*0.25f), 0.5f, 3.0f*cos((GLfloat)glfwGetTime()*0.25f));
+	camera.lookAt(glm::vec3(0.0f, 0.5f, 0.0f), //Pos
+			la); //lookat
+
+
 	camera.applyProjectionMatrix(&shader);
 	camera.applyViewMatrix(&shader);
 	
