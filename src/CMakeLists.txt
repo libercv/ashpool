@@ -9,21 +9,24 @@ add_executable(ashpool main.cpp
 		window.cpp window.h
 		scene.cpp scene.h
 		model.cpp model.h
-		mesh.cpp mesh.h)
+		mesh.cpp mesh.h
+		texturemanager.cpp texturemanager.h)
 find_package(PkgConfig REQUIRED)
-find_package(SOIL  REQUIRED)
+#find_package(SOIL  REQUIRED)
 pkg_search_module(GLFW REQUIRED glfw3)
 find_package(OpenGL REQUIRED)
 find_package(GLEW REQUIRED)
 find_package(GLM REQUIRED)
 find_package(ASSIMP REQUIRED) 
+find_package(FreeImage REQUIRED) 
 
 include_directories( ${OPENGL_INCLUDE_DIRS}  
 	${GLFW_INCLUDE_DIRS} 
 	${GLEW_INCLUDE_DIRS} 
 	${GLM_INCLUDE_DIRS} 
-	${SOIL_INCLUDE_DIRS}
+#	${SOIL_INCLUDE_DIRS}
 	${ASSIMP_INCLUDE_DIRS}
+	${FREEIMAGE_INCLUDE_DIRS}
 	) 
 
 
@@ -32,6 +35,7 @@ target_link_libraries(ashpool
 	${GLFW_LIBRARIES} 
 	${GLEW_LIBRARY} 
 	${GLM_LIBRARY}
-	${SOIL_LIBRARIES}
+#	${SOIL_LIBRARIES}
 	${ASSIMP_LIBRARIES}
+	${FREEIMAGE_LIBRARIES}
 	)

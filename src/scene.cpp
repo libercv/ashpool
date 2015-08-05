@@ -11,15 +11,18 @@
 #include "camera.h"
 #include "shader.h"
 #include "scene.h"
+#include "texturemanager.h"
 
-Scene::Scene() : 
+Scene::Scene() :
 	shader { "shaders/shader.vert", "shaders/shader.frag"},
-	nanosuit {"models/kolumny/kolumny.obj"} {
+	model {"models/sibenik/sibenik.obj" } {
 	
 	// Camera
-	camera.lookAt(glm::vec3(1.0f, 1.0f, -4.0f),
-			glm::vec3(0.0f, 0.0f, 4.0f));
+	camera.lookAt(glm::vec3(-13.0f, -12.0f, -0.0f), //Pos
+			glm::vec3(20.0f, -2.0f, 0.0f)); //lookat
 
+	//camera.lookAt(glm::vec3(-19.0f, -12.0f, -0.0f), //Pos
+	//		glm::vec3(20.0f, -17.0f, 0.0f)); //lookat
 }
 
 void Scene::clear() {
@@ -29,21 +32,19 @@ void Scene::clear() {
 	
 void Scene::render() {
 	// Model - View - Projection
-	glm::mat4 model=glm::mat4();
-	//model = glm::rotate(model, 3.14f, glm::vec3(0.0f, 1.0f, 0.0f));
-	//model = glm::translate(model, glm::vec3(0.0f, -1.75f, 0.0f)); 
-	//model = glm::scale(model, glm::vec3(0.2f, 0.2f, 0.2f));	
+	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	glm::mat4 modelMatrix=glm::mat4();
 	auto modelLoc=shader.getUniformLocation("model");
-	glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+	glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(modelMatrix));
 	camera.applyProjectionMatrix(&shader);
 	camera.applyViewMatrix(&shader);
 	
-	nanosuit.Draw(shader);
+	model.Draw(shader);
 	shader.use();
 }
 
 Scene::~Scene() { 
-	glDeleteVertexArrays(1, &VAO);
-	glDeleteBuffers(1, &VBO);
+	//glDeleteVertexArrays(1, &VAO);
+	//glDeleteBuffers(1, &VBO);
 }
 
