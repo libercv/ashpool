@@ -3,6 +3,8 @@ cmake_minimum_required(VERSION 3.1)
 project(ashpool)
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -pedantic")
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH}
+                      ${CMAKE_CURRENT_SOURCE_DIR}/../cmake/)
 add_executable(ashpool main.cpp 
 		camera.h camera.cpp
 		shader.cpp shader.h 
@@ -16,7 +18,7 @@ find_package(PkgConfig REQUIRED)
 pkg_search_module(GLFW REQUIRED glfw3)
 find_package(OpenGL REQUIRED)
 find_package(GLEW REQUIRED)
-find_package(GLM REQUIRED)
+find_package(glm REQUIRED)
 find_package(ASSIMP REQUIRED) 
 find_package(FreeImage REQUIRED) 
 

@@ -96,10 +96,11 @@ GLint TextureManager::TextureFromFile(const std::string& filename) {
 	for ( unsigned int i = 0; i < width; ++i ) {
 		for ( unsigned int j = 0; j < height; ++j ) {
 			unsigned int buf_index = ( j * width + i )*4;
-			image.get()[ buf_index + 0 ] = bits[buf_index + FI_RGBA_RED];
-			image.get()[ buf_index + 1 ] = bits[buf_index + FI_RGBA_GREEN];
-			image.get()[ buf_index + 2 ] = bits[buf_index + FI_RGBA_BLUE];
-			image.get()[ buf_index + 3 ] = bits[buf_index + FI_RGBA_ALPHA];
+			unsigned int buf_dst = (width * height * 4) - buf_index -4 ;
+			image.get()[ buf_dst  + 0 ] = bits[buf_index + FI_RGBA_RED];
+			image.get()[ buf_dst + 1 ] = bits[buf_index + FI_RGBA_GREEN];
+			image.get()[ buf_dst + 2 ] = bits[buf_index + FI_RGBA_BLUE];
+			image.get()[ buf_dst + 3 ] = bits[buf_index + FI_RGBA_ALPHA];
 		}
 	}
 
