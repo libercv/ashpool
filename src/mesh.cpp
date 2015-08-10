@@ -135,7 +135,6 @@ void  Mesh::Draw(const Shader& shader) {
 	}
 
 	// Also set each mesh's shininess property to a default value (if you want you could extend this to another mesh property and possibly change this value)
-	struct Material mtl = this->mat;
 	glUniform1f(shader.getUniformLocation("material_shininess"), mat.shininess);
 	glUniform4f(shader.getUniformLocation("material_diffuse"), mat.diffuse.x, mat.diffuse.y, mat.diffuse.z, mat.diffuse.w);
 	glUniform4f(shader.getUniformLocation("material_ambient"), mat.ambient.x, mat.ambient.y, mat.ambient.z, mat.ambient.w);

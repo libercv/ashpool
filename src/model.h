@@ -25,7 +25,7 @@ class Model
 public:
     /*  Functions   */
     // Constructor, expects a filepath to a 3D model.
-    Model(const std::string& path);
+    explicit Model(const std::string& path);
 
     // Draws the model, and thus all its meshes
     void Draw(const Shader& shader);
