@@ -12,7 +12,8 @@ add_executable(ashpool main.cpp
 		scene.cpp scene.h
 		model.cpp model.h
 		mesh.cpp mesh.h
-		texturemanager.cpp texturemanager.h)
+		texturemanager.cpp texturemanager.h
+		textureloader.cpp textureloader.h)
 find_package(PkgConfig REQUIRED)
 #find_package(SOIL  REQUIRED)
 pkg_search_module(GLFW REQUIRED glfw3)
