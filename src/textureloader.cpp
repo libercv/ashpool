@@ -13,17 +13,11 @@
 #include "textureloader.h"
 
 TextureLoader::TextureLoader(const std::string& filename) {
-	//image format
-	FREE_IMAGE_FORMAT fif = FIF_UNKNOWN;
-	//pointer to the image data
-	BYTE* bits(nullptr);
-
-	//check the file signature and deduce its format
-	fif = FreeImage_GetFileType(filename.c_str(), 0);
-	//if still unknown, try to guess the file format from the file extension
+	
+	// Check the file signature and deduce its format
+	auto fif = FreeImage_GetFileType(filename.c_str(), 0);
 	if(fif == FIF_UNKNOWN)
 		fif = FreeImage_GetFIFFromFilename(filename.c_str());
-	//if still unkown, return failure
 	if(fif == FIF_UNKNOWN)
 		return ;
 
@@ -42,7 +36,7 @@ TextureLoader::TextureLoader(const std::string& filename) {
 	}
 
 	//retrieve the image data
-	bits = FreeImage_GetBits(dib);
+	BYTE *bits = FreeImage_GetBits(dib);
 	//get the image width and height
 	width = FreeImage_GetWidth(dib);
 	height = FreeImage_GetHeight(dib);
