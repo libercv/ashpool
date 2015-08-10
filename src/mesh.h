@@ -27,13 +27,13 @@ struct Texture {
 };
 
 struct Material{
+	glm::vec4 diffuse {0.8f, 0.8f, 0.8f, 1.0f};
+	glm::vec4 ambient {0.2f, 0.2f, 0.2f, 1.0f};
+	glm::vec4 specular {0.0f, 0.0f, 0.0f, 1.0f};
+	glm::vec4 emissive {0.0f, 0.0f, 0.0f, 1.0f};
 
-	glm::vec4 diffuse;
-	glm::vec4 ambient;
-	glm::vec4 specular;
-	glm::vec4 emissive;
 	float shininess;
-	int texCount;
+	int texCount {0};
 };
 
 
@@ -81,7 +81,7 @@ class Mesh {
 	GLuint VAO, VBO, EBO;
 	struct Material mat;	
 
-	struct Material loadMaterial(aiMaterial *);
+	void loadMaterial(aiMaterial *);
 	/*  Functions    */
 	// Initializes all the buffer objects/arrays
 	void setupMesh();

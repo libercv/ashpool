@@ -24,12 +24,12 @@ Mesh::Mesh(const aiMesh* mesh, const aiScene* scene, const std::string &director
 			// A vertex can contain up to 8 different texture coordinates. We thus make the assumption that we won't 
 			// use models where a vertex can have multiple texture coordinates so we always take the first set (0).
 			vertices.emplace_back( glm::vec3(vv->x, vv->y, vv->z),
-				glm::vec3(vn->x, vn->y, vn->z),
-				glm::vec2(vt->x, vt->y)  );
+					glm::vec3(vn->x, vn->y, vn->z),
+					glm::vec2(vt->x, vt->y)  );
 		} else {
 			vertices.emplace_back( glm::vec3(vv->x, vv->y, vv->z),
-				glm::vec3(vn->x, vn->y, vn->z),
-				glm::vec2(0.0f, 0.0f)  );
+					glm::vec3(vn->x, vn->y, vn->z),
+					glm::vec2(0.0f, 0.0f)  );
 		}
 	}
 	// Now walk through each of the mesh's faces (a face is a mesh its triangle) and retrieve the corresponding vertex indices.
@@ -56,8 +56,8 @@ Mesh::Mesh(const aiMesh* mesh, const aiScene* scene, const std::string &director
 		// 2. Specular maps
 		std::vector<Texture> specularMaps = TextureManager::get().loadMaterialTextures(material, aiTextureType_SPECULAR, "texture_specular", directory);
 		textures.insert(textures.end(), specularMaps.begin(), specularMaps.end());
-	
-		this->mat = loadMaterial(material);	
+
+		loadMaterial(material);	
 		//glGenBuffers(1,&uniformBlockIndex);
 		//glBindBuffer(GL_UNIFORM_BUFFER, uniformBlockIndex);
 		//glBufferData(GL_UNIFORM_BUFFER, sizeof(mat), (void *)(&mat), GL_STATIC_DRAW);
@@ -65,49 +65,25 @@ Mesh::Mesh(const aiMesh* mesh, const aiScene* scene, const std::string &director
 	this->setupMesh();
 }
 
-struct Material Mesh::loadMaterial(aiMaterial *mtl) {
-		aiString texPath;	//contains filename of texture
-		struct Material aMat;
+void  Mesh::loadMaterial(aiMaterial *mtl) {
+	if(mtl->GetTextureCount(aiTextureType_DIFFUSE)>0)
+		mat.texCount = 1;
 
-		if(mtl->GetTextureCount(aiTextureType_DIFFUSE)>0)
-			aMat.texCount = 1;
-		else
-			aMat.texCount = 0;
+	aiColor4D color;
+	if(AI_SUCCESS == aiGetMaterialColor(mtl, AI_MATKEY_COLOR_DIFFUSE, &color)) 
+		mat.diffuse = glm::vec4(color.r, color.g, color.b, color.a);
 
-		glm::vec4 vec(0.8f, 0.8f, 0.8f, 1.0f);
-		aiColor4D diffuse;
-		if(AI_SUCCESS == aiGetMaterialColor(mtl, AI_MATKEY_COLOR_DIFFUSE, &diffuse)) {
-			vec.x = diffuse.r; vec.y=diffuse.g; vec.z=diffuse.b; vec.w=diffuse.a;
-		}
-		aMat.diffuse = vec;
+	if(AI_SUCCESS == aiGetMaterialColor(mtl, AI_MATKEY_COLOR_AMBIENT, &color)) 
+		mat.ambient = glm::vec4(color.r, color.g, color.b, color.a);
 
-		vec = glm::vec4(0.2f, 0.2f, 0.2f, 1.0f);
-		aiColor4D ambient;
-		if(AI_SUCCESS == aiGetMaterialColor(mtl, AI_MATKEY_COLOR_AMBIENT, &ambient)) {
-			vec.x = ambient.r; vec.y=ambient.g; vec.z=ambient.b; vec.w=ambient.a;
-		}
-		aMat.ambient=vec;
+	if(AI_SUCCESS == aiGetMaterialColor(mtl, AI_MATKEY_COLOR_SPECULAR, &color)) 
+		mat.specular=glm::vec4(color.r, color.g, color.b, color.a);
 
-		aiColor4D specular;
-		if(AI_SUCCESS == aiGetMaterialColor(mtl, AI_MATKEY_COLOR_SPECULAR, &specular)) 
-			aMat.specular=glm::vec4(specular.r, specular.g, specular.b, specular.a);
-		else
-			aMat.specular=glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
+	if(AI_SUCCESS == aiGetMaterialColor(mtl, AI_MATKEY_COLOR_EMISSIVE, &color))
+		mat.emissive=glm::vec4(color.r, color.g, color.b, color.a);
 
-
-		aiColor4D emission;
-		if(AI_SUCCESS == aiGetMaterialColor(mtl, AI_MATKEY_COLOR_EMISSIVE, &emission))
-			aMat.emissive=glm::vec4(emission.r, emission.g, emission.b, emission.a);
-		else
-			aMat.emissive=glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
-
-
-		float shininess = 0.0;
-		unsigned int max;
-		aiGetMaterialFloatArray(mtl, AI_MATKEY_SHININESS, &shininess, &max);
-		aMat.shininess = shininess;
-	
-		return aMat;
+	unsigned int max;
+	aiGetMaterialFloatArray(mtl, AI_MATKEY_SHININESS, &mat.shininess, &max);
 }
 	
 
