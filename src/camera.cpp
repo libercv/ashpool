@@ -1,7 +1,9 @@
-#include "camera.h"
-#include "shader.h"
+#include "camera.hpp"
+#include "shader.hpp"
 
 #include <GL/glew.h>
+#include <glm/gtc/matrix_transform.hpp>  
+#include <glm/gtc/type_ptr.hpp> 
 
 
 Camera::Camera() : upVector{ glm::vec3(0.0f, 1.0f, 0.0f) },

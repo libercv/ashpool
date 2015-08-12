@@ -1,5 +1,5 @@
-#include "window.h"
-#include "scene.h"
+#include "window.hpp"
+#include "scene.hpp"
 
 
 int main() {

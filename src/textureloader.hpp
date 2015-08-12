@@ -1,13 +1,10 @@
 #ifndef TEXTURELOADER_H
 #define TEXTURELOADER_H
 
-// Std. Includes
-#include <string>
-#include <iostream>
-#include <memory>
-
-#include <GL/glew.h> // Contains all the necessery OpenGL includes
-#include <FreeImage.h>
+#include <GL/glew.h>  // for GLbyte
+#include <memory>     // for unique_ptr
+#include <string>     // for string
+struct FIBITMAP;
 
 class TextureLoader {
 public:

@@ -1,22 +1,11 @@
 #ifndef TEXTUREMANAGER_H
 #define TEXTUREMANAGER_H
 
-// Std. Includes
-#include <string>
-#include <fstream>
-#include <sstream>
-#include <iostream>
-#include <map>
-#include <vector>
-// GL Includes
-#include <GL/glew.h> // Contains all the necessery OpenGL includes
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <assimp/Importer.hpp>
-#include <assimp/scene.h>
-#include <assimp/postprocess.h>
-
-#include "mesh.h"
+#include <GL/glew.h>          // for GLbyte, GLint, GLuint
+#include <assimp/material.h>  // for aiMaterial (ptr only), aiTextureType
+#include <string>             // for string
+#include <vector>             // for vector
+#include "mesh.hpp"           // for Texture
 
 class TextureManager {
 	public:

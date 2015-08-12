@@ -1,22 +1,12 @@
-// Std. Includes
-#include <string>
-#include <fstream>
-#include <sstream>
-#include <iostream>
-#include <memory>
-#include <map>
-#include <vector>
-// GL Includes
-#include <GL/glew.h> // Contains all the necessery OpenGL includes
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <FreeImage.h>
-#include <assimp/Importer.hpp>
-#include <assimp/scene.h>
-#include <assimp/postprocess.h>
-
-#include "texturemanager.h"
-#include "textureloader.h"
+#include "texturemanager.hpp"
+#include <GL/glew.h>            // for GL_TEXTURE_2D, glTexParameteri, etc
+#include <assimp/types.h>       // for aiString
+#include <ext/alloc_traits.h>   // for __alloc_traits<>::value_type
+#include <assimp/material.inl>  // for aiMaterial::GetTexture, etc
+#include <iostream>             // for basic_ostream, operator<<, cout, etc
+#include <string>               // for allocator, string, operator+, etc
+#include <vector>               // for vector
+#include "textureloader.hpp"    // for TextureLoader
 
 
 std::vector<Texture> TextureManager::loadMaterialTextures(aiMaterial* mat, aiTextureType type, std::string typeName, const std::string& directory) {

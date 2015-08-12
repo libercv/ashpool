@@ -1,24 +1,16 @@
 #ifndef MESH_H
 #define MESH_H
 
-
-// Std. Includes
-#include <string>
-#include <fstream>
-#include <sstream>
-#include <iostream>
-#include <vector>
-// GL Includes
-#include <GL/glew.h> // Contains all the necessery OpenGL includes
+#include <GL/glew.h>                 // for GLuint
+#include <assimp/types.h>            // for aiString
+#include <algorithm>                 // for move
 #include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-
-#include <assimp/Importer.hpp>
-#include <assimp/scene.h>
-#include <assimp/postprocess.h>
-
-class Shader;
-class Model;
+#include <string>                    // for string
+#include <vector>                    // for vector
+class Shader; 
+struct aiMaterial;
+struct aiMesh;
+struct aiScene;
 
 struct Texture {
     GLuint id;
@@ -41,8 +33,8 @@ class Mesh {
 
 	class Vertex {
 		public:
-			Vertex(Vertex &&other) : 
-				Position(std::move(other.Position)), 
+			Vertex(Vertex &&other) :
+				Position(std::move(other.Position)),
 				Normal(std::move(other.Normal)),
 				TexCoords(std::move(other.TexCoords)) { };
 			Vertex(glm::vec3 pos, glm::vec3 nor, glm::vec2 tex) :
@@ -61,7 +53,7 @@ class Mesh {
 	};
 
 
-	public:
+public:
 	/*  Mesh Data  */
 	std::vector<Vertex> vertices;
 	std::vector<GLuint> indices;
@@ -70,16 +62,16 @@ class Mesh {
 	/*  Functions  */
 	// Constructor
 	Mesh(std::vector<Vertex> vertices, std::vector<GLuint> indices, std::vector<Texture> textures);
-	Mesh(const aiMesh* mesh, const aiScene* scene, const std::string &directory); 
+	Mesh(const aiMesh* mesh, const aiScene* scene, const std::string &directory);
 	~Mesh();
 
 	// Render the mesh
-	void Draw(const Shader& shader);
+	void Draw(const Shader& shader) const;
 
-	private:
+private:
 	/*  Render data  */
 	GLuint VAO, VBO, EBO;
-	struct Material mat;	
+	struct Material mat;
 
 	void loadMaterial(aiMaterial *);
 	/*  Functions    */

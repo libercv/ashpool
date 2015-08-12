@@ -6,14 +6,14 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -pedantic")
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH}
                       ${CMAKE_CURRENT_SOURCE_DIR}/../cmake/)
 add_executable(ashpool main.cpp 
-		camera.h camera.cpp
-		shader.cpp shader.h 
-		window.cpp window.h
-		scene.cpp scene.h
-		model.cpp model.h
-		mesh.cpp mesh.h
-		texturemanager.cpp texturemanager.h
-		textureloader.cpp textureloader.h)
+		camera.hpp camera.cpp
+		shader.cpp shader.hpp 
+		window.cpp window.hpp
+		scene.cpp scene.hpp
+		model.cpp model.hpp
+		mesh.cpp mesh.hpp
+		texturemanager.cpp texturemanager.hpp
+		textureloader.cpp textureloader.hpp)
 find_package(PkgConfig REQUIRED)
 #find_package(SOIL  REQUIRED)
 pkg_search_module(GLFW REQUIRED glfw3)

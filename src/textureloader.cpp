@@ -1,16 +1,8 @@
-// Std. Includes
-#include <string>
-#include <fstream>
-#include <sstream>
-#include <iostream>
-#include <memory>
-#include <map>
-#include <vector>
-
-#include <GL/glew.h> // Contains all the necessery OpenGL includes
-#include <FreeImage.h>
-
-#include "textureloader.h"
+#include "textureloader.hpp"
+#include <FreeImage.h>  // for BYTE, FreeImage_Unload, etc
+#include <GL/glew.h>    // for GLbyte
+#include <memory>       // for unique_ptr, make_unique
+#include <string>       // for string
 
 TextureLoader::TextureLoader(const std::string& filename) {
 	

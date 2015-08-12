@@ -1,13 +1,9 @@
 #ifndef SCENE_H
 #define SCENE_H
 
-#include <memory>
-
-//class Shader;
-#include "shader.h"
-#include "camera.h"
-#include "model.h"
-//class Camera;
+#include "camera.hpp"  // for Camera
+#include "model.hpp"   // for Model
+#include "shader.hpp"  // for Shader
 
 class Scene {
 private:

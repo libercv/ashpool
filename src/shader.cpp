@@ -1,12 +1,13 @@
-#include "shader.h"
-#include <GLFW/glfw3.h>
-#include <cmath>
+#include "shader.hpp"
+#include <iostream>
+#include <sstream>
+#include <fstream>
 
 Shader::Shader(const GLchar *vertexPath, const GLchar *fragmentPath) {
-	auto vertexCodeStr = readFile(vertexPath); 
+	auto vertexCodeStr = readFile(vertexPath);
 	const GLchar* vShaderCode=vertexCodeStr.c_str();
 	GLuint vertex = compileShader(vShaderCode, GL_VERTEX_SHADER);
-	
+
 	auto fragmentCodeStr = readFile(fragmentPath);
 	const GLchar* fShaderCode=fragmentCodeStr.c_str();
 	GLuint fragment = compileShader(fShaderCode, GL_FRAGMENT_SHADER);
@@ -17,12 +18,12 @@ Shader::Shader(const GLchar *vertexPath, const GLchar *fragmentPath) {
 	glDeleteShader(fragment);
 }
 
-GLuint Shader::getUniformLocation(const std::string& name) const { 
+GLuint Shader::getUniformLocation(const std::string& name) const {
 	return glGetUniformLocation(this->program, name.data());
 }
 
 
-//Shader::setUniform(GLuint location, 
+//Shader::setUniform(GLuint location,
 void Shader::createProgram(GLuint vertexId, GLuint fragmentId) {
 	GLint success;
 	GLchar infoLog[512];
@@ -39,17 +40,10 @@ void Shader::createProgram(GLuint vertexId, GLuint fragmentId) {
 		std::exit(1);
 	}
 }
-	
 
-void Shader::use() const { 
-/*
-	GLfloat timeValue = glfwGetTime();
-	GLfloat greenValue = (sin(timeValue) / 2) + 0.5;
-	GLint vertexColorLocation = glGetUniformLocation(
-			this->program, "ourColor");
-*/
-	glUseProgram(this->program); 
-//	glUniform4f(vertexColorLocation, 0.0f, greenValue, 0.0f, 1.0f);
+
+void Shader::use() const {
+	glUseProgram(this->program);
 }
 
 GLuint Shader::compileShader(const GLchar* code, GLuint shader_type) {
@@ -68,7 +62,7 @@ GLuint Shader::compileShader(const GLchar* code, GLuint shader_type) {
 	}
 	return shaderId;
 }
-	
+
 std::string Shader::readFile(const GLchar *name) {
 	std::string code {""};
 	try {
@@ -86,4 +80,3 @@ std::string Shader::readFile(const GLchar *name) {
 	}
 	return code;
 }
-
