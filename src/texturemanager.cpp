@@ -30,7 +30,7 @@ std::vector<Texture> TextureManager::loadMaterialTextures(aiMaterial* mat, aiTex
 			texture.type = typeName;
 			texture.path = str;
 			textures.push_back(texture);
-			this->textures_loaded.push_back(texture);  // Store it as texture loaded for entire model, to ensure we won't unnecesery load duplicate textures.
+			this->textures_loaded.push_back(texture);  
 		}
 	}
 	return textures;
@@ -41,7 +41,7 @@ GLint TextureManager::TextureFromFile(const std::string& filename) {
 	//Generate texture ID and load texture data 
 	GLuint textureID;
 	glGenTextures(1, &textureID);
-		
+
 	// Load the image
 	TextureLoader image{filename};
 	if (image.getImagePtr()==nullptr) {

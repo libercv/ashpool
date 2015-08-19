@@ -24,6 +24,8 @@ public:
 	void lookAt(glm::vec3 pos, glm::vec3 targt);
 	void applyProjectionMatrix(const Shader*);
 	void applyViewMatrix(const Shader *);
+	void applyMVP(const Shader *, const glm::mat4 *modelMatrix);
+	void applyMV(const Shader *, const glm::mat4 *modelMatrix);
 };
 
 #endif //CAMERA_H

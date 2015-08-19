@@ -51,7 +51,7 @@ Mesh::Mesh(const aiMesh* mesh, const aiScene* scene, const std::string &director
 	}
 
 	// Process materials
-	if(mesh->mMaterialIndex >= 0) {
+	//if(mesh->mMaterialIndex >= 0) {
 		aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
 		// We assume a convention for sampler names in the shaders. Each diffuse texture should be named
 		// as 'texture_diffuseN' where N is a sequential number ranging from 1 to MAX_SAMPLER_NUMBER.
@@ -73,7 +73,7 @@ Mesh::Mesh(const aiMesh* mesh, const aiScene* scene, const std::string &director
 		//glGenBuffers(1,&uniformBlockIndex);
 		//glBindBuffer(GL_UNIFORM_BUFFER, uniformBlockIndex);
 		//glBufferData(GL_UNIFORM_BUFFER, sizeof(mat), (void *)(&mat), GL_STATIC_DRAW);
-	}
+	//}
 	this->setupMesh();
 }
 
