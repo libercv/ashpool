@@ -2,58 +2,19 @@
 #define MESH_H
 
 #include <GL/glew.h>                 // for GLuint
-#include <assimp/types.h>            // for aiString
 #include <algorithm>                 // for move
 #include <glm/glm.hpp>
 #include <string>                    // for string
 #include <vector>                    // for vector
-class Shader; 
-struct aiMaterial;
-struct aiMesh;
-struct aiScene;
+#include <iostream>
+#include "material.hpp"
+#include "texture.hpp"
+#include "vertex.hpp"
 
-struct Texture {
-    GLuint id;
-    std::string type;
-    aiString path;
-};
-
-struct Material{
-	glm::vec4 diffuse {0.8f, 0.8f, 0.8f, 1.0f};
-	glm::vec4 ambient {0.2f, 0.2f, 0.2f, 1.0f};
-	glm::vec4 specular {0.0f, 0.0f, 0.0f, 1.0f};
-	glm::vec4 emissive {0.0f, 0.0f, 0.0f, 1.0f};
-
-	float shininess;
-	int texCount {0};
-};
-
+class ShaderProgram; 
 
 class Mesh {
-
-	class Vertex {
-		public:
-			Vertex(Vertex &&other) :
-				Position(std::move(other.Position)),
-				Normal(std::move(other.Normal)),
-				TexCoords(std::move(other.TexCoords)) { };
-			Vertex(glm::vec3 pos, glm::vec3 nor, glm::vec2 tex) :
-				Position(std::move(pos)),
-				Normal(std::move(nor)),
-				TexCoords(std::move(tex)) { };
-			//Vertex& operator=(const Vertex& other) = default;
-			Vertex(const Vertex& other) = default;
-
-			// Position
-			glm::vec3 Position;
-			// Normal
-			glm::vec3 Normal;
-			// TexCoords
-			glm::vec2 TexCoords;
-	};
-
-
-public:
+	public:
 	/*  Mesh Data  */
 	std::vector<Vertex> vertices;
 	std::vector<GLuint> indices;
@@ -61,19 +22,30 @@ public:
 
 	/*  Functions  */
 	// Constructor
-	Mesh(std::vector<Vertex> vertices, std::vector<GLuint> indices, std::vector<Texture> textures);
-	Mesh(const aiMesh* mesh, const aiScene* scene, const std::string &directory);
+	Mesh() : VAO{0}, VBO{0}, EBO{0} { std::cout << "Mesh: default ctor" << std::endl; };
+	Mesh(Mesh &&other) :
+		vertices(std::move(other.vertices)),
+		indices(std::move(other.indices)),
+		textures(std::move(other.textures)),
+		mat(std::move(other.mat)),
+		VAO(other.VAO), VBO(other.VBO), EBO(other.EBO) { 
+			std::cout << "Mesh: moving constructor " << vertices.size() << " vertices." << std::endl; 
+			other.VBO=0; other.EBO=0; other.VAO=0; };
+	
+	Mesh(std::vector<Vertex> vertices, std::vector<GLuint> indices, std::vector<Texture> textures, Material material);
 	~Mesh();
+	
+	Mesh& operator=(const Mesh& other) = delete;
+	Mesh(const Mesh &other) = delete;
 
 	// Render the mesh
-	void Draw(const Shader& shader) const;
+	void Draw(const ShaderProgram& shader) const;
 
-private:
+	private:
 	/*  Render data  */
-	GLuint VAO, VBO, EBO;
 	struct Material mat;
+	GLuint VAO, VBO, EBO;
 
-	void loadMaterial(aiMaterial *);
 	/*  Functions    */
 	// Initializes all the buffer objects/arrays
 	void setupMesh();

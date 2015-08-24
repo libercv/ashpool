@@ -3,11 +3,11 @@
 
 #include "camera.hpp"  // for Camera
 #include "model.hpp"   // for Model
-#include "shader.hpp"  // for Shader
+#include "shaderprogram.hpp"  // for Shader
 
 class Scene {
 private:
-	Shader shader;
+	ShaderProgram shader;
 	Camera camera;
 	Model model;
 

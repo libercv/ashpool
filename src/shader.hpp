@@ -6,14 +6,13 @@
 
 class Shader {
 public:
-	Shader(const GLchar *vertexSourcePath, const GLchar *fragmentSourcePath);
-	void use() const;
-	GLuint getUniformLocation(const std::string& name) const;
+	Shader(const std::string &path, GLuint shader_type);
+	~Shader();
+	GLuint getId() { return mId; };
 private:
-	GLuint program;
-	std::string readFile(const GLchar *name);
-	GLuint compileShader(const GLchar* code, GLuint);
-	void createProgram(GLuint, GLuint);
+	GLuint mId;
+	std::string readFile(const std::string &path);
+	void compile(const GLchar*, GLuint);
 };
 
 

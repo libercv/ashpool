@@ -7,7 +7,7 @@
 #include <string>               // for allocator, string, operator+, etc
 #include <vector>               // for vector
 #include "textureloader.hpp"    // for TextureLoader
-
+#include "vertex.hpp"
 
 std::vector<Texture> TextureManager::loadMaterialTextures(aiMaterial* mat, aiTextureType type, std::string typeName, const std::string& directory) {
 	std::vector<Texture> textures;
@@ -18,7 +18,7 @@ std::vector<Texture> TextureManager::loadMaterialTextures(aiMaterial* mat, aiTex
 		// Check if texture was loaded before and if so, continue to next iteration: skip loading a new texture
 		GLboolean skip = false;
 		for(GLuint j = 0; j < textures_loaded.size(); j++) {
-			if(textures_loaded[j].path == str) {
+			if(textures_loaded[j].path == std::string(str.C_Str())) {
 				textures.push_back(textures_loaded[j]);
 				skip = true; // A texture with the same filepath has already been loaded, continue to next one. (optimization)
 				break;
@@ -28,7 +28,7 @@ std::vector<Texture> TextureManager::loadMaterialTextures(aiMaterial* mat, aiTex
 			Texture texture;
 			texture.id = TextureFromFile(directory + "/" + str.C_Str());
 			texture.type = typeName;
-			texture.path = str;
+			texture.path = std::string(str.C_Str());
 			textures.push_back(texture);
 			this->textures_loaded.push_back(texture);  
 		}

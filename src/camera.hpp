@@ -3,7 +3,7 @@
 
 #include <glm/glm.hpp> 
 
-class Shader;  
+class ShaderProgram;  
 
 class Camera {
 private:
@@ -22,10 +22,10 @@ public:
 	void setTarget(glm::vec3 targt);
 	void setPosition(glm::vec3 pos);
 	void lookAt(glm::vec3 pos, glm::vec3 targt);
-	void applyProjectionMatrix(const Shader*);
-	void applyViewMatrix(const Shader *);
-	void applyMVP(const Shader *, const glm::mat4 *modelMatrix);
-	void applyMV(const Shader *, const glm::mat4 *modelMatrix);
+	void applyProjectionMatrix(const ShaderProgram*);
+	void applyViewMatrix(const ShaderProgram *);
+	void applyMVP(const ShaderProgram *, const glm::mat4 *modelMatrix);
+	void applyMV(const ShaderProgram *, const glm::mat4 *modelMatrix);
 };
 
 #endif //CAMERA_H

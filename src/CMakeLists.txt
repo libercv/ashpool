@@ -8,10 +8,12 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH}
 add_executable(ashpool main.cpp 
 		camera.hpp camera.cpp
 		shader.cpp shader.hpp 
+		shaderprogram.cpp shaderprogram.hpp 
 		window.cpp window.hpp
 		scene.cpp scene.hpp
 		model.cpp model.hpp
 		mesh.cpp mesh.hpp
+		modelloader.cpp modelloader.hpp
 		texturemanager.cpp texturemanager.hpp
 		textureloader.cpp textureloader.hpp)
 find_package(PkgConfig REQUIRED)

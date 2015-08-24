@@ -6,12 +6,13 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include "camera.hpp"                         // for Camera
-#include "shader.hpp"                         // for Shader
+#include "shaderprogram.hpp"                         // for Shader
+#include "modelloader.hpp"
 
 
 Scene::Scene() :
 	shader { "shaders/shader.vert", "shaders/shader.frag"},
-	model {"models/sponza/sponza.obj" } {
+	model { ModelLoader::loadModel("models/sponza/sponza.obj") } {
 		//model {"models/sibenik/sibenik.obj" } {
 
 		// Camera
@@ -45,19 +46,17 @@ Scene::Scene() :
 		//auto modelLoc=shader.getUniformLocation("model");
 		//glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(modelMatrix));
 
+		clear();
 
-		glm::vec3 la(sin((GLfloat)glfwGetTime()*0.10f), 0.5f, cos((GLfloat)glfwGetTime()*0.10f));
+		auto speed = 0.25f * glfwGetTime();
+		glm::vec3 la(sin(speed), 0.5f, cos(speed));
 		camera.lookAt(glm::vec3(0.0f, 0.5f, 0.0f), //Pos
 				la); //lookat
 
-
-		//camera.applyProjectionMatrix(&shader);
-		//camera.applyViewMatrix(&shader);
 		camera.applyMVP(&shader, model.getModelMatrix());
 		camera.applyMV(&shader, model.getModelMatrix());
 
 		model.Draw(shader);
-		shader.use();
 	}
 
 	Scene::~Scene() {
