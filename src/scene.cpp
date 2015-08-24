@@ -13,6 +13,7 @@
 
 Scene::Scene() :
 	shader { "shaders/shader.vert", "shaders/shader.frag"},
+	camera { std::make_unique<Camera>() } ,
 	model { std::make_unique<Model>(ModelLoader::loadModel("models/sponza/sponza.obj")) } {
 		//model {"models/sibenik/sibenik.obj" } {
 
@@ -29,7 +30,6 @@ Scene::Scene() :
 		glm::mat4 modelMatrix=glm::mat4();
 		auto modelLoc=shader.getUniformLocation("model");
 		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(modelMatrix));
-
 
 		camera->lookAt(glm::vec3(0.0f, 0.5f, 0.0f), //Pos
 				glm::vec3(5.0f, 1.5f, 0.0f)); //lookat
