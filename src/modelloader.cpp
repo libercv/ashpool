@@ -15,6 +15,9 @@
 #include <iostream>
 #include "mesh.hpp"
 #include "model.hpp"
+#include "texture.hpp"
+#include "vertex.hpp"
+#include "material.hpp"
 #include "shaderprogram.hpp"                // for Shader
 #include "texturemanager.hpp"        // for TextureManager
 

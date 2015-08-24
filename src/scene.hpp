@@ -1,15 +1,17 @@
 #ifndef SCENE_H
 #define SCENE_H
 
-#include "camera.hpp"  // for Camera
-#include "model.hpp"   // for Model
-#include "shaderprogram.hpp"  // for Shader
+#include <memory>
+#include "shaderprogram.hpp"
+
+class Model;
+class Camera;
 
 class Scene {
 private:
 	ShaderProgram shader;
-	Camera camera;
-	Model model;
+	std::unique_ptr<Camera> camera;
+	std::unique_ptr<Model> model;
 
 public:
 	Scene();
