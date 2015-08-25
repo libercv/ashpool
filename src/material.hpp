@@ -2,7 +2,7 @@
 #define MATERIAL_H
 
 #include <glm/glm.hpp>
-
+#include <GL/glew.h>
 
 struct Material{
 	glm::vec4 diffuse {0.8f, 0.8f, 0.8f, 1.0f};
@@ -10,7 +10,12 @@ struct Material{
 	glm::vec4 specular {0.0f, 0.0f, 0.0f, 1.0f};
 	glm::vec4 emissive {0.0f, 0.0f, 0.0f, 1.0f};
 
-	float shininess;
+    GLuint shininess_uniform {0};
+    GLuint diffuse_uniform {0};
+    GLuint ambient_uniform {0};
+    GLuint texCount_uniform {0};
+    
+    float shininess {0.0f};
 	int texCount {0};
 };
 

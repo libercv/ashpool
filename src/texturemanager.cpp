@@ -9,31 +9,32 @@
 #include "textureloader.hpp"    // for TextureLoader
 #include "vertex.hpp"
 
-std::vector<Texture> TextureManager::loadMaterialTextures(aiMaterial* mat, aiTextureType type, std::string typeName, const std::string& directory) {
-	std::vector<Texture> textures;
-	for(GLuint i = 0; i < mat->GetTextureCount(type); i++)
+std::vector<Texture> TextureManager::loadMaterialTextures(aiMaterial* mat,
+             aiTextureType aiType, TextureType texType, const std::string& directory) {
+    std::vector<Texture> textures;
+    for(GLuint i = 0; i < mat->GetTextureCount(aiType); i++)
 	{
 		aiString str;
-		mat->GetTexture(type, i, &str);
+        mat->GetTexture(aiType, i, &str);
 		// Check if texture was loaded before and if so, continue to next iteration: skip loading a new texture
 		GLboolean skip = false;
 		for(GLuint j = 0; j < textures_loaded.size(); j++) {
 			if(textures_loaded[j].path == std::string(str.C_Str())) {
-				textures.push_back(textures_loaded[j]);
+                textures.push_back(Texture{textures_loaded[j].id, 0});
 				skip = true; // A texture with the same filepath has already been loaded, continue to next one. (optimization)
 				break;
 			}
 		}
 		if(!skip) {   // If texture hasn't been loaded already, load it
-			Texture texture;
+			TextureLoaded texture;
 			texture.id = TextureFromFile(directory + "/" + str.C_Str());
-			texture.type = typeName;
+            //texture.type = texType;
 			texture.path = std::string(str.C_Str());
-			textures.push_back(texture);
 			this->textures_loaded.push_back(texture);  
-		}
+            textures.push_back(Texture{texture.id, 0});
+        }
 	}
-	return textures;
+    return textures;
 }
 
 

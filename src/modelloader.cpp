@@ -89,22 +89,19 @@ void ModelLoader::loadMesh(std::vector<Mesh> &meshes, const aiMesh* mesh, const 
 	// Specular: texture_specularN
 	// Normal: texture_normalN
 
-	std::vector<Texture> textures;
-
 	// 1. Diffuse maps
-	std::vector<Texture> diffuseMaps = TextureManager::get().loadMaterialTextures(material,
-			aiTextureType_DIFFUSE, "texture_diffuse", directory);
-	textures.insert(textures.end(), diffuseMaps.begin(), diffuseMaps.end());
+    std::vector<Texture> diffuseMaps = TextureManager::get().loadMaterialTextures(material,
+            aiTextureType_DIFFUSE, TextureType::diffuse, directory);
 	// 2. Specular maps
-	std::vector<Texture> specularMaps = TextureManager::get().loadMaterialTextures(material,
-			aiTextureType_SPECULAR, "texture_specular", directory);
-	textures.insert(textures.end(), specularMaps.begin(), specularMaps.end());
+    std::vector<Texture> specularMaps = TextureManager::get().loadMaterialTextures(material,
+            aiTextureType_SPECULAR, TextureType::specular, directory);
 
 	auto mat = ModelLoader::loadMaterial(material);
 	//glGenBuffers(1,&uniformBlockIndex);
 	//glBindBuffer(GL_UNIFORM_BUFFER, uniformBlockIndex);
 	//glBufferData(GL_UNIFORM_BUFFER, sizeof(mat), (void *)(&mat), GL_STATIC_DRAW);
-	meshes.emplace_back(std::move(vertices), std::move(indices), std::move(textures), std::move(mat));
+    meshes.emplace_back(std::move(vertices), std::move(indices),
+                        std::move(specularMaps), std::move(diffuseMaps), std::move(mat));
 }
 
 Material ModelLoader::loadMaterial(aiMaterial *mtl){

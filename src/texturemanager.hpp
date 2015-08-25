@@ -19,10 +19,16 @@ class TextureManager {
 
 		// Checks all material textures of a given type and loads the textures if they're not loaded yet.
 		// The required info is returned as a Texture struct.
-		std::vector<Texture> loadMaterialTextures(aiMaterial* mat, aiTextureType type, std::string typeName, const std::string& directory);
+        std::vector<Texture> loadMaterialTextures(aiMaterial* mat, aiTextureType type, TextureType typeName,
+                                                 const std::string& directory);
 	private:
+        struct TextureLoaded {
+            std::string path;
+            GLuint id;
+        };
+
 		TextureManager() {};
-		std::vector<Texture> textures_loaded;	// Stores all the textures loaded so far, optimization to make sure textures aren't loaded more than once.
+		std::vector<TextureLoaded> textures_loaded;	// Stores all the textures loaded so far, optimization to make sure textures aren't loaded more than once.
 		GLint TextureFromFile(const std::string& filename); 
 		GLbyte* readTextureFromDisk(std::string path, unsigned int* widthp, unsigned int* heightp, bool scale, GLbyte **smallTexData) const;
 		GLuint load2dTexture(const std::string& path);

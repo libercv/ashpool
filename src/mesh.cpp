@@ -16,63 +16,71 @@
 
 
 
-Mesh::Mesh(std::vector<Vertex> Vertices,  std::vector<GLuint> Indices, std::vector<Texture> Textures, Material material) :
+Mesh::Mesh(std::vector<Vertex> Vertices,  std::vector<GLuint> Indices,
+		std::vector<Texture> Specular_Textures, std::vector<Texture> Diffuse_Textures,
+		Material mtl) :
 	vertices {std::move(Vertices)}, 
 	indices {std::move(Indices)}, 
-	textures {std::move(Textures)},
-	mat {std::move(material)} {
+	specular_textures {std::move(Specular_Textures)},
+	diffuse_textures {std::move(Diffuse_Textures)},
+	material {std::move(mtl)} {
 		this->setupMesh();
 	}
 
+void Mesh::refreshUniforms(const ShaderProgram &shader) {
+	auto diffuse_name = std::string("texture_diffuse");
+	auto specular_name = std::string("texture_specular");
 
+	GLuint diffuseNr = 1;
+	for (auto &tex:diffuse_textures) {
+		std::stringstream ss;
+		ss << diffuseNr++;
+		tex.uniformId=shader.getUniformLocation(diffuse_name + ss.str());
+	}
+	GLuint specularNr = 1;
+	for (auto &tex:specular_textures) {
+		std::stringstream ss;
+		ss << specularNr++;
+		tex.uniformId=shader.getUniformLocation(specular_name + ss.str());
+	}
+	material.shininess_uniform = shader.getUniformLocation("material_shininess");
+	material.diffuse_uniform = shader.getUniformLocation("material_diffuse");
+	material.ambient_uniform=shader.getUniformLocation("material_ambient");
+	material.texCount_uniform=shader.getUniformLocation("material_texCount");
+}
 
 // Render the mesh
 void  Mesh::Draw(const ShaderProgram& shader) const {
 	shader.use();
-	// Bind appropriate textures
-	GLuint diffuseNr = 1;
-	GLuint specularNr = 1;
-	for(GLuint i = 0; i < this->textures.size(); i++) {
+	int i=0;
+
+	for (auto& tex:diffuse_textures) {
 		glActiveTexture(GL_TEXTURE0 + i); // Active proper texture unit before binding
-		// Retrieve texture number (the N in diffuse_textureN)
-		std::stringstream ss;
-		std::string number;
-		std::string name = this->textures[i].type;
-		if(name == "texture_diffuse")
-			ss << diffuseNr++; // Transfer GLuint to stream
-		else if(name == "texture_specular")
-			ss << specularNr++; // Transfer GLuint to stream
-		number = ss.str();
-		// Now set the sampler to the correct texture unit
-		glUniform1i(shader.getUniformLocation(name + number), i);
-		// And finally bind the texture
-		glBindTexture(GL_TEXTURE_2D, this->textures[i].id);
+		glUniform1i(tex.uniformId, i);
+		glBindTexture(GL_TEXTURE_2D, tex.id);
+		i=i+1;
+	}
+	for (auto& tex:specular_textures) {
+		glActiveTexture(GL_TEXTURE0 + i); // Active proper texture unit before binding
+		glUniform1i(tex.uniformId, i);
+		glBindTexture(GL_TEXTURE_2D, tex.id);
+		i=i+1;
 	}
 
-	// Also set each mesh's shininess property to a default value (if you want you could extend this to another
-	// mesh property and possibly change this value)
-	glUniform1f(shader.getUniformLocation("material_shininess"), mat.shininess);
-	glUniform4f(shader.getUniformLocation("material_diffuse"),
-			mat.diffuse.x, mat.diffuse.y, mat.diffuse.z, mat.diffuse.w);
-	glUniform4f(shader.getUniformLocation("material_ambient"),
-			mat.ambient.x, mat.ambient.y, mat.ambient.z, mat.ambient.w);
-	glUniform1i(shader.getUniformLocation("material_texCount"), mat.texCount);
-	//glBindBufferRange(GL_UNIFORM_BUFFER, materialUniLoc, myMeshes[nd->mMeshes[n]].uniformBlockIndex,
-	// 0, sizeof(struct MyMaterial));
+	glUniform1f(material.shininess_uniform, material.shininess);
+	glUniform4f(material.diffuse_uniform,
+			material.diffuse.x, material.diffuse.y, material.diffuse.z, material.diffuse.w);
+	glUniform4f(material.ambient_uniform,
+			material.ambient.x, material.ambient.y, material.ambient.z, material.ambient.w);
+	glUniform1i(material.texCount_uniform, material.texCount);
 
-	// Draw mesh
 	glBindVertexArray(this->VAO);
-	glDrawElements(GL_TRIANGLES, this->indices.size(), GL_UNSIGNED_INT, 0);
-	glBindVertexArray(0);
-
-	// Always good practice to set everything back to defaults once configured.
-	//for (GLuint i = 0; i < this->textures.size(); i++) {
-	//	glActiveTexture(GL_TEXTURE0 + i);
-	//	glBindTexture(GL_TEXTURE_2D, 0);
-	//}
+	glDrawElements(GL_TRIANGLES, this->indicesSize, GL_UNSIGNED_INT, 0);
 }
 
 void Mesh::setupMesh() {
+	this->indicesSize=indices.size();
+
 	// Create buffers/arrays
 	glGenVertexArrays(1, &this->VAO);
 	glGenBuffers(1, &this->VBO);

@@ -17,6 +17,7 @@ class Model
 				modelMatrix{std::move(other.modelMatrix) } { };
 
 		void Draw(const ShaderProgram& shader) const;
+		void refreshUniforms(const ShaderProgram& shader);
 		const glm::mat4 *getModelMatrix() { return &modelMatrix; }; 
 
 	private:

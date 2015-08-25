@@ -12,28 +12,36 @@ class ShaderProgram;
 
 class Mesh {
 	public:
-		Mesh() : mat{}, VAO{0}, VBO{0}, EBO{0} { };
+        Mesh() : material{}, VAO{0}, VBO{0}, EBO{0} { };
 		Mesh(Mesh &&other) :
 			vertices(std::move(other.vertices)),
 			indices(std::move(other.indices)),
-			textures(std::move(other.textures)),
-			mat(std::move(other.mat)),
-			VAO(other.VAO), VBO(other.VBO), EBO(other.EBO) { 
-				other.VBO=0; other.EBO=0; other.VAO=0; };
-		Mesh(std::vector<Vertex> vertices, std::vector<GLuint> indices, std::vector<Texture> textures, Material material);
+            specular_textures(std::move(other.specular_textures)),
+            diffuse_textures(std::move(other.diffuse_textures)),
+            material(std::move(other.material)),
+            VAO(other.VAO), VBO(other.VBO), EBO(other.EBO),
+            indicesSize(other.indicesSize) { 
+				other.VBO=0; other.EBO=0; other.VAO=0;
+        		other.indicesSize=0;};
+        Mesh(std::vector<Vertex> vertices, std::vector<GLuint> indices,
+             std::vector<Texture> specular_textures, std::vector<Texture> diffuse_textures,
+             Material material);
 		~Mesh();
 
 		Mesh& operator=(const Mesh& other) = delete;
 		Mesh(const Mesh &other) = delete;
 
+		void refreshUniforms(const ShaderProgram &shader); 
 		void Draw(const ShaderProgram& shader) const;
 
 	private:
 		std::vector<Vertex> vertices;
 		std::vector<GLuint> indices;
-		std::vector<Texture> textures;
-		struct Material mat;
+        std::vector<Texture> specular_textures;
+        std::vector<Texture> diffuse_textures;
+        struct Material material;
 		GLuint VAO, VBO, EBO;
+        GLuint indicesSize {0};
 
 		void setupMesh();
 };

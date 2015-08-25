@@ -14,6 +14,9 @@ add_executable(ashpool main.cpp
 		model.cpp model.hpp
 		mesh.cpp mesh.hpp
 		modelloader.cpp modelloader.hpp
+		texture.hpp
+		vertex.hpp
+		material.hpp
 		texturemanager.cpp texturemanager.hpp
 		textureloader.cpp textureloader.hpp)
 find_package(PkgConfig REQUIRED)
