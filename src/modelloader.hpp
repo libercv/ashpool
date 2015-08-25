@@ -20,7 +20,7 @@ public:
 	ModelLoader() = default;
 	static Model loadModel(const std::string& path);
 private:
-	static void loadMesh(std::vector<Mesh>& meshes, const aiMesh* mesh, const aiScene* scene, const std::string &directory);
+	static Mesh loadMesh(const aiMesh* mesh, const aiScene* scene, const std::string &directory);
 	static Material loadMaterial(aiMaterial *mtl);
 	static std::vector<Vertex> loadMeshVertices(const aiMesh* mesh);
 	static std::vector<GLuint> loadMeshIndices(const aiMesh* mesh); 

@@ -21,9 +21,13 @@
 #include "shaderprogram.hpp"                // for Shader
 #include "texturemanager.hpp"        // for TextureManager
 
+
 Model ModelLoader::loadModel(const std::string& path) {
+	
+	// Read file
 	Assimp::Importer importer;
 	std::cout << "Start importing model" << std::endl;
+	auto directory = path.substr(0, path.find_last_of('/'));
 	const aiScene* scene = importer.ReadFile(path, aiProcess_GenNormals |
 			aiProcess_Triangulate | aiProcess_FlipUVs);
 
@@ -34,22 +38,47 @@ Model ModelLoader::loadModel(const std::string& path) {
 		exit(2);
 	}
 
-	// Retrieve the directory path of the filepath
-	auto directory = path.substr(0, path.find_last_of('/'));
-
+	// Import meshes
 	std::cout << "Reading " << scene->mNumMeshes << " meshes" << std::endl;
 	std::vector<Mesh> meshes;
 	meshes.reserve(scene->mNumMeshes);
-	for(GLuint i = 0; i< scene->mNumMeshes; i++) {
-		ModelLoader::loadMesh(meshes, scene->mMeshes[i], scene, directory);
-	}
+	for(GLuint i = 0; i< scene->mNumMeshes; i++) 
+		meshes.emplace_back(ModelLoader::loadMesh(scene->mMeshes[i], scene, directory));
+	
 	std::cout << "Model successfully imported." << std::endl;
+	
+	// Return new model
 	return Model(std::move(meshes));
 }
 
+
+Mesh ModelLoader::loadMesh(const aiMesh* mesh, const aiScene* scene, 
+			   const std::string &directory) {
+	// Vertices	
+	auto vertices = loadMeshVertices(mesh);
+	
+	// Indices
+	auto indices = loadMeshIndices(mesh);
+	
+	// Materials and textures
+	aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
+	std::vector<Texture> diffuseMaps = TextureManager::get().loadMaterialTextures(material,
+            aiTextureType_DIFFUSE, TextureType::diffuse, directory);
+	std::vector<Texture> specularMaps = TextureManager::get().loadMaterialTextures(material,
+            aiTextureType_SPECULAR, TextureType::specular, directory);
+	auto mat = ModelLoader::loadMaterial(material);
+	
+	// Return Mesh
+	return Mesh(std::move(vertices), std::move(indices),
+                        std::move(specularMaps), std::move(diffuseMaps), std::move(mat));
+}
+
+
 std::vector<Vertex> ModelLoader::loadMeshVertices(const aiMesh* mesh) {
+	
 	std::vector<Vertex> vertices;
 	vertices.reserve(mesh->mNumVertices);
+	
 	for(GLuint i = 0; i < mesh->mNumVertices; i++) {
 		auto vv = &mesh->mVertices[i];
 		auto vn = &mesh->mNormals[i];
@@ -69,43 +98,23 @@ std::vector<Vertex> ModelLoader::loadMeshVertices(const aiMesh* mesh) {
 	return vertices;
 }
 
+
 std::vector<GLuint> ModelLoader::loadMeshIndices(const aiMesh* mesh) {
+	
 	std::vector<GLuint> indices;
 	indices.reserve(3 * mesh->mNumFaces);
+	
 	for(GLuint i = 0; i < mesh->mNumFaces; i++) {
 		aiFace *face = &mesh->mFaces[i];
 		std::copy_n(&face->mIndices[0], face->mNumIndices, back_inserter(indices) );
 	}
+	
 	return indices;
 }
 
-void ModelLoader::loadMesh(std::vector<Mesh> &meshes, const aiMesh* mesh, const aiScene* scene, 
-			   const std::string &directory) {
-	// Vertices	
-	auto vertices = loadMeshVertices(mesh);
-	
-	// Indices
-	auto indices = loadMeshIndices(mesh);
-	
-	// Materials
-	aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
-	std::vector<Texture> diffuseMaps = TextureManager::get().loadMaterialTextures(material,
-            aiTextureType_DIFFUSE, TextureType::diffuse, directory);
-	std::vector<Texture> specularMaps = TextureManager::get().loadMaterialTextures(material,
-            aiTextureType_SPECULAR, TextureType::specular, directory);
-	auto mat = ModelLoader::loadMaterial(material);
-	
-	// Message
-	std::cout << "Mesh loaded. " << vertices.size() << " vertices, " <<
-		     diffuseMaps.size() << " diffuse maps, " <<
-		     specularMaps.size() << " specular maps." << std::endl;
-
-	// Store mesh
-	meshes.emplace_back(std::move(vertices), std::move(indices),
-                        std::move(specularMaps), std::move(diffuseMaps), std::move(mat));
-}
 
 Material ModelLoader::loadMaterial(aiMaterial *mtl){
+	
 	Material mat;
 
 	if(mtl->GetTextureCount(aiTextureType_DIFFUSE)>0)
