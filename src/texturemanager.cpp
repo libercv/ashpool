@@ -6,41 +6,46 @@
 #include <iostream>             // for basic_ostream, operator<<, cout, etc
 #include <string>               // for allocator, string, operator+, etc
 #include <vector>               // for vector
+#include <algorithm>
 #include "textureloader.hpp"    // for TextureLoader
 #include "vertex.hpp"
 
 std::vector<Texture> TextureManager::loadMaterialTextures(aiMaterial* mat,
-             aiTextureType aiType, TextureType texType, const std::string& directory) {
-    std::vector<Texture> textures;
-    for(GLuint i = 0; i < mat->GetTextureCount(aiType); i++)
-	{
+		aiTextureType aiType, const std::string& directory) {
+	
+	std::vector<Texture> textures;
+	
+	for(GLuint i = 0; i < mat->GetTextureCount(aiType); i++) {
+		// Get texture name
 		aiString str;
-        mat->GetTexture(aiType, i, &str);
-		// Check if texture was loaded before and if so, continue to next iteration: skip loading a new texture
-		GLboolean skip = false;
-		for(GLuint j = 0; j < textures_loaded.size(); j++) {
-			if(textures_loaded[j].path == std::string(str.C_Str())) {
-                textures.push_back(Texture{textures_loaded[j].id, 0});
-				skip = true; // A texture with the same filepath has already been loaded, continue to next one. (optimization)
-				break;
-			}
-		}
-		if(!skip) {   // If texture hasn't been loaded already, load it
+		mat->GetTexture(aiType, i, &str);
+		auto path = std::string(str.C_Str());
+		
+		// Find out if we have already loaded it. 
+		auto found = std::find_if(textures_loaded.begin(), textures_loaded.end(), 
+			[&path](TextureLoaded &t){ return t.path==path;});
+		
+		if (found!=textures_loaded.end()) {
+			// The texture was already loaded
+			textures.push_back(Texture{(*found).id, 0});
+		} else {
+			// Load a new texture
 			TextureLoaded texture;
-			texture.id = TextureFromFile(directory + "/" + str.C_Str());
-            //texture.type = texType;
-			texture.path = std::string(str.C_Str());
-			this->textures_loaded.push_back(texture);  
-            textures.push_back(Texture{texture.id, 0});
-        }
+			texture.id = TextureFromFile(directory + "/" + path);
+			texture.path = 	path;
+			textures.push_back(Texture{texture.id, 0});
+			this->textures_loaded.push_back(std::move(texture));  
+		}
 	}
-    return textures;
+	
+	return textures;
 }
 
 
 GLint TextureManager::TextureFromFile(const std::string& filename) {
+	
 	//Generate texture ID and load texture data 
-	GLuint textureID;
+	GLuint textureID=0;
 	glGenTextures(1, &textureID);
 
 	// Load the image
@@ -64,6 +69,7 @@ GLint TextureManager::TextureFromFile(const std::string& filename) {
 
 	glBindTexture(GL_TEXTURE_2D, 0);
 	std::cout << "Imported texture " << filename << std::endl;
+	
 	return textureID;
 }
 

@@ -49,24 +49,26 @@ void Mesh::refreshUniforms(const ShaderProgram &shader) {
 	material.texCount_uniform=shader.getUniformLocation("material_texCount");
 }
 
-// Render the mesh
-void  Mesh::Draw(const ShaderProgram& shader) const {
+void  Mesh::draw(const ShaderProgram& shader) const {
+	
 	shader.use();
+	
+	// Bind textures
 	int i=0;
-
 	for (auto& tex:diffuse_textures) {
-		glActiveTexture(GL_TEXTURE0 + i); // Active proper texture unit before binding
+		glActiveTexture(GL_TEXTURE0 + i); 
 		glUniform1i(tex.uniformId, i);
 		glBindTexture(GL_TEXTURE_2D, tex.id);
 		i=i+1;
 	}
 	for (auto& tex:specular_textures) {
-		glActiveTexture(GL_TEXTURE0 + i); // Active proper texture unit before binding
+		glActiveTexture(GL_TEXTURE0 + i); 
 		glUniform1i(tex.uniformId, i);
 		glBindTexture(GL_TEXTURE_2D, tex.id);
 		i=i+1;
 	}
 
+	// Bind material
 	glUniform1f(material.shininess_uniform, material.shininess);
 	glUniform4f(material.diffuse_uniform,
 			material.diffuse.x, material.diffuse.y, material.diffuse.z, material.diffuse.w);
@@ -74,6 +76,7 @@ void  Mesh::Draw(const ShaderProgram& shader) const {
 			material.ambient.x, material.ambient.y, material.ambient.z, material.ambient.w);
 	glUniform1i(material.texCount_uniform, material.texCount);
 
+	// Draw
 	glBindVertexArray(this->VAO);
 	glDrawElements(GL_TRIANGLES, this->indicesSize, GL_UNSIGNED_INT, 0);
 }
@@ -87,8 +90,8 @@ void Mesh::setupMesh() {
 	glGenBuffers(1, &this->EBO);
 
 	glBindVertexArray(this->VAO);
+	
 	// Load data into vertex buffers
-
 	auto sizeof_vertex = sizeof(Vertex);
 	glBindBuffer(GL_ARRAY_BUFFER, this->VBO);
 	glBufferData(GL_ARRAY_BUFFER, this->vertices.size() * sizeof_vertex, &this->vertices[0], GL_STATIC_DRAW);

@@ -9,32 +9,30 @@
 
 class TextureManager {
 	public:
-		/*  Functions   */
-		// Constructor, expects a filepath to a 3D model.
-
+		// Singleton
 		static TextureManager& get(){
 			static TextureManager instance;
 			return instance;
 		}
 
-		// Checks all material textures of a given type and loads the textures if they're not loaded yet.
-		// The required info is returned as a Texture struct.
-        std::vector<Texture> loadMaterialTextures(aiMaterial* mat, aiTextureType type, TextureType typeName,
-                                                 const std::string& directory);
+		std::vector<Texture> loadMaterialTextures(aiMaterial* mat, aiTextureType type,
+							  const std::string& directory);
 	private:
-        struct TextureLoaded {
-            std::string path;
-            GLuint id;
-        };
+		// Struct for internal use to avoid loading duplicated textures
+		struct TextureLoaded {
+			GLuint id;
+			std::string path;
+		};
 
+		// Private ctor to implement singleton
 		TextureManager() {};
-		std::vector<TextureLoaded> textures_loaded;	// Stores all the textures loaded so far, optimization to make sure textures aren't loaded more than once.
+		
+		std::vector<TextureLoaded> textures_loaded;	
 		GLint TextureFromFile(const std::string& filename); 
-		GLbyte* readTextureFromDisk(std::string path, unsigned int* widthp, unsigned int* heightp, bool scale, GLbyte **smallTexData) const;
+		GLbyte* readTextureFromDisk(std::string path, unsigned int* widthp, 
+					    unsigned int* heightp, bool scale, GLbyte **smallTexData) const;
 		GLuint load2dTexture(const std::string& path);
 
 };
-
-
 
 #endif // TEXTUREMANAGER_H

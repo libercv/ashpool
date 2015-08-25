@@ -58,7 +58,7 @@ Scene::Scene() :
 		camera->applyMVP(&shader, model->getModelMatrix());
 		camera->applyMV(&shader, model->getModelMatrix());
 
-		model->Draw(shader);
+		model->draw(shader);
 	}
 
 	Scene::~Scene() {

@@ -63,9 +63,9 @@ Mesh ModelLoader::loadMesh(const aiMesh* mesh, const aiScene* scene,
 	// Materials and textures
 	aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
 	std::vector<Texture> diffuseMaps = TextureManager::get().loadMaterialTextures(material,
-            aiTextureType_DIFFUSE, TextureType::diffuse, directory);
+            aiTextureType_DIFFUSE, directory);
 	std::vector<Texture> specularMaps = TextureManager::get().loadMaterialTextures(material,
-            aiTextureType_SPECULAR, TextureType::specular, directory);
+            aiTextureType_SPECULAR, directory);
 	auto mat = ModelLoader::loadMaterial(material);
 	
 	// Return Mesh
