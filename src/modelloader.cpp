@@ -41,26 +41,22 @@ Model ModelLoader::loadModel(const std::string& path) {
 	std::vector<Mesh> meshes;
 	meshes.reserve(scene->mNumMeshes);
 	for(GLuint i = 0; i< scene->mNumMeshes; i++) {
-		//meshes.emplace_back(scene->mMeshes[i], scene, directory);
-		//meshes.push_back(std::move(this->loadMesh(scene->mMeshes[i], scene, directory)));
 		ModelLoader::loadMesh(meshes, scene->mMeshes[i], scene, directory);
 	}
 	std::cout << "Model successfully imported." << std::endl;
 	return Model(std::move(meshes));
 }
 
-void ModelLoader::loadMesh(std::vector<Mesh> &meshes, const aiMesh* mesh, const aiScene* scene, const std::string &directory) {
+std::vector<Vertex> ModelLoader::loadMeshVertices(const aiMesh* mesh) {
 	std::vector<Vertex> vertices;
 	vertices.reserve(mesh->mNumVertices);
 	for(GLuint i = 0; i < mesh->mNumVertices; i++) {
 		auto vv = &mesh->mVertices[i];
 		auto vn = &mesh->mNormals[i];
 		// Texture Coordinates
-		if(mesh->mTextureCoords[0]) { // Does the mesh contain texture coordinates?
+		if(mesh->mTextureCoords[0]) { 
+			// Load only 1st texture coordinates set. It could have up to 8.
 			auto vt = &mesh->mTextureCoords[0][i];
-			// A vertex can contain up to 8 different texture coordinates. We thus make the assumption that
-			// we won't use models where a vertex can have multiple texture coordinates so we always take
-			// the first set (0).
 			vertices.emplace_back( glm::vec3(vv->x, vv->y, vv->z),
 					glm::vec3(vn->x, vn->y, vn->z),
 					glm::vec2(vt->x, vt->y)  );
@@ -70,37 +66,42 @@ void ModelLoader::loadMesh(std::vector<Mesh> &meshes, const aiMesh* mesh, const 
 					glm::vec2(0.0f, 0.0f)  );
 		}
 	}
-	// Now walk through each of the mesh's faces (a face is a mesh its triangle) and retrieve the corresponding
-	// vertex indices.
+	return vertices;
+}
+
+std::vector<GLuint> ModelLoader::loadMeshIndices(const aiMesh* mesh) {
 	std::vector<GLuint> indices;
 	indices.reserve(3 * mesh->mNumFaces);
 	for(GLuint i = 0; i < mesh->mNumFaces; i++) {
-		aiFace face = mesh->mFaces[i];
-		std::copy_n(&face.mIndices[0], face.mNumIndices, back_inserter(indices) );
-		//indices.insert(indices.end(), &face.mIndices[0], &face.mIndices[face.mNumIndices]);
+		aiFace *face = &mesh->mFaces[i];
+		std::copy_n(&face->mIndices[0], face->mNumIndices, back_inserter(indices) );
 	}
+	return indices;
+}
 
-	// Process materials
+void ModelLoader::loadMesh(std::vector<Mesh> &meshes, const aiMesh* mesh, const aiScene* scene, 
+			   const std::string &directory) {
+	// Vertices	
+	auto vertices = loadMeshVertices(mesh);
+	
+	// Indices
+	auto indices = loadMeshIndices(mesh);
+	
+	// Materials
 	aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
-	// We assume a convention for sampler names in the shaders. Each diffuse texture should be named
-	// as 'texture_diffuseN' where N is a sequential number ranging from 1 to MAX_SAMPLER_NUMBER.
-	// Same applies to other texture as the following list summarizes:
-	// Diffuse: texture_diffuseN
-	// Specular: texture_specularN
-	// Normal: texture_normalN
-
-	// 1. Diffuse maps
-    std::vector<Texture> diffuseMaps = TextureManager::get().loadMaterialTextures(material,
+	std::vector<Texture> diffuseMaps = TextureManager::get().loadMaterialTextures(material,
             aiTextureType_DIFFUSE, TextureType::diffuse, directory);
-	// 2. Specular maps
-    std::vector<Texture> specularMaps = TextureManager::get().loadMaterialTextures(material,
+	std::vector<Texture> specularMaps = TextureManager::get().loadMaterialTextures(material,
             aiTextureType_SPECULAR, TextureType::specular, directory);
-
 	auto mat = ModelLoader::loadMaterial(material);
-	//glGenBuffers(1,&uniformBlockIndex);
-	//glBindBuffer(GL_UNIFORM_BUFFER, uniformBlockIndex);
-	//glBufferData(GL_UNIFORM_BUFFER, sizeof(mat), (void *)(&mat), GL_STATIC_DRAW);
-    meshes.emplace_back(std::move(vertices), std::move(indices),
+	
+	// Message
+	std::cout << "Mesh loaded. " << vertices.size() << " vertices, " <<
+		     diffuseMaps.size() << " diffuse maps, " <<
+		     specularMaps.size() << " specular maps." << std::endl;
+
+	// Store mesh
+	meshes.emplace_back(std::move(vertices), std::move(indices),
                         std::move(specularMaps), std::move(diffuseMaps), std::move(mat));
 }
 
