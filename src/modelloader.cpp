@@ -25,8 +25,8 @@
 Model ModelLoader::loadModel(const std::string& path) {
 	
 	// Read file
-	Assimp::Importer importer;
 	std::cout << "Start importing model" << std::endl;
+	Assimp::Importer importer;
 	auto directory = path.substr(0, path.find_last_of('/'));
 	const aiScene* scene = importer.ReadFile(path, aiProcess_GenNormals |
 			aiProcess_Triangulate | aiProcess_FlipUVs);
@@ -43,7 +43,7 @@ Model ModelLoader::loadModel(const std::string& path) {
 	std::vector<Mesh> meshes;
 	meshes.reserve(scene->mNumMeshes);
 	for(GLuint i = 0; i< scene->mNumMeshes; i++) 
-		meshes.emplace_back(ModelLoader::loadMesh(scene->mMeshes[i], scene, directory));
+		meshes.emplace_back(loadMesh(scene->mMeshes[i], scene, directory));
 	
 	std::cout << "Model successfully imported." << std::endl;
 	
