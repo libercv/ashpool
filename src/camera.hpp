@@ -7,12 +7,13 @@ class ShaderProgram;
 
 class Camera {
 private:
+	const glm::vec3 upVector = glm::vec3(0.0f, 1.0f, 0.0f);
+	static constexpr float fovy {45.0f};
+	static constexpr float zNear {0.1f};
+	static constexpr float zFar {100.0f};
+	
 	glm::vec3 position;
 	glm::vec3 target;
-	//glm::vec3 direction;
-	//glm::vec3 right;
-	glm::vec3 upVector;
-
 	glm::mat4 viewMatrix;
 	glm::mat4 projMatrix;
 

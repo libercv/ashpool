@@ -22,10 +22,10 @@ std::vector<Texture> TextureManager::loadMaterialTextures(aiMaterial* mat,
 		auto path = std::string(str.C_Str());
 		
 		// Find out if we have already loaded it. 
-		auto found = std::find_if(textures_loaded.begin(), textures_loaded.end(), 
+		auto found = std::find_if(begin(textures_loaded), end(textures_loaded), 
 			[&path](TextureLoaded &t){ return t.path==path;});
 		
-		if (found!=textures_loaded.end()) {
+		if (found!=end(textures_loaded)) {
 			// The texture was already loaded
 			textures.push_back(Texture{(*found).id, 0});
 		} else {

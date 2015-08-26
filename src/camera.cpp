@@ -4,14 +4,11 @@
 #include <GL/glew.h>
 #include <glm/gtc/matrix_transform.hpp>  
 #include <glm/gtc/type_ptr.hpp> 
+#include "window.hpp"
 
 
-Camera::Camera() : upVector{ glm::vec3(0.0f, 1.0f, 0.0f) },
-	projMatrix { glm::perspective( 45.0f, (float)800/(float)600, 0.1f, 100.0f )} 	  {
-
-		//direction = glm::normalize( position - targt );
-		//right = glm::normalize(glm::cross(upVector, direction));
-		//up = glm::cross(direction, right);
+Camera::Camera() : projMatrix { glm::perspective( 
+			fovy, Window::RATIO, zNear, zFar )}  {
 	}
 
 void Camera::setTarget(glm::vec3 targt) {

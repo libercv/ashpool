@@ -26,7 +26,7 @@ Scene::Scene() :
 		//		glm::vec3(20.0f, -17.0f, 0.0f)); //lookat
 
 		shader.use();
-	        model->refreshUniforms(shader);
+		model->refreshUniforms(shader);
 
 		glm::mat4 modelMatrix=glm::mat4();
 		auto modelLoc=shader.getUniformLocation("model");

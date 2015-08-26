@@ -1,6 +1,6 @@
 #include "window.hpp"
+#include <functional>
 
-void key_callback(GLFWwindow* window, int key, int scancode, int action, int mode);
 
 
 Window::Window() {
@@ -63,8 +63,7 @@ void Window::swapBuffers() {
 	glfwSwapBuffers(window);
 }
 
-// Is called whenever a key is pressed/released via GLFW
-void key_callback(GLFWwindow* window, int key, int scancode, int action, int mode) {
+void Window::key_callback(GLFWwindow* window, int key, int scancode, int action, int mode) {
 	if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
 		glfwSetWindowShouldClose(window, GL_TRUE);
 }
