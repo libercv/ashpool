@@ -16,9 +16,9 @@
 
 
 
-Mesh::Mesh(std::vector<Vertex> Vertices,  std::vector<GLuint> Indices,
-		std::vector<Texture> Specular_Textures, std::vector<Texture> Diffuse_Textures,
-		Material mtl) :
+Mesh::Mesh(std::vector<Vertex> &&Vertices,  std::vector<GLuint> &&Indices,
+		std::vector<Texture> &&Specular_Textures, std::vector<Texture> &&Diffuse_Textures,
+		Material &&mtl) :
 	vertices {std::move(Vertices)}, 
 	indices {std::move(Indices)}, 
 	specular_textures {std::move(Specular_Textures)},
@@ -115,6 +115,9 @@ void Mesh::setupMesh() {
 
 
 Mesh::~Mesh() {
+	if (vertices.empty()) 
+		return; 
+	
 	if(this->VAO!=0) 
 		glDeleteVertexArrays(1, &this->VAO);
 
@@ -123,5 +126,4 @@ Mesh::~Mesh() {
 
 	if(this->EBO!=0)
 		glDeleteBuffers(1, &this->EBO);
-
 }

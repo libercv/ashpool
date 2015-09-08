@@ -8,11 +8,14 @@
 #include "texture.hpp"
 #include "vertex.hpp"
 
+#include <iostream>
+
 class ShaderProgram; 
+
 
 class Mesh {
 	public:
-		Mesh() : material{}, VAO{0}, VBO{0}, EBO{0} { };
+		Mesh() = delete;
 		Mesh(Mesh &&other) :
 			vertices(std::move(other.vertices)),
 			indices(std::move(other.indices)),
@@ -22,15 +25,17 @@ class Mesh {
 			VAO(other.VAO), VBO(other.VBO), EBO(other.EBO),
 			indicesSize(other.indicesSize) { 
 				other.VBO=0; other.EBO=0; other.VAO=0;
-				other.indicesSize=0;};
-		Mesh(std::vector<Vertex> vertices, std::vector<GLuint> indices,
-				std::vector<Texture> specular_textures, std::vector<Texture> diffuse_textures,
-				Material material);
+				other.indicesSize=0;}
+		
+		Mesh(std::vector<Vertex> &&vertices, std::vector<GLuint> &&indices,
+				std::vector<Texture> &&specular_textures, std::vector<Texture> &&diffuse_textures,
+				Material &&material);
 		~Mesh();
 
 		Mesh& operator=(const Mesh& other) = delete;
+		Mesh& operator=(const Mesh&& other) = delete;
 		Mesh(const Mesh &other) = delete;
-
+		
 		void refreshUniforms(const ShaderProgram &shader); 
 		void draw(const ShaderProgram& shader) const;
 
@@ -40,7 +45,7 @@ class Mesh {
 		std::vector<Texture> specular_textures;
 		std::vector<Texture> diffuse_textures;
 		struct Material material;
-		GLuint VAO, VBO, EBO;
+		GLuint VAO {0}, VBO {0}, EBO{0};
 		GLuint indicesSize {0};
 
 		void setupMesh();

@@ -23,7 +23,6 @@
 
 
 Model ModelLoader::loadModel(const std::string& path) {
-	
 	// Read file
 	std::cout << "Start importing model" << std::endl;
 	Assimp::Importer importer;
@@ -38,39 +37,28 @@ Model ModelLoader::loadModel(const std::string& path) {
 		exit(2);
 	}
 
-	// Import meshes
-	std::cout << "Reading " << scene->mNumMeshes << " meshes" << std::endl;
-	std::vector<Mesh> meshes;
-	meshes.reserve(scene->mNumMeshes);
-	for(GLuint i = 0; i< scene->mNumMeshes; i++) 
-		meshes.emplace_back(loadMesh(scene->mMeshes[i], scene, directory));
-	
-	std::cout << "Model successfully imported." << std::endl;
-	
 	// Return new model
-	return Model(std::move(meshes));
+	return Model(loadMeshes(scene, directory));
 }
 
-
-Mesh ModelLoader::loadMesh(const aiMesh* mesh, const aiScene* scene, 
+std::vector<Mesh> ModelLoader::loadMeshes(const aiScene* scene, 
 			   const std::string &directory) {
-	// Vertices	
-	auto vertices = loadMeshVertices(mesh);
 	
-	// Indices
-	auto indices = loadMeshIndices(mesh);
+	std::vector<Mesh> meshes;
+	std::cout << "Reading " << scene->mNumMeshes << " meshes" << std::endl;
+	meshes.reserve(scene->mNumMeshes);
+	for(GLuint i = 0; i< scene->mNumMeshes; i++) { 
+		auto m=scene->mMeshes[i];
+		aiMaterial* mat = scene->mMaterials[m->mMaterialIndex];
 	
-	// Materials and textures
-	aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
-	std::vector<Texture> diffuseMaps = TextureManager::get().loadMaterialTextures(material,
-            aiTextureType_DIFFUSE, directory);
-	std::vector<Texture> specularMaps = TextureManager::get().loadMaterialTextures(material,
-            aiTextureType_SPECULAR, directory);
-	auto mat = ModelLoader::loadMaterial(material);
+		meshes.emplace_back(loadMeshVertices(m), loadMeshIndices(m),
+		    TextureManager::get().loadMaterialTextures(mat, aiTextureType_SPECULAR, directory),
+		    TextureManager::get().loadMaterialTextures(mat, aiTextureType_DIFFUSE, directory),
+		    loadMaterial(mat) );
+	}
 	
-	// Return Mesh
-	return Mesh(std::move(vertices), std::move(indices),
-                        std::move(specularMaps), std::move(diffuseMaps), std::move(mat));
+	std::cout << "Model successfully imported." << std::endl;
+	return meshes;
 }
 
 
@@ -113,7 +101,7 @@ std::vector<GLuint> ModelLoader::loadMeshIndices(const aiMesh* mesh) {
 }
 
 
-Material ModelLoader::loadMaterial(aiMaterial *mtl){
+Material ModelLoader::loadMaterial(const aiMaterial* mtl){
 	
 	Material mat;
 

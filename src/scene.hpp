@@ -9,7 +9,11 @@ class Camera;
 
 class Scene {
 private:
-	ShaderProgram shader;
+	GLuint gBuffer, gNormal, gAlbedo;
+	GLuint gPosition, gColorSpec, gAlbedoSpec;
+	GLuint rboDepth;
+	ShaderProgram gBufferShader;
+	ShaderProgram lightingPassShader;
 	std::unique_ptr<Camera> camera;
 	std::unique_ptr<Model> model;
 
