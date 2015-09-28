@@ -6,26 +6,25 @@
 #include <GL/glew.h>
 
 #include "vertex.hpp"
+#include "texturemanager.hpp"
 
 struct aiScene;
 struct aiMesh;
 struct aiMaterial;
 class Model;
 class Mesh;
-class Dumb;
 struct Material;
 
 class ModelLoader {
 
 public:
 	ModelLoader() = default;
-	static Model loadModel(const std::string& path);
+	Model loadModel(const std::string& path) ;
 private:
-	static std::vector<Mesh> loadMeshes(const aiScene* scene, const std::string &directory);
-	static Material loadMaterial(const aiMaterial* mtl);
-	static std::vector<Vertex> loadMeshVertices(const aiMesh* mesh);
-	static std::vector<GLuint> loadMeshIndices(const aiMesh* mesh); 
-	static Dumb loadMeshDumb();
-
+	std::vector<Mesh> loadMeshes(const aiScene* scene, const std::string &directory) ;
+	Material loadMaterial(const aiMaterial* mtl) ;
+	std::vector<Vertex> loadMeshVertices(const aiMesh* mesh) ;
+	std::vector<GLuint> loadMeshIndices(const aiMesh* mesh) ; 
+	TextureManager mTextureManager;
 };
 #endif // MODELLOADER_H

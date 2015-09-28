@@ -2,6 +2,7 @@
 #define SCENE_H
 
 #include <memory>
+#include <vector>
 #include "shaderprogram.hpp"
 
 class Model;
@@ -17,7 +18,9 @@ private:
 	ShaderProgram gBufferShader;
 	ShaderProgram lightingPassShader;
 	std::unique_ptr<Camera> camera;
-	std::unique_ptr<Model> model;
+	//std::unique_ptr<Model> model;
+	std::vector<Model> models;	
+	
 	void init_pass1_gBuffer(); 
 	void init_pass2_lighting(); 
 	void renderQuad();

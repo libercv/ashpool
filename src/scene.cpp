@@ -17,13 +17,17 @@ void RenderQuad();
 Scene::Scene() :
 	gBufferShader { "shaders/gbuffer.vert", "shaders/gbuffer.frag"},
 	lightingPassShader { "shaders/lighting.vert", "shaders/lighting.frag"},
-	camera { std::make_unique<Camera>() } ,
-	model { std::make_unique<Model>(ModelLoader::loadModel("models/sponza/sponza.obj")) } {
+	camera { std::make_unique<Camera>() } {
+
+	
+	ModelLoader mLoader;
+	models.emplace_back(mLoader.loadModel("models/sponza/sponza.obj"));
 	
 	init_pass1_gBuffer();
 	init_pass2_lighting();
 	
-	model->refreshUniforms(gBufferShader);
+	for(auto &m:models)
+		m.refreshUniforms(gBufferShader);
 
 	glm::mat4 modelMatrix=glm::mat4();
 	auto modelLoc=gBufferShader.getUniformLocation("model");
@@ -93,7 +97,7 @@ void Scene::init_pass2_lighting() {
 	
 //	const auto lPos = glm::vec3(GLfloat(0),GLfloat(0),GLfloat(0));
 	auto lCol = glm::vec3(1.0f, 1.0f,1.0f);
-	for (auto i=0; i<lPos.size(); i++) {
+	for (unsigned int i=0; i<lPos.size(); i++) {
 		glUniform3fv(lightingPassShader.getUniformLocation(
 				     "lights["+std::to_string(i)+"].Position"), 1, &lPos[i][0]);
 		glUniform3fv(lightingPassShader.getUniformLocation(
@@ -137,10 +141,12 @@ void Scene::render() {
 	
 	camera->applyProjectionMatrix(&gBufferShader);
 	camera->applyViewMatrix(&gBufferShader);
-	glUniformMatrix4fv(gBufferShader.getUniformLocation("model"), 1, GL_FALSE,
-			   glm::value_ptr(*model->getModelMatrix()));
 	
-	model->draw(gBufferShader);
+	for(auto &m:models)	{
+		glUniformMatrix4fv(gBufferShader.getUniformLocation("model"), 1, GL_FALSE,
+			   glm::value_ptr(*m.getModelMatrix()));
+		m.draw(gBufferShader);
+	}
 	renderQuad();
 	
 }

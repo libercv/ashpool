@@ -9,12 +9,6 @@
 
 class TextureManager {
 	public:
-		// Singleton
-		static TextureManager& get(){
-			static TextureManager instance;
-			return instance;
-		}
-
 		std::vector<Texture> loadMaterialTextures(aiMaterial* mat, aiTextureType type,
 							  const std::string& directory);
 	private:
@@ -24,9 +18,6 @@ class TextureManager {
 			std::string path;
 		};
 
-		// Private ctor to implement singleton
-		TextureManager() {};
-		
 		std::vector<TextureLoaded> textures_loaded;	
 		GLint TextureFromFile(const std::string& filename); 
 		GLbyte* readTextureFromDisk(std::string path, unsigned int* widthp, 

@@ -52,8 +52,8 @@ std::vector<Mesh> ModelLoader::loadMeshes(const aiScene* scene,
 		aiMaterial* mat = scene->mMaterials[m->mMaterialIndex];
 	
 		meshes.emplace_back(loadMeshVertices(m), loadMeshIndices(m),
-		    TextureManager::get().loadMaterialTextures(mat, aiTextureType_SPECULAR, directory),
-		    TextureManager::get().loadMaterialTextures(mat, aiTextureType_DIFFUSE, directory),
+		    mTextureManager.loadMaterialTextures(mat, aiTextureType_SPECULAR, directory),
+		    mTextureManager.loadMaterialTextures(mat, aiTextureType_DIFFUSE, directory),
 		    loadMaterial(mat) );
 	}
 	
@@ -101,7 +101,7 @@ std::vector<GLuint> ModelLoader::loadMeshIndices(const aiMesh* mesh) {
 }
 
 
-Material ModelLoader::loadMaterial(const aiMaterial* mtl){
+Material ModelLoader::loadMaterial(const aiMaterial* mtl) {
 	
 	Material mat;
 
