@@ -19,15 +19,21 @@ Scene::Scene() :
 	lightingPassShader { "shaders/lighting.vert", "shaders/lighting.frag"},
 	camera { std::make_unique<Camera>() } ,
 	model { std::make_unique<Model>(ModelLoader::loadModel("models/sponza/sponza.obj")) } {
-		//model {"models/sibenik/sibenik.obj" } {
+	
+	init_pass1_gBuffer();
+	init_pass2_lighting();
+	
+	model->refreshUniforms(gBufferShader);
 
-		// Camera
-		// sibenik cerca
-		//camera.lookAt(glm::vec3(-13.0f, -12.0f, -0.0f), //Pos
-		//		glm::vec3(20.0f, -2.0f, 0.0f)); //lookat
-		// sibenik lejos
-		//camera.lookAt(glm::vec3(-19.0f, -12.0f, -0.0f), //Pos
-		//		glm::vec3(20.0f, -17.0f, 0.0f)); //lookat
+	glm::mat4 modelMatrix=glm::mat4();
+	auto modelLoc=gBufferShader.getUniformLocation("model");
+	glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(modelMatrix));
+
+	camera->lookAt(glm::vec3(0.0f, 0.5f, 0.0f), //Pos
+			glm::vec3(5.0f, 1.5f, 0.0f)); //lookat
+}
+
+void Scene::init_pass1_gBuffer() {
 	lightingPassShader.use();
 	glUniform1i(lightingPassShader.getUniformLocation("gPosition"), 0);
 	glUniform1i(lightingPassShader.getUniformLocation("gNormal"), 1);
@@ -73,16 +79,42 @@ Scene::Scene() :
 	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
 		std::cout << "Framebuffer not complete!" << std::endl;
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
- 
-	gBufferShader.use();
-	model->refreshUniforms(gBufferShader);
+}
 
-	glm::mat4 modelMatrix=glm::mat4();
-	auto modelLoc=gBufferShader.getUniformLocation("model");
-	glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(modelMatrix));
-
-	camera->lookAt(glm::vec3(0.0f, 0.5f, 0.0f), //Pos
-			glm::vec3(5.0f, 1.5f, 0.0f)); //lookat
+void Scene::init_pass2_lighting() {
+	lightingPassShader.use();
+	std::vector<glm::vec3> lPos;
+	lPos.emplace_back(0.0f, 2.5f, 8.0f);
+	lPos.emplace_back(3.5f, 0.5f, 5.0f);
+	lPos.emplace_back(3.0f, 0.5f, 6.0f);
+	lPos.emplace_back(-3.5f, 0.5f, 5.0f);
+	lPos.emplace_back(-3.5f, 0.5f, -5.0f);
+	lPos.emplace_back(3.5f, 0.5f, -5.0f);
+	
+//	const auto lPos = glm::vec3(GLfloat(0),GLfloat(0),GLfloat(0));
+	auto lCol = glm::vec3(1.0f, 1.0f,1.0f);
+	for (auto i=0; i<lPos.size(); i++) {
+		glUniform3fv(lightingPassShader.getUniformLocation(
+				     "lights["+std::to_string(i)+"].Position"), 1, &lPos[i][0]);
+		glUniform3fv(lightingPassShader.getUniformLocation(
+				     "lights[" + std::to_string(i) + "].Color"), 1, &lCol[0]);
+	// Update attenuation parameters and calculate radius
+	const GLfloat constant = 1.0; // Note that we don't send this to the shader, we assume it is always 1.0 (in our case)
+	//const GLfloat linear = 0.7;
+	//const GLfloat quadratic = 1.8;
+	const GLfloat linear = 0.6;
+	const GLfloat quadratic = 0.2;
+	glUniform1f(lightingPassShader.getUniformLocation(
+			    "lights[" + std::to_string(i)+"].Linear"), linear);
+	glUniform1f(lightingPassShader.getUniformLocation(
+			    "lights[" + std::to_string(i) + "].Quadratic"), quadratic);
+	}
+	glUniform1f(lightingPassShader.getUniformLocation(
+			    "lights[0].Linear"), 0.1f);
+	glUniform1f(lightingPassShader.getUniformLocation(
+			    "lights[0].Quadratic"), 0.1f);
+	auto camPos = glm::vec3(0.0f, 0.5f, 0.0f);
+	glUniform3fv(lightingPassShader.getUniformLocation("viewPos"), 1, &camPos[0]);
 }
 
 void Scene::clear() {
@@ -99,8 +131,9 @@ void Scene::render() {
 	auto camPos = glm::vec3(0.0f, 0.5f, 0.0f);
 	camera->lookAt(camPos, //Pos
 			la); //lookat
-	camera->applyMVP(&gBufferShader, model->getModelMatrix());
-	camera->applyMV(&gBufferShader, model->getModelMatrix());
+			
+	//camera->applyMVP(&gBufferShader, model->getModelMatrix());
+	//camera->applyMV(&gBufferShader, model->getModelMatrix());
 	
 	camera->applyProjectionMatrix(&gBufferShader);
 	camera->applyViewMatrix(&gBufferShader);
@@ -108,35 +141,7 @@ void Scene::render() {
 			   glm::value_ptr(*model->getModelMatrix()));
 	
 	model->draw(gBufferShader);
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	lightingPassShader.use();
-	glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, gPosition);
-        glActiveTexture(GL_TEXTURE1);
-        glBindTexture(GL_TEXTURE_2D, gNormal);
-        glActiveTexture(GL_TEXTURE2);
-        glBindTexture(GL_TEXTURE_2D, gAlbedoSpec);
-
-	const auto lPos = glm::vec3(GLfloat(0),GLfloat(0),GLfloat(0));
-	auto lCol = glm::vec3(0.8f, 0.8f,0.8f);
-	glUniform3fv(lightingPassShader.getUniformLocation("lights[0].Position"), 1, &lPos[0]);
-	glUniform3fv(lightingPassShader.getUniformLocation("lights[0].Color"), 1, &lCol[0]);
-	// Update attenuation parameters and calculate radius
-	const GLfloat constant = 1.0; // Note that we don't send this to the shader, we assume it is always 1.0 (in our case)
-	const GLfloat linear = 0.1;
-	const GLfloat quadratic = 0.1;
-	//const GLfloat linear = 0.7;
-	//const GLfloat quadratic = 1.8;
-	glUniform1f(lightingPassShader.getUniformLocation("lights[0].Linear"), linear);
-	glUniform1f(lightingPassShader.getUniformLocation("lights[0].Quadratic"), quadratic);
-	glUniform3fv(lightingPassShader.getUniformLocation("viewPos"), 1, &camPos[0]);
- 
-	// Bind all gBuffer textures
-	// Se lighting uniforms
-	// render
-	
-	RenderQuad();
+	renderQuad();
 	
 }
 
@@ -145,31 +150,38 @@ Scene::~Scene() {
 
 // RenderQuad() Renders a 1x1 quad in NDC, best used for framebuffer color targets
 // and post-processing effects.
-GLuint quadVAO = 0;
-GLuint quadVBO;
-void RenderQuad()
-{
-    if (quadVAO == 0)
-    {
-        GLfloat quadVertices[] = {
-            // Positions        // Texture Coords
-            -1.0f, 1.0f, 0.0f, 0.0f, 1.0f,
-            -1.0f, -1.0f, 0.0f, 0.0f, 0.0f,
-            1.0f, 1.0f, 0.0f, 1.0f, 1.0f,
-            1.0f, -1.0f, 0.0f, 1.0f, 0.0f,
-        };
-        // Setup plane VAO
-        glGenVertexArrays(1, &quadVAO);
-        glGenBuffers(1, &quadVBO);
-        glBindVertexArray(quadVAO);
-        glBindBuffer(GL_ARRAY_BUFFER, quadVBO);
-        glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), &quadVertices, GL_STATIC_DRAW);
-        glEnableVertexAttribArray(0);
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (GLvoid*)0);
-        glEnableVertexAttribArray(1);
-        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat)));
-    }
-    glBindVertexArray(quadVAO);
-    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-    glBindVertexArray(0);
+void Scene::renderQuad() {
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	lightingPassShader.use();
+ 	glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, gPosition);
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_2D, gNormal);
+        glActiveTexture(GL_TEXTURE2);
+        glBindTexture(GL_TEXTURE_2D, gAlbedoSpec);
+
+
+	if (quadVAO == 0) {
+		GLfloat quadVertices[] = {
+			// Positions        // Texture Coords
+			-1.0f, 1.0f, 0.0f, 0.0f, 1.0f,
+			-1.0f, -1.0f, 0.0f, 0.0f, 0.0f,
+			1.0f, 1.0f, 0.0f, 1.0f, 1.0f,
+			1.0f, -1.0f, 0.0f, 1.0f, 0.0f,
+		};
+		// Setup plane VAO
+		glGenVertexArrays(1, &quadVAO);
+		glGenBuffers(1, &quadVBO);
+		glBindVertexArray(quadVAO);
+		glBindBuffer(GL_ARRAY_BUFFER, quadVBO);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), &quadVertices, GL_STATIC_DRAW);
+		glEnableVertexAttribArray(0);
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (GLvoid*)0);
+		glEnableVertexAttribArray(1);
+		glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat)));
+    	}
+	glBindVertexArray(quadVAO);
+	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+	glBindVertexArray(0);
 }
