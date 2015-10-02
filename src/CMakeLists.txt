@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.1)
 
 project(ashpool)
 set(CMAKE_CXX_STANDARD 14)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -pedantic")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -pedantic -fno-omit-frame-pointer")
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH}
                       ${CMAKE_CURRENT_SOURCE_DIR}/../cmake/)
 add_executable(ashpool main.cpp 
@@ -20,6 +20,7 @@ add_executable(ashpool main.cpp
 		texturemanager.cpp texturemanager.hpp
 		cl_init.cpp cl_init.hpp
 		cl_platform.cpp cl_platform.hpp
+		cl_device.cpp cl_device.hpp
 		textureloader.cpp textureloader.hpp)
 find_package(PkgConfig REQUIRED)
 #find_package(SOIL  REQUIRED)

@@ -4,17 +4,15 @@
 
 int main() {
 
-	Window window;
-	Scene scene;
-	CL_Init opencl;
-	
-	
-	while (!window.shouldClose()) {
-		window.pollEvents();
-		window.swapBuffers();
-		scene.render();
-	}
+  Window window;
+  Scene scene;
+  CL_Init opencl;
 
-	return 0;
+  while (!window.shouldClose()) {
+    window.pollEvents();
+    window.swapBuffers();
+    scene.render();
+  }
+
+  return 0;
 }
-

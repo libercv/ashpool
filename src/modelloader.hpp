@@ -18,13 +18,15 @@ struct Material;
 class ModelLoader {
 
 public:
-	ModelLoader() = default;
-	Model loadModel(const std::string& path) ;
+  ModelLoader() = default;
+  Model loadModel(const std::string &path);
+
 private:
-	std::vector<Mesh> loadMeshes(const aiScene* scene, const std::string &directory) ;
-	Material loadMaterial(const aiMaterial* mtl) ;
-	std::vector<Vertex> loadMeshVertices(const aiMesh* mesh) ;
-	std::vector<GLuint> loadMeshIndices(const aiMesh* mesh) ; 
-	TextureManager mTextureManager;
+  std::vector<Mesh> loadMeshes(const aiScene *scene,
+                               const std::string &directory);
+  Material loadMaterial(const aiMaterial *mtl) const;
+  std::vector<Vertex> loadMeshVertices(const aiMesh *mesh) const;
+  std::vector<GLuint> loadMeshIndices(const aiMesh *mesh) const;
+  TextureManager mTextureManager;
 };
 #endif // MODELLOADER_H
