@@ -1,4 +1,5 @@
 #include "window.hpp"
+#include "input.hpp"
 #include <functional>
 
 Window::Window() {
@@ -22,8 +23,8 @@ Window::Window() {
   glfwMakeContextCurrent(window);
   glfwSwapInterval(1);
 
-  // Set the required callback functions
-  glfwSetKeyCallback(window, key_callback);
+    // Options
+  glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
   // Set this to true so GLEW knows to use a modern approach to retrieving
   // function pointers and extensions
@@ -45,6 +46,11 @@ Window::Window() {
   glEnable(GL_DEPTH_TEST);
 }
 
+Input Window::createInput() 
+{
+  return Input(window);
+}
+
 Window::~Window() { glfwTerminate(); }
 
 bool Window::shouldClose() { return glfwWindowShouldClose(window); }
@@ -53,8 +59,3 @@ void Window::pollEvents() { glfwPollEvents(); }
 
 void Window::swapBuffers() { glfwSwapBuffers(window); }
 
-void Window::key_callback(GLFWwindow *window, int key, int /*scancode*/,
-                          int action, int /*mode*/) {
-  if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
-    glfwSetWindowShouldClose(window, GL_TRUE);
-}

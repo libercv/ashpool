@@ -10,6 +10,11 @@
 
 // GLFW
 #include <GLFW/glfw3.h>
+
+
+class Input;
+
+
 class Window {
 public:
   Window();
@@ -17,14 +22,15 @@ public:
   bool shouldClose();
   void pollEvents();
   void swapBuffers();
+  Input createInput();
+
+  void move();
 
   static constexpr GLuint WIDTH = 800;
   static constexpr GLuint HEIGHT = 600;
   static constexpr float RATIO = (float)WIDTH / (float)HEIGHT;
 
 private:
-  static void key_callback(GLFWwindow *window, int key, int scancode,
-                           int action, int mode);
   GLFWwindow *window;
 };
 

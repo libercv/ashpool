@@ -7,6 +7,7 @@
 
 class Model;
 class Camera;
+class Input;
 
 class Scene {
 private:
@@ -21,13 +22,18 @@ private:
   std::unique_ptr<Camera> camera;
   // std::unique_ptr<Model> model;
   std::vector<Model> models;
+  GLfloat deltaTime = 0.0f; // Time between current frame and last frame
+  GLfloat lastFrame = 0.0f;   // Time of last frame
+
+  Input *input;
+
 
   void init_pass1_gBuffer();
   void init_pass2_lighting();
   void renderQuad();
 
 public:
-  Scene();
+  Scene(Input *i);
   ~Scene();
   void render();
   void clear();

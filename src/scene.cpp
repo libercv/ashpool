@@ -4,6 +4,7 @@
 #include <math.h>       // for cos, sin
 #include <memory>
 #include <glm/glm.hpp>
+#include <glm/ext.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include "model.hpp"
@@ -11,14 +12,18 @@
 #include "shaderprogram.hpp" // for Shader
 #include "modelloader.hpp"
 #include "window.hpp"
+#include "input.hpp"
 
-Scene::Scene()
-    : gBufferShader{"shaders/gbuffer.vert", "shaders/gbuffer.frag"},
-      lightingPassShader{"shaders/lighting.vert", "shaders/lighting.frag"},
-      camera{std::make_unique<Camera>()} {
+Scene::Scene(Input *i)
+    : input(i),
+     gBufferShader{"shaders/gbuffer.vert", "shaders/gbuffer.frag"},
+      lightingPassShader{"shaders/lighting.vert", "shaders/lighting.frag"} {
+
+  camera = std::make_unique<Camera>();
+  input->setCamera(camera.get());
 
   ModelLoader mLoader;
-  models.emplace_back(mLoader.loadModel("models/sponza/sponza.obj"));
+  models.emplace_back(mLoader.loadModel("models/sponza3/sponza.obj"));
 
   init_pass1_gBuffer();
   init_pass2_lighting();
@@ -30,8 +35,15 @@ Scene::Scene()
   auto modelLoc = gBufferShader.getUniformLocation("model");
   glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(modelMatrix));
 
+  auto projMatrix = camera->GetProjectionMatrix();
+  auto loc = gBufferShader.getUniformLocation("projection");
+  glUniformMatrix4fv(loc, 1, GL_FALSE, glm::value_ptr(projMatrix));
+
+
+/*
   camera->lookAt(glm::vec3(0.0f, 0.5f, 0.0f),  // Pos
                  glm::vec3(5.0f, 1.5f, 0.0f)); // lookat
+*/
 }
 
 void Scene::init_pass1_gBuffer() {
@@ -141,17 +153,23 @@ void Scene::render() {
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   gBufferShader.use();
 
-  auto speed = 0.25f * glfwGetTime();
-  glm::vec3 la(sin(speed), 0.5f, cos(speed));
-  auto camPos = glm::vec3(0.0f, 0.5f, 0.0f);
-  camera->lookAt(camPos, // Pos
-                 la);    // lookat
+  GLfloat currentFrame = glfwGetTime();
+  deltaTime = currentFrame - lastFrame;
+  lastFrame = currentFrame;
+  input->move(deltaTime);
 
-  // camera->applyMVP(&gBufferShader, model->getModelMatrix());
-  // camera->applyMV(&gBufferShader, model->getModelMatrix());
+  auto vMat = camera->GetViewMatrix();
+  auto loc = gBufferShader.getUniformLocation("view");
+  glUniformMatrix4fv(loc, 1, GL_FALSE, glm::value_ptr(vMat));
 
-  camera->applyProjectionMatrix(&gBufferShader);
-  camera->applyViewMatrix(&gBufferShader);
+  glm::mat4 modelMatrix = glm::mat4();
+  auto modelLoc = gBufferShader.getUniformLocation("model");
+  glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(modelMatrix));
+
+  auto projMatrix = camera->GetProjectionMatrix();
+  auto projLoc = gBufferShader.getUniformLocation("projection");
+  glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(projMatrix));
+
 
   for (auto &m : models) {
     glUniformMatrix4fv(gBufferShader.getUniformLocation("model"), 1, GL_FALSE,

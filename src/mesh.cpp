@@ -24,21 +24,17 @@ Mesh::Mesh(std::vector<Vertex> &&Vertices, std::vector<GLuint> &&Indices,
 }
 
 void Mesh::refreshUniforms(const ShaderProgram &shader) {
-  auto diffuse_name = std::string("texture_diffuse");
-  auto specular_name = std::string("texture_specular");
+  static constexpr auto diffuse_name = "texture_diffuse";
+  static constexpr auto specular_name = "texture_specular";
 
-  GLuint diffuseNr = 1;
-  for (auto &tex : diffuse_textures) {
-    std::stringstream ss;
-    ss << diffuseNr++;
-    tex.uniformId = shader.getUniformLocation(diffuse_name + ss.str());
-  }
-  GLuint specularNr = 1;
-  for (auto &tex : specular_textures) {
-    std::stringstream ss;
-    ss << specularNr++;
-    tex.uniformId = shader.getUniformLocation(specular_name + ss.str());
-  }
+  for (GLuint i = 0; i < diffuse_textures.size(); i++)
+    diffuse_textures[i].uniformId =
+        shader.getUniformLocation(diffuse_name + std::to_string(i));
+
+  for (GLuint i = 0; i < specular_textures.size(); i++)
+    specular_textures[i].uniformId =
+        shader.getUniformLocation(specular_name + std::to_string(i));
+
   material.shininess_uniform = shader.getUniformLocation("material_shininess");
   material.diffuse_uniform = shader.getUniformLocation("material_diffuse");
   material.ambient_uniform = shader.getUniformLocation("material_ambient");
@@ -74,7 +70,7 @@ void Mesh::draw(const ShaderProgram &shader) const {
 
   // Draw
   glBindVertexArray(this->VAO);
-  glDrawElements(GL_TRIANGLES, this->indicesSize, GL_UNSIGNED_INT, 0);
+  glDrawElements(GL_TRIANGLES, this->indicesSize, GL_UNSIGNED_INT, nullptr);
 }
 
 void Mesh::setupMesh() {
@@ -100,7 +96,7 @@ void Mesh::setupMesh() {
   // Set the vertex attribute pointers
   // Vertex Positions
   glEnableVertexAttribArray(0);
-  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof_vertex, (GLvoid *)0);
+  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof_vertex, (GLvoid *)nullptr);
   // Vertex Normals
   glEnableVertexAttribArray(1);
   glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof_vertex,
