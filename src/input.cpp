@@ -4,14 +4,20 @@
 #include <cstring>
 
 Input::Input(GLFWwindow *window) {
+  init(window);
+} 
+
+Input::Input(GLFWwindow *window, Camera *c) : camera{c} {
+  init(window);
+}
+
+void Input::init(GLFWwindow *window) {
   glfwSetWindowUserPointer(window, reinterpret_cast<void*>(this));
   std::memset(keys, false, sizeof keys);
   set_key_callback(window);
   set_mouse_callback(window);
   set_scroll_callback(window);
 }
-
-
 
 // Moves/alters the camera->positions based on user input
 void Input::move(GLfloat deltaTime) {

@@ -19,7 +19,7 @@ public:
   ~Model() = default;
   void draw(const ShaderProgram &shader) const;
   void refreshUniforms(const ShaderProgram &shader);
-  const glm::mat4 *getModelMatrix() { return &modelMatrix; };
+  const glm::mat4 *getModelMatrix() const { return &modelMatrix; };
 
 private:
   std::vector<Mesh> meshes;

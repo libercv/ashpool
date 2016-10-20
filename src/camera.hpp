@@ -79,8 +79,8 @@ public:
     void ProcessMouseMovement(GLfloat xoffset, GLfloat yoffset,
                               GLboolean constrainPitch = true);
     void ProcessKeyboard(Camera_Movement direction, GLfloat deltaTime);
-    glm::mat4 GetViewMatrix();
-    glm::mat4 GetProjectionMatrix() { return projMatrix; };
+    glm::mat4 GetViewMatrix() const;
+    glm::mat4 GetProjectionMatrix() const { return projMatrix; };
 
   private:
     void updateCameraVectors();

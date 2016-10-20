@@ -7,7 +7,7 @@
 #include "window.hpp"
 
 // Returns the view matrix calculated using Eular Angles and the LookAt Matrix
-glm::mat4 Camera::GetViewMatrix() {
+glm::mat4 Camera::GetViewMatrix() const {
   return glm::lookAt(this->Position, this->Position + this->Front, this->Up);
 }
 
