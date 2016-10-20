@@ -1,20 +1,20 @@
-#include "shader.hpp"
+#include "shaderloader.hpp"
 #include <iostream>
 #include <sstream>
 #include <fstream>
 
-Shader::Shader(const std::string &path, GLuint shader_type) : mId{0} {
+ShaderLoader::ShaderLoader(const std::string &path, GLuint shader_type) : mId{0} {
   std::string vertexCodeStr = readFile(path);
   const GLchar *code = vertexCodeStr.c_str();
   compile(code, shader_type);
 }
 
-Shader::~Shader() {
+ShaderLoader::~ShaderLoader() {
   if (mId != 0)
     glDeleteShader(mId);
 }
 
-void Shader::compile(const GLchar *code, GLuint shader_type) {
+void ShaderLoader::compile(const GLchar *code, GLuint shader_type) {
   // Compile shader
   mId = glCreateShader(shader_type);
   glShaderSource(mId, 1, &code, NULL);
@@ -31,7 +31,7 @@ void Shader::compile(const GLchar *code, GLuint shader_type) {
   }
 }
 
-std::string Shader::readFile(const std::string &path) {
+std::string ShaderLoader::readFile(const std::string &path) {
   std::string code{""};
   try {
     std::ifstream file;

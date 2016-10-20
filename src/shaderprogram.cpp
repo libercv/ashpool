@@ -1,13 +1,13 @@
 #include "shaderprogram.hpp"
-#include "shader.hpp"
+#include "shaderloader.hpp"
 #include <iostream>
 #include <sstream>
 #include <fstream>
 
 ShaderProgram::ShaderProgram(const GLchar *vertexPath,
                              const GLchar *fragmentPath) {
-  auto vertexShader = Shader(vertexPath, GL_VERTEX_SHADER);
-  auto fragmentShader = Shader(fragmentPath, GL_FRAGMENT_SHADER);
+  auto vertexShader = ShaderLoader(vertexPath, GL_VERTEX_SHADER);
+  auto fragmentShader = ShaderLoader(fragmentPath, GL_FRAGMENT_SHADER);
   createProgram(vertexShader.getId(), fragmentShader.getId());
 }
 

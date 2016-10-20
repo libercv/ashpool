@@ -4,10 +4,10 @@
 #include <GL/glew.h> // for GLuint, GLchar
 #include <string>    // for string
 
-class Shader {
+class ShaderLoader {
 public:
-  Shader(const std::string &path, GLuint shader_type);
-  ~Shader();
+  ShaderLoader(const std::string &path, GLuint shader_type);
+  ~ShaderLoader();
   GLuint getId() { return mId; };
 
 private:
