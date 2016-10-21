@@ -3,6 +3,7 @@
 
 #include <memory>
 #include <vector>
+#include "shader.hpp"
 #include "deferredshader.hpp"
 
 class Model;
@@ -16,7 +17,7 @@ private:
   GLfloat deltaTime = 0.0f; // Time between current frame and last frame
   GLfloat lastFrame = 0.0f;   // Time of last frame
   Input *input;
-  DeferredShader shader;
+  Shader<DeferredShader> shader;
 
 public:
   Scene(Input *i);

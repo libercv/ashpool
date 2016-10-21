@@ -10,6 +10,7 @@ add_executable(ashpool main.cpp
     input.hpp input.cpp
 		shaderloader.cpp shaderloader.hpp 
 		shaderprogram.cpp shaderprogram.hpp 
+    shader.hpp
 		window.cpp window.hpp
 		scene.cpp scene.hpp
 		model.cpp model.hpp

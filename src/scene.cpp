@@ -15,7 +15,7 @@
 #include "input.hpp"
 
 Scene::Scene(Input *i)
-    : camera{std::make_unique<Camera>()}, input{i}, shader{DeferredShader()} {
+    : camera{std::make_unique<Camera>()}, input{i} {
 
   input->setCamera(camera.get());
   ModelLoader mLoader;
