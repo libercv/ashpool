@@ -6,6 +6,7 @@
 #include "shaderprogram.hpp"  // for ShaderProgram
 class Camera;  
 class Model;
+class World;
 
 class DeferredShader {
 private:
@@ -23,7 +24,8 @@ private:
   void renderQuad();
 
 public:
-  void render(const Camera *camera, const std::vector<Model> &models);
+  //void render(const Camera *camera, const std::vector<Model> &models);
+  void render(const World *);
   const ShaderProgram &getModelShader() { return gBufferShader; };
 
   DeferredShader();

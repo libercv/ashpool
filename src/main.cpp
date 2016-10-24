@@ -1,19 +1,18 @@
-#include "window.hpp"
-#include "scene.hpp"
-#include "cl_init.hpp"
-#include "input.hpp"
+#include "system.hpp"
+#include "world.hpp"
+#include "renderengine.hpp"
+
 
 int main() {
+  System system;
+  World world;
+  RenderEngine renderer;
 
-  Window window;
-  Input input = window.createInput();
-  Scene scene(&input);
-  CL_Init opencl;
+  system.setCamera(world.getCamera());
 
-  while (!window.shouldClose()) {
-    window.pollEvents();
-    window.swapBuffers();
-    scene.render();
+  while (!system.exitRequested()) {
+    system.update();
+    renderer.render(&world);
   }
 
   return 0;

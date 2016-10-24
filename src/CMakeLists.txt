@@ -12,7 +12,6 @@ add_executable(ashpool main.cpp
 		shaderprogram.cpp shaderprogram.hpp 
     shader.hpp
 		window.cpp window.hpp
-		scene.cpp scene.hpp
 		model.cpp model.hpp
 		mesh.cpp mesh.hpp
 		modelloader.cpp modelloader.hpp
@@ -21,10 +20,14 @@ add_executable(ashpool main.cpp
 		texture.hpp
 		vertex.hpp
 		material.hpp
+    timer.hpp
+    system.hpp
+    renderengine.hpp
 		texturemanager.cpp texturemanager.hpp
 		cl_init.cpp cl_init.hpp
 		cl_platform.cpp cl_platform.hpp
 		cl_device.cpp cl_device.hpp
+    world.cpp world.hpp
 		textureloader.cpp textureloader.hpp)
 find_package(PkgConfig REQUIRED)
 #find_package(SOIL  REQUIRED)

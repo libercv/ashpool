@@ -7,6 +7,7 @@
 #include "model.hpp"                
 #include "shaderprogram.hpp"       
 #include "window.hpp"             
+#include "world.hpp"
 
 DeferredShader::DeferredShader()
     : gBufferShader{"shaders/gbuffer.vert", "shaders/gbuffer.frag"},
@@ -114,11 +115,15 @@ void DeferredShader::init_pass2_lighting() {
   glUniform3fv(lightingPassShader.getUniformLocation("viewPos"), 1, &camPos[0]);
 }
 
-void DeferredShader::render(const Camera *camera, const std::vector<Model> &models ) {
+//void DeferredShader::render(const Camera *camera, const std::vector<Model> &models ) {
+void DeferredShader::render(const World *w) {
   glBindFramebuffer(GL_FRAMEBUFFER, gBuffer);
   glClearColor(0.05f, 0.05f, 0.05f, 1.0f);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   gBufferShader.use();
+
+  const Camera *camera = w->getCamera();
+  const std::vector<Model> *models = w->getModels();
 
   auto vMat = camera->GetViewMatrix();
   auto loc = gBufferShader.getUniformLocation("view");
@@ -128,7 +133,7 @@ void DeferredShader::render(const Camera *camera, const std::vector<Model> &mode
   auto projLoc = gBufferShader.getUniformLocation("projection");
   glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(projMatrix));
 
-  for (auto &m : models) {
+  for (auto &m : *models) {
     glUniformMatrix4fv(gBufferShader.getUniformLocation("model"), 1, GL_FALSE,
                        glm::value_ptr(*m.getModelMatrix()));
     m.draw(gBufferShader);

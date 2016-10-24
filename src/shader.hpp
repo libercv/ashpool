@@ -1,11 +1,9 @@
 #ifndef SHADER_H
 #define SHADER_H
 
-#include "model.hpp"
 #include "shaderprogram.hpp"
-#include <vector>
 
-class Camera;
+class World;
 
 template <typename T> class Shader {
 private:
@@ -14,9 +12,7 @@ private:
 public:
   Shader() {}
   ~Shader() {}
-  void render(const Camera *c, const std::vector<Model> &m) {
-    elem.render(c, m);
-  }
+  void render(const World *w) { elem.render(w); }
   const ShaderProgram &getModelShader() { return elem.getModelShader(); }
 };
 
