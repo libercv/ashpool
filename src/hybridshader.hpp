@@ -1,13 +1,14 @@
-#ifndef DEFERREDSHADER_H
-#define DEFERREDSHADER_H
+#ifndef HYBRIDSHADER_H
+#define HYBRIDSHADER_H
 
 #include <GL/glew.h>          // for GLuint
 #include <vector>             // for vector
 #include "shaderprogram.hpp"  // for ShaderProgram
-class Camera;  
+class Camera;                
 class Model;
 
-class DeferredShader {
+
+class HybridShader {
 private:
   GLuint gBuffer, gNormal; 
   GLuint gPosition, gAlbedoSpec;
@@ -26,8 +27,8 @@ public:
   void render(const Camera *camera, const std::vector<Model> &models);
   const ShaderProgram &getModelShader() { return gBufferShader; };
 
-  DeferredShader();
-  ~DeferredShader(){};
+  HybridShader();
+  ~HybridShader(){};
 };
 
-#endif // DEFERREDSHADER_H
+#endif // HYBRIDSHADER_H

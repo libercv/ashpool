@@ -1,21 +1,22 @@
 #ifndef SCENE_H
 #define SCENE_H
 
-#include <memory>
-#include <vector>
-#include "shader.hpp"
-#include "deferredshader.hpp"
 
-class Model;
-class Camera;
-class Input;
+#include <GL/glew.h>           // for GLfloat
+#include <memory>              // for unique_ptr
+#include <vector>              // for vector
+#include "deferredshader.hpp"  // for DeferredShader
+#include "model.hpp"           // for Model
+#include "shader.hpp"          // for Shader
+class Camera;  // lines 10-10
+class Input;  // lines 11-11
 
 class Scene {
 private:
   std::unique_ptr<Camera> camera;
   std::vector<Model> models;
   GLfloat deltaTime = 0.0f; // Time between current frame and last frame
-  GLfloat lastFrame = 0.0f;   // Time of last frame
+  GLfloat lastFrame = 0.0f; // Time of last frame
   Input *input;
   Shader<DeferredShader> shader;
 

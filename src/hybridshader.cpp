@@ -1,14 +1,14 @@
-#include "deferredshader.hpp"
-#include <GL/glew.h>    
-#include <glm/glm.hpp>
-#include <iostream>     
-#include <string>      
-#include "camera.hpp"                
-#include "model.hpp"                
-#include "shaderprogram.hpp"       
-#include "window.hpp"             
+#include "hybridshader.hpp"
+#include <GL/glew.h>                   // for GL_TEXTURE_2D, glBindTexture
+#include <glm/glm.hpp>  
+#include <iostream>                    // for operator<<, basic_ostream, cout
+#include <string>                      // for allocator, operator+, basic_st...
+#include "camera.hpp"                  // for Camera
+#include "model.hpp"                   // for Model
+#include "shaderprogram.hpp"           // for ShaderProgram
+#include "window.hpp"                  // for Window, Window::HEIGHT, Window...
 
-DeferredShader::DeferredShader()
+HybridShader::HybridShader()
     : gBufferShader{"shaders/gbuffer.vert", "shaders/gbuffer.frag"},
       lightingPassShader{"shaders/lighting.vert", "shaders/lighting.frag"} {
   lightingPassShader.use();
@@ -16,7 +16,7 @@ DeferredShader::DeferredShader()
   init_pass2_lighting();
 }
 
-void DeferredShader::init_pass1_gBuffer() {
+void HybridShader::init_pass1_gBuffer() {
   glUniform1i(lightingPassShader.getUniformLocation("gPosition"), 0);
   glUniform1i(lightingPassShader.getUniformLocation("gNormal"), 1);
   glUniform1i(lightingPassShader.getUniformLocation("gAlbedoSpec"), 2);
@@ -73,7 +73,7 @@ void DeferredShader::init_pass1_gBuffer() {
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-void DeferredShader::init_pass2_lighting() {
+void HybridShader::init_pass2_lighting() {
   std::vector<glm::vec3> lPos;
   lPos.emplace_back(0.0f, 2.5f, 8.0f);
   lPos.emplace_back(3.5f, 0.5f, 5.0f);
@@ -114,7 +114,7 @@ void DeferredShader::init_pass2_lighting() {
   glUniform3fv(lightingPassShader.getUniformLocation("viewPos"), 1, &camPos[0]);
 }
 
-void DeferredShader::render(const Camera *camera, const std::vector<Model> &models ) {
+void HybridShader::render(const Camera *camera, const std::vector<Model> &models ) {
   glBindFramebuffer(GL_FRAMEBUFFER, gBuffer);
   glClearColor(0.05f, 0.05f, 0.05f, 1.0f);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -139,7 +139,7 @@ void DeferredShader::render(const Camera *camera, const std::vector<Model> &mode
 // RenderQuad() Renders a 1x1 quad in NDC, best used for framebuffer color
 // targets
 // and post-processing effects.
-void DeferredShader::renderQuad() {
+void HybridShader::renderQuad() {
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   lightingPassShader.use();

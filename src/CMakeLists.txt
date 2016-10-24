@@ -17,6 +17,7 @@ add_executable(ashpool main.cpp
 		mesh.cpp mesh.hpp
 		modelloader.cpp modelloader.hpp
     deferredshader.cpp deferredshader.hpp
+    hybridshader.cpp hybridshader.hpp
 		texture.hpp
 		vertex.hpp
 		material.hpp
