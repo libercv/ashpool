@@ -6,13 +6,13 @@
 int main() {
   System system;
   World world;
-  RenderEngine renderer;
+  RenderEngine renderer(&world);
 
   system.setCamera(world.getCamera());
 
   while (!system.exitRequested()) {
     system.update();
-    renderer.render(&world);
+    renderer.render();
   }
 
   return 0;

@@ -13,8 +13,9 @@ struct Light {
     float Linear;
     float Quadratic;
 };
-const int NR_LIGHTS = 6;
-uniform Light lights[NR_LIGHTS];
+const int MAX_LIGHTS = 25;
+uniform int NR_LIGHTS;
+uniform Light lights[MAX_LIGHTS];
 uniform vec3 viewPos;
 
 void main()

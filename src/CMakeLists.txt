@@ -23,6 +23,7 @@ add_executable(ashpool main.cpp
     timer.hpp
     system.hpp
     renderengine.hpp
+    pointlight.hpp
 		texturemanager.cpp texturemanager.hpp
 		cl_init.cpp cl_init.hpp
 		cl_platform.cpp cl_platform.hpp

@@ -9,9 +9,10 @@
 #include "window.hpp"             
 #include "world.hpp"
 
-DeferredShader::DeferredShader()
+DeferredShader::DeferredShader(const World *w)
     : gBufferShader{"shaders/gbuffer.vert", "shaders/gbuffer.frag"},
-      lightingPassShader{"shaders/lighting.vert", "shaders/lighting.frag"} {
+      lightingPassShader{"shaders/lighting.vert", "shaders/lighting.frag"},
+      world {w} {
   lightingPassShader.use();
   init_pass1_gBuffer();
   init_pass2_lighting();
@@ -75,20 +76,13 @@ void DeferredShader::init_pass1_gBuffer() {
 }
 
 void DeferredShader::init_pass2_lighting() {
-  std::vector<glm::vec3> lPos;
-  lPos.emplace_back(0.0f, 2.5f, 8.0f);
-  lPos.emplace_back(3.5f, 0.5f, 5.0f);
-  lPos.emplace_back(3.0f, 0.5f, 6.0f);
-  lPos.emplace_back(-3.5f, 0.5f, 5.0f);
-  lPos.emplace_back(-3.5f, 0.5f, -5.0f);
-  lPos.emplace_back(3.5f, 0.5f, -5.0f);
-
-  //  const auto lPos = glm::vec3(GLfloat(0),GLfloat(0),GLfloat(0));
+  
+  auto lPos = world->getPointLights();
   auto lCol = glm::vec3(1.0f, 1.0f, 1.0f);
   for (unsigned int i = 0; i < lPos.size(); i++) {
     glUniform3fv(lightingPassShader.getUniformLocation(
                      "lights[" + std::to_string(i) + "].Position"),
-                 1, &lPos[i][0]);
+                 1, &(lPos[i].getPosition()[0]));
     glUniform3fv(lightingPassShader.getUniformLocation(
                      "lights[" + std::to_string(i) + "].Color"),
                  1, &lCol[0]);
@@ -113,17 +107,17 @@ void DeferredShader::init_pass2_lighting() {
               0.1f);
   auto camPos = glm::vec3(0.0f, 0.5f, 0.0f);
   glUniform3fv(lightingPassShader.getUniformLocation("viewPos"), 1, &camPos[0]);
+  glUniform1i(lightingPassShader.getUniformLocation("NR_LIGHTS"), world->getPointLightsNr());
 }
 
-//void DeferredShader::render(const Camera *camera, const std::vector<Model> &models ) {
-void DeferredShader::render(const World *w) {
+void DeferredShader::render() {
   glBindFramebuffer(GL_FRAMEBUFFER, gBuffer);
   glClearColor(0.05f, 0.05f, 0.05f, 1.0f);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   gBufferShader.use();
 
-  const Camera *camera = w->getCamera();
-  const std::vector<Model> *models = w->getModels();
+  const Camera *camera = world->getCamera();
+  const std::vector<Model> *models = world->getModels();
 
   auto vMat = camera->GetViewMatrix();
   auto loc = gBufferShader.getUniformLocation("view");

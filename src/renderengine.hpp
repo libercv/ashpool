@@ -12,9 +12,9 @@ private:
   CL_Init opencl;
 
 public:
-  RenderEngine(){};
+  RenderEngine(const World *w) : shader{Shader<DeferredShader>(w)} {};
   ~RenderEngine(){};
-  void render(const World *w) { shader.render(w); }
+  void render() { shader.render(); }
   void clear(){};
 };
 

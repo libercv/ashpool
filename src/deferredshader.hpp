@@ -18,6 +18,7 @@ private:
 
   ShaderProgram gBufferShader;
   ShaderProgram lightingPassShader;
+  const World *world;
 
   void init_pass1_gBuffer();
   void init_pass2_lighting();
@@ -25,10 +26,10 @@ private:
 
 public:
   //void render(const Camera *camera, const std::vector<Model> &models);
-  void render(const World *);
+  void render();
   const ShaderProgram &getModelShader() { return gBufferShader; };
 
-  DeferredShader();
+  DeferredShader(const World *w);
   ~DeferredShader(){};
 };
 
