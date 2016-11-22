@@ -3,13 +3,19 @@
 
 #include "CL/cl.h"
 #include "cl_platform.hpp"
+#include "cl_device.hpp"
+
 
 class CL_Init {
 private:
-  std::vector<CL_Platform> m_platforms;
+  std::unique_ptr<CL_Platform> platform;
+  std::unique_ptr<CL_Device> device;
+  cl_context ctxt;
+  cl_command_queue cmdQueue;
 
 public:
   CL_Init();
+  ~CL_Init();
 };
 
 #endif // CL_INIT_H

@@ -10,6 +10,7 @@ public:
   void update() {
     double currentTime = glfwGetTime();
     deltaTime = currentTime - lastTime;
+    lastTime = currentTime;
   }
   double getDelta() const { return deltaTime; }
 

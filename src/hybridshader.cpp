@@ -1,16 +1,18 @@
 #include "hybridshader.hpp"
-#include <GL/glew.h>                   // for GL_TEXTURE_2D, glBindTexture
-#include <glm/glm.hpp>  
-#include <iostream>                    // for operator<<, basic_ostream, cout
-#include <string>                      // for allocator, operator+, basic_st...
-#include "camera.hpp"                  // for Camera
-#include "model.hpp"                   // for Model
-#include "shaderprogram.hpp"           // for ShaderProgram
-#include "window.hpp"                  // for Window, Window::HEIGHT, Window...
+#include <GL/glew.h>    
+#include <glm/glm.hpp>
+#include <iostream>     
+#include <string>      
+#include "camera.hpp"                
+#include "model.hpp"                
+#include "shaderprogram.hpp"       
+#include "window.hpp"             
+#include "world.hpp"
 
-HybridShader::HybridShader()
+HybridShader::HybridShader(const World *w)
     : gBufferShader{"shaders/gbuffer.vert", "shaders/gbuffer.frag"},
-      lightingPassShader{"shaders/lighting.vert", "shaders/lighting.frag"} {
+      lightingPassShader{"shaders/lighting.vert", "shaders/lighting.frag"},
+      world {w} {
   lightingPassShader.use();
   init_pass1_gBuffer();
   init_pass2_lighting();
@@ -74,20 +76,13 @@ void HybridShader::init_pass1_gBuffer() {
 }
 
 void HybridShader::init_pass2_lighting() {
-  std::vector<glm::vec3> lPos;
-  lPos.emplace_back(0.0f, 2.5f, 8.0f);
-  lPos.emplace_back(3.5f, 0.5f, 5.0f);
-  lPos.emplace_back(3.0f, 0.5f, 6.0f);
-  lPos.emplace_back(-3.5f, 0.5f, 5.0f);
-  lPos.emplace_back(-3.5f, 0.5f, -5.0f);
-  lPos.emplace_back(3.5f, 0.5f, -5.0f);
-
-  //  const auto lPos = glm::vec3(GLfloat(0),GLfloat(0),GLfloat(0));
+  
+  auto lPos = world->getPointLights();
   auto lCol = glm::vec3(1.0f, 1.0f, 1.0f);
   for (unsigned int i = 0; i < lPos.size(); i++) {
     glUniform3fv(lightingPassShader.getUniformLocation(
                      "lights[" + std::to_string(i) + "].Position"),
-                 1, &lPos[i][0]);
+                 1, &(lPos[i].getPosition()[0]));
     glUniform3fv(lightingPassShader.getUniformLocation(
                      "lights[" + std::to_string(i) + "].Color"),
                  1, &lCol[0]);
@@ -112,13 +107,17 @@ void HybridShader::init_pass2_lighting() {
               0.1f);
   auto camPos = glm::vec3(0.0f, 0.5f, 0.0f);
   glUniform3fv(lightingPassShader.getUniformLocation("viewPos"), 1, &camPos[0]);
+  glUniform1i(lightingPassShader.getUniformLocation("NR_LIGHTS"), world->getPointLightsNr());
 }
 
-void HybridShader::render(const Camera *camera, const std::vector<Model> &models ) {
+void HybridShader::render() {
   glBindFramebuffer(GL_FRAMEBUFFER, gBuffer);
   glClearColor(0.05f, 0.05f, 0.05f, 1.0f);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   gBufferShader.use();
+
+  const Camera *camera = world->getCamera();
+  const std::vector<Model> *models = world->getModels();
 
   auto vMat = camera->GetViewMatrix();
   auto loc = gBufferShader.getUniformLocation("view");
@@ -128,7 +127,7 @@ void HybridShader::render(const Camera *camera, const std::vector<Model> &models
   auto projLoc = gBufferShader.getUniformLocation("projection");
   glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(projMatrix));
 
-  for (auto &m : models) {
+  for (auto &m : *models) {
     glUniformMatrix4fv(gBufferShader.getUniformLocation("model"), 1, GL_FALSE,
                        glm::value_ptr(*m.getModelMatrix()));
     m.draw(gBufferShader);

@@ -3,16 +3,16 @@
 
 #include "cl_init.hpp"
 #include "shader.hpp"
-#include "deferredshader.hpp"  // for DeferredShader
+#include "hybridshader.hpp"  // for DeferredShader
 class World;  // lines 10-10
 
 class RenderEngine {
 private:
-  Shader<DeferredShader> shader;
+  Shader<HybridShader> shader;
   CL_Init opencl;
 
 public:
-  RenderEngine(const World *w) : shader{Shader<DeferredShader>(w)} {};
+  RenderEngine(const World *w) : shader{Shader<HybridShader>(w)} {};
   ~RenderEngine(){};
   void render() { shader.render(); }
   void clear(){};

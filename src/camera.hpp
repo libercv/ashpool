@@ -27,7 +27,7 @@ public:
 // Default camera values
   static constexpr GLfloat YAW = -90.0f;
   static constexpr GLfloat PITCH = 0.0f;
-  static constexpr GLfloat SPEED = 0.50f;
+  static constexpr GLfloat SPEED = 4.00f;
   static constexpr GLfloat SENSITIVTY = 0.25f;
   static constexpr GLfloat ZOOM = 45.0f;
 

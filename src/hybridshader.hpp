@@ -4,9 +4,9 @@
 #include <GL/glew.h>          // for GLuint
 #include <vector>             // for vector
 #include "shaderprogram.hpp"  // for ShaderProgram
-class Camera;                
+class Camera;  
 class Model;
-
+class World;
 
 class HybridShader {
 private:
@@ -18,16 +18,18 @@ private:
 
   ShaderProgram gBufferShader;
   ShaderProgram lightingPassShader;
+  const World *world;
 
   void init_pass1_gBuffer();
   void init_pass2_lighting();
   void renderQuad();
 
 public:
-  void render(const Camera *camera, const std::vector<Model> &models);
+  //void render(const Camera *camera, const std::vector<Model> &models);
+  void render();
   const ShaderProgram &getModelShader() { return gBufferShader; };
 
-  HybridShader();
+  HybridShader(const World *w);
   ~HybridShader(){};
 };
 

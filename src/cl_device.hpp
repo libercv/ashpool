@@ -7,10 +7,11 @@
 
 class CL_Device {
   std::string name;
-  cl_device_id device_id;
+  const cl_device_id device_id;
 
 public:
   explicit CL_Device(cl_device_id);
+  const cl_device_id& getId() const { return device_id; }
   static std::vector<cl_device_id> get_devices_ids(cl_platform_id platform_id);
 };
 
