@@ -10,7 +10,7 @@ private:
   T elem;
 
 public:
-  Shader(const World *w) : elem{w} {}
+  Shader(const World *w) : elem(w) {}
   ~Shader() {}
   void render() { elem.render(); }
   const ShaderProgram &getModelShader() { return elem.getModelShader(); }

@@ -12,12 +12,12 @@ class ShaderProgram;
 class World {
 public:
   World();
-  ~World(){};
+  ~World(){}
 
   void initModelsUniforms(const ShaderProgram &shader);
 
-  Camera *getCamera() const { return camera.get(); };
-  const std::vector<Model> *getModels() const { return &models; };
+  Camera *getCamera() const { return camera.get(); }
+  const std::vector<Model> *getModels() const { return &models; }
   int getPointLightsNr() const { return PointLights.size(); }
   const std::vector<PointLight> &getPointLights() const { return PointLights; }
 

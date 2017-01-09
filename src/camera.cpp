@@ -5,6 +5,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include "window.hpp"
+#include <iostream>
 
 // Returns the view matrix calculated using Eular Angles and the LookAt Matrix
 glm::mat4 Camera::GetViewMatrix() const {
@@ -81,5 +82,6 @@ void Camera::updateCameraVectors() {
                                                // which results in slower
                                                // movement.
   this->Up = glm::normalize(glm::cross(this->Right, this->Front));
+  //std::cout << "x: " << Position.x <<", y: " << Position.y << ", z: "<< Position.z<<"\n";
 }
 

@@ -15,6 +15,7 @@ private:
 
 public:
   CL_Platform(cl_platform_id id);
+  CL_Platform() : platform_id(0) {}
   static std::vector<cl_platform_id> get_platforms_ids();
 };
 

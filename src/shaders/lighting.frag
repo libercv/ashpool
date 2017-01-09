@@ -9,7 +9,6 @@ uniform sampler2D gAlbedoSpec;
 struct Light {
     vec3 Position;
     vec3 Color;
-    
     float Linear;
     float Quadratic;
 };
@@ -27,7 +26,7 @@ void main()
     float Specular = texture(gAlbedoSpec, TexCoords).a;
     
     // Then calculate lighting as usual
-    vec3 lighting  = Diffuse * 0.1; // hard-coded ambient component
+    vec3 lighting  = Diffuse * 0.2; // hard-coded ambient component
     vec3 viewDir  = normalize(viewPos - FragPos);
     for(int i = 0; i < NR_LIGHTS; ++i)
     {

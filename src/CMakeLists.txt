@@ -35,7 +35,7 @@ find_package(PkgConfig REQUIRED)
 pkg_search_module(GLFW REQUIRED glfw3)
 find_package(OpenGL REQUIRED)
 find_package(GLEW REQUIRED)
-find_package(glm REQUIRED)
+#find_package(glm REQUIRED)
 find_package(ASSIMP REQUIRED) 
 find_package(FreeImage REQUIRED) 
 find_package(OpenCL REQUIRED) 
@@ -43,7 +43,7 @@ find_package(OpenCL REQUIRED)
 include_directories( ${OPENGL_INCLUDE_DIRS}  
 	${GLFW_INCLUDE_DIRS} 
 	${GLEW_INCLUDE_DIRS} 
-	${GLM_INCLUDE_DIRS} 
+#	${GLM_INCLUDE_DIRS} 
 #	${SOIL_INCLUDE_DIRS}
 	${ASSIMP_INCLUDE_DIRS}
 	${FREEIMAGE_INCLUDE_DIRS}
@@ -55,7 +55,7 @@ target_link_libraries(ashpool
 	${OPENGL_LIBRARIES} 
 	${GLFW_LIBRARIES} 
 	${GLEW_LIBRARY} 
-	${GLM_LIBRARY}
+#	${GLM_LIBRARY}
 #	${SOIL_LIBRARIES}
 	${ASSIMP_LIBRARIES}
 	${FREEIMAGE_LIBRARIES}
