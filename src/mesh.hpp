@@ -38,6 +38,11 @@ public:
 
   void refreshUniforms(const ShaderProgram &shader);
   void draw(const ShaderProgram &shader) const;
+  
+  
+  const std::vector<Vertex>& getVertices() const { return vertices; }
+  const std::vector<GLuint>& getIndices() const { return indices; }
+  
 
 private:
   std::vector<Vertex> vertices;

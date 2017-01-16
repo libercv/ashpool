@@ -61,13 +61,14 @@ void Mesh::draw(const ShaderProgram &shader) const {
   }
 
   // Bind material
+  /*
   glUniform1f(material.shininess_uniform, material.shininess);
   glUniform4f(material.diffuse_uniform, material.diffuse.x, material.diffuse.y,
               material.diffuse.z, material.diffuse.w);
   glUniform4f(material.ambient_uniform, material.ambient.x, material.ambient.y,
               material.ambient.z, material.ambient.w);
   glUniform1i(material.texCount_uniform, material.texCount);
-
+    */
   // Draw
   glBindVertexArray(this->VAO);
   glDrawElements(GL_TRIANGLES, this->indicesSize, GL_UNSIGNED_INT, nullptr);
@@ -100,7 +101,7 @@ void Mesh::setupMesh() {
   // Vertex Normals
   glEnableVertexAttribArray(1);
   glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof_vertex,
-                        (GLvoid *)offsetof(Vertex, Normal));
+                        (GLvoid *)offsetof(Vertex, Normal));  
   // Vertex Texture Coords
   glEnableVertexAttribArray(2);
   glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof_vertex,

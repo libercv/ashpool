@@ -98,6 +98,20 @@ CL_Init::CL_Init() {
   }
 }
 
+
+cl_mem CL_Init::createFromGLBuffer(GLuint GLBuffer, cl_mem_flags mem_flags,
+                                    const std::string &str) {
+  cl_int err;
+  cl_mem buffer =
+      clCreateFromGLBuffer(ctxt, mem_flags, GLBuffer, &err);
+  if (!buffer || err != CL_SUCCESS) {
+    std::cout << "Error acquiring CL texture from from OpenGL " << str << "\n";
+  }
+  
+  return buffer;
+}
+
+
 cl_mem CL_Init::createFromGLTexture(GLuint GLtexture, cl_mem_flags mem_flags,
                                     const std::string &str) {
   cl_int err;
@@ -194,9 +208,7 @@ void CL_Init::loadProgram(const std::string &path) {
 }
 
 void CL_Init::setKernelArg(cl_uint index, size_t size, const void *value) {
-  std::cout << "clSetKernelArg entering\n";
-  clSetKernelArg(kernel, index, size, value);
-  std::cout << "clSetKernelArg exiting\n";
+  clSetKernelArg(kernel, index, size, value);  
 }
 
 void CL_Init::executeKernel(cl_event *event) {

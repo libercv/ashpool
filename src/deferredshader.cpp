@@ -129,7 +129,7 @@ void DeferredShader::render() {
 
   for (auto &m : *models) {
     glUniformMatrix4fv(gBufferShader.getUniformLocation("model"), 1, GL_FALSE,
-                       glm::value_ptr(*m.getModelMatrix()));
+                       glm::value_ptr(m.getModelMatrix()));
     m.draw(gBufferShader);
   }
   renderQuad();

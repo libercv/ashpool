@@ -89,7 +89,7 @@ std::vector<Vertex> ModelLoader::loadMeshVertices(const aiMesh *mesh) const {
 std::vector<GLuint> ModelLoader::loadMeshIndices(const aiMesh *mesh) const {
 
   std::vector<GLuint> indices;
-  indices.reserve(3 * mesh->mNumFaces);
+  indices.reserve(3 * mesh->mNumFaces);  
 
   for (GLuint i = 0; i < mesh->mNumFaces; i++) {
     aiFace *face = &mesh->mFaces[i];

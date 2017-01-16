@@ -16,9 +16,11 @@ HybridShader::HybridShader(const World *w)
       lightingPassShader{"shaders/lighting.vert", "shaders/lighting.frag"},
       world{w} {
 
-  scene_attribs.diffuse=0.2f;
-  scene_attribs.linear=0.8f;
-  scene_attribs.quadratic=1.6f;
+  scene_attribs.diffuse=0.1f;
+  //scene_attribs.linear=0.95f;
+  //scene_attribs.quadratic=1.1f;
+  scene_attribs.linear=0.6f;
+  scene_attribs.quadratic=0.5f;
   
   init_pass1_gBuffer();
   init_pass2_lighting();
@@ -35,18 +37,37 @@ void HybridShader::init_opencl() {
   cl_gNormal = opencl.createFromGLTexture(gNormal, CL_MEM_READ_ONLY, "gNormal");
   cl_gScene =
       opencl.createFromGLTexture(gSceneTexture, CL_MEM_WRITE_ONLY, "gScene");
-
+    
+  // Point Lights
   auto lPos = world->getPointLights();
   cl_point_lights=opencl.createBuffer(3*sizeof(float)*lPos.size(), lPos.data());
   cl_int nr_point_lights=world->getPointLightsNr();
 
+  
+  // Geometry
+  const Model *m=&(world->getModels()->at(0));
+  int n_meshes=m->cl_meshes.size();
+  cl_mem cl_world=opencl.createBuffer(n_meshes*sizeof(Model::cl_mesh), (void *)m->cl_meshes.data());    
+  
+  auto cl_ind = m->cl_indices;
+  cl_mem cl_indices=opencl.createBuffer(cl_ind.size()*sizeof(cl_int), (void *)cl_ind.data());    
+  
+  auto cl_ver = m->cl_vertices;
+  cl_mem cl_vertices=opencl.createBuffer(cl_ver.size()*sizeof(cl_float3), (void *)cl_ver.data());
+
+  cl_int cl_meshes_nr=n_meshes;
+    
   opencl.setKernelArg(0, sizeof(cl_mem), &cl_gAlbedoSpec);
   opencl.setKernelArg(1, sizeof(cl_mem), &cl_gPosition);
   opencl.setKernelArg(2, sizeof(cl_mem), &cl_gNormal);
   opencl.setKernelArg(3, sizeof(cl_mem), &cl_point_lights);
   opencl.setKernelArg(4, sizeof(cl_int), &nr_point_lights);
   opencl.setKernelArg(5, sizeof(scene_attribs), (void*)&scene_attribs);
-  opencl.setKernelArg(6, sizeof(cl_mem), &cl_gScene);
+  opencl.setKernelArg(6, sizeof(cl_mem), &cl_world);
+  opencl.setKernelArg(7, sizeof(cl_mem), &cl_vertices);
+  opencl.setKernelArg(8, sizeof(cl_mem), &cl_indices);
+  opencl.setKernelArg(9, sizeof(cl_int), &cl_meshes_nr);    
+  opencl.setKernelArg(10, sizeof(cl_mem), &cl_gScene);
 
 
   std::cout << "OpenCL initialized\n";
@@ -210,7 +231,7 @@ void HybridShader::updateGBuffer() {
 
   for (auto &m : *models) {
     glUniformMatrix4fv(gBufferShader.getUniformLocation("model"), 1, GL_FALSE,
-                       glm::value_ptr(*m.getModelMatrix()));
+                       glm::value_ptr(m.getModelMatrix()));
     m.draw(gBufferShader);
   }
 }
