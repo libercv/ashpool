@@ -11,6 +11,7 @@ public:
   ~PointLight() {}
 
   const glm::vec3 &getPosition() const { return position; }
+  void setPosition(glm::vec3 pos) { position=pos; }
 
 private:
   glm::vec3 position;

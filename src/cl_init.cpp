@@ -195,7 +195,19 @@ void CL_Init::loadProgram(const std::string &path) {
       clBuildProgram(program, 1, &device.getId(), nullptr, nullptr, nullptr);
   if (status != CL_SUCCESS) {
     std::cout << "Error building program: " << path << "\n";
-    return;
+            
+     size_t buildLogSize = 0;
+    clGetProgramBuildInfo(program, device.getId(),  CL_PROGRAM_BUILD_LOG, 
+                                      buildLogSize, nullptr, &buildLogSize);
+    
+    
+    auto buildLog = std::make_unique<char[]>(buildLogSize);  
+    
+    clGetProgramBuildInfo(program, device.getId(),  CL_PROGRAM_BUILD_LOG,
+                                      buildLogSize,  buildLog.get(),  nullptr);
+    
+    std::cout << buildLog.get() << std::endl;    
+    exit(-1);
   }
 
   status = clCreateKernelsInProgram(program, 1, &kernel, nullptr);

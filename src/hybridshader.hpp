@@ -46,8 +46,7 @@ private:
     cl_float quadratic;
   };
   
-  SceneAttribs scene_attribs;
-  
+  SceneAttribs scene_attribs;   
 public:
   void render() {
     updateGBuffer();

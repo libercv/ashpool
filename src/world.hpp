@@ -7,6 +7,8 @@
 class Camera; 
 class ShaderProgram;
 #include "pointlight.hpp"
+#include "triangle.hpp"
+#include "bvh.hpp"
 
 
 class World {
@@ -20,12 +22,18 @@ public:
   const std::vector<Model> *getModels() const { return &models; }
   int getPointLightsNr() const { return PointLights.size(); }
   const std::vector<PointLight> &getPointLights() const { return PointLights; }
+  void setPointLight(int nr, glm::vec3 pos) { PointLights.at(nr)=pos; }
+  BVH bvh;
 
 private:
   std::unique_ptr<Camera> camera;
   std::vector<Model> models;
   // lights
-  std::vector<PointLight> PointLights;
+  std::vector<PointLight> PointLights;  
+  
+  
+  
+  
 };
 
 #endif // WORLD_H

@@ -5,6 +5,7 @@
 #include <glm/glm.hpp>
 #include <CL/cl_gl.h>
 
+#include "triangle.hpp"
 #include "mesh.hpp" // for Mesh
 class ShaderProgram;
 
@@ -17,17 +18,19 @@ public:
   } cl_mesh;    
     
   Model() = delete;
-  Model(std::vector<Mesh> &&m) : meshes{std::move(m)} {};
+  Model(std::vector<Mesh> &&m) : meshes{std::move(m)} {}
   Model &operator=(const Model &other) = delete;
   Model(const Model &other) = delete;
   Model(Model &&other)
       : meshes{std::move(other.meshes)},
-        modelMatrix{std::move(other.modelMatrix)} {};
+        modelMatrix{std::move(other.modelMatrix)} {}
 
   ~Model() = default;
   void draw(const ShaderProgram &shader) const;
   void refreshUniforms(const ShaderProgram &shader);
-  const glm::mat4 &getModelMatrix() const { return modelMatrix; };
+  const glm::mat4 &getModelMatrix() const { return modelMatrix; }
+  
+  std::vector<Triangle> ExportTriangles();
 
   std::vector<cl_float3> cl_vertices;
   std::vector<cl_int> cl_indices;
