@@ -1,25 +1,25 @@
 #include "modelloader.hpp"
-#include <GL/glew.h> // for GLuint, glBindVertexArray, etc
-#include <assimp/postprocess.h>
-#include <assimp/color4.h>     // for aiColor4D
-#include <assimp/Importer.hpp> // for Importer
-#include <assimp/material.h>   // for aiGetMaterialColor, etc
-#include <assimp/mesh.h>       // for aiMesh, aiFace
-#include <assimp/scene.h>      // for aiScene
-#include <assimp/vector3.h>    // for aiVector3t, aiVector3D
-#include <ext/alloc_traits.h>  // for __alloc_traits<>::value_type
-#include <stddef.h>            // for offsetof
-#include <assimp/material.inl> // for aiMaterial::GetTextureCount
-#include <iterator>            // for back_insert_iterator, etc
-#include <sstream>             // for stringstream, basic_ostream
-#include <iostream>
+#include "material.hpp"
 #include "mesh.hpp"
 #include "model.hpp"
+#include "shaderprogram.hpp" // for Shader
 #include "texture.hpp"
-#include "vertex.hpp"
-#include "material.hpp"
-#include "shaderprogram.hpp"  // for Shader
 #include "texturemanager.hpp" // for TextureManager
+#include "vertex.hpp"
+#include <GL/glew.h>           // for GLuint, glBindVertexArray, etc
+#include <assimp/Importer.hpp> // for Importer
+#include <assimp/color4.h>     // for aiColor4D
+#include <assimp/material.h>   // for aiGetMaterialColor, etc
+#include <assimp/material.inl> // for aiMaterial::GetTextureCount
+#include <assimp/mesh.h>       // for aiMesh, aiFace
+#include <assimp/postprocess.h>
+#include <assimp/scene.h>     // for aiScene
+#include <assimp/vector3.h>   // for aiVector3t, aiVector3D
+#include <ext/alloc_traits.h> // for __alloc_traits<>::value_type
+#include <iostream>
+#include <iterator> // for back_insert_iterator, etc
+#include <sstream>  // for stringstream, basic_ostream
+#include <stddef.h> // for offsetof
 
 Model ModelLoader::loadModel(const std::string &path) {
   // Read file
@@ -89,7 +89,7 @@ std::vector<Vertex> ModelLoader::loadMeshVertices(const aiMesh *mesh) const {
 std::vector<GLuint> ModelLoader::loadMeshIndices(const aiMesh *mesh) const {
 
   std::vector<GLuint> indices;
-  indices.reserve(3 * mesh->mNumFaces);  
+  indices.reserve(3 * mesh->mNumFaces);
 
   for (GLuint i = 0; i < mesh->mNumFaces; i++) {
     aiFace *face = &mesh->mFaces[i];

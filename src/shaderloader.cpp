@@ -1,9 +1,10 @@
 #include "shaderloader.hpp"
+#include <fstream>
 #include <iostream>
 #include <sstream>
-#include <fstream>
 
-ShaderLoader::ShaderLoader(const std::string &path, GLuint shader_type) : mId{0} {
+ShaderLoader::ShaderLoader(const std::string &path, GLuint shader_type)
+    : mId{0} {
   std::string vertexCodeStr = readFile(path);
   const GLchar *code = vertexCodeStr.c_str();
   compile(code, shader_type);

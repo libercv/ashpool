@@ -10,7 +10,6 @@
 
 class Input;
 
-
 class Window {
 public:
   Window();
@@ -22,8 +21,8 @@ public:
 
   void move();
 
-  static constexpr GLuint WIDTH = 800;
-  static constexpr GLuint HEIGHT = 600;
+  static constexpr GLuint WIDTH = 1280;
+  static constexpr GLuint HEIGHT = 720;
   static constexpr float RATIO = (float)WIDTH / (float)HEIGHT;
 
 private:

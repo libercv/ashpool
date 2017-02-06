@@ -45,7 +45,7 @@ CL_Platform::CL_Platform(cl_platform_id id) : platform_id{id} {
   // VERSION
   clGetPlatformInfo(platform_id, CL_PLATFORM_VERSION, 0, nullptr, &arg_size);
   version.resize(arg_size);
-  clGetPlatformInfo(platform_id, CL_PLATFORM_VERSION, arg_size, &version.front(),
-                    nullptr);
+  clGetPlatformInfo(platform_id, CL_PLATFORM_VERSION, arg_size,
+                    &version.front(), nullptr);
   std::cout << "OpenCL version:" << version << std::endl;
 }

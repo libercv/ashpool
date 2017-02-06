@@ -1,10 +1,10 @@
 #include "camera.hpp"
 #include "shaderprogram.hpp"
 
+#include "window.hpp"
 #include <GL/glew.h>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
-#include "window.hpp"
 #include <iostream>
 
 // Returns the view matrix calculated using Eular Angles and the LookAt Matrix
@@ -50,14 +50,13 @@ void Camera::ProcessMouseMovement(GLfloat xoffset, GLfloat yoffset,
 
   // Update Front, Right and Up Vectors using the updated Eular angles
   this->updateCameraVectors();
-
 }
 
 // Processes input received from a mouse scroll-wheel event. Only requires input
 // on the vertical wheel-axis
 void Camera::ProcessMouseScroll(GLfloat yoffset) {
   if (this->fovy >= 1.0f && this->fovy <= 45.0f)
-    this->fovy -= 3*yoffset;
+    this->fovy -= 3 * yoffset;
   if (this->fovy <= 1.0f)
     this->fovy = 1.0f;
   if (this->fovy >= 45.0f)
@@ -82,6 +81,8 @@ void Camera::updateCameraVectors() {
                                                // which results in slower
                                                // movement.
   this->Up = glm::normalize(glm::cross(this->Right, this->Front));
-  //std::cout << "x: " << Position.x <<", y: " << Position.y << ", z: "<< Position.z<<"\n";
+  /*
+  std::cout << "x: " << Position.x << ", y: " << Position.y
+            << ", z: " << Position.z << "\n";
+            */
 }
-

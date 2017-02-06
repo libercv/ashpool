@@ -1,16 +1,16 @@
 #ifndef SYSTEM_H
 #define SYSTEM_H
 
-#include "window.hpp"
 #include "cl_init.hpp"
 #include "input.hpp"
 #include "timer.hpp"
+#include "window.hpp"
 
 class System {
 public:
-  System() : input { window.createInput() } {}
+  System() : input{window.createInput()} {}
 
- void update() {
+  void update() {
     window.pollEvents();
     timer.update();
     window.swapBuffers();

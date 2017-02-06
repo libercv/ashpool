@@ -1,12 +1,12 @@
 #ifndef MESH_H
 #define MESH_H
 
-#include <GL/glew.h> // for GLuint
-#include <algorithm> // for move
-#include <vector>    // for vector
 #include "material.hpp"
 #include "texture.hpp"
 #include "vertex.hpp"
+#include <GL/glew.h> // for GLuint
+#include <algorithm> // for move
+#include <vector>    // for vector
 
 #include <iostream>
 
@@ -38,11 +38,9 @@ public:
 
   void refreshUniforms(const ShaderProgram &shader);
   void draw(const ShaderProgram &shader) const;
-  
-  
-  const std::vector<Vertex>& getVertices() const { return vertices; }
-  const std::vector<GLuint>& getIndices() const { return indices; }
-  
+
+  const std::vector<Vertex> &getVertices() const { return vertices; }
+  const std::vector<GLuint> &getIndices() const { return indices; }
 
 private:
   std::vector<Vertex> vertices;

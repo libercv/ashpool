@@ -26,10 +26,10 @@ public:
   cl_mem createFromGLTexture(GLuint GLtexture, cl_mem_flags mem_flags,
                              const std::string &str);
   cl_mem createFromGLBuffer(GLuint GLBuffer, cl_mem_flags mem_flags,
-                             const std::string &str);
+                            const std::string &str);
   cl_mem createBuffer(size_t size, void *ptr) {
-      return clCreateBuffer(ctxt, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR,
-                            size, ptr, nullptr);
+    return clCreateBuffer(ctxt, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, size,
+                          ptr, nullptr);
   }
 
   void loadProgram(const std::string &path);

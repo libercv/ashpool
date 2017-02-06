@@ -1,11 +1,11 @@
 #ifndef TEXTUREMANAGER_H
 #define TEXTUREMANAGER_H
 
+#include "mesh.hpp"          // for Texture
 #include <GL/glew.h>         // for GLbyte, GLint, GLuint
 #include <assimp/material.h> // for aiMaterial (ptr only), aiTextureType
 #include <string>            // for string
 #include <vector>            // for vector
-#include "mesh.hpp"          // for Texture
 
 class TextureManager {
 public:

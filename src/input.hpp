@@ -17,7 +17,7 @@ class Input {
 public:
   Input(GLFWwindow *w);
   Input(GLFWwindow *w, Camera *c);
-  ~Input() {};
+  ~Input(){};
   void setCamera(Camera *c) { camera = c; };
   void move(GLfloat deltaTime);
 
@@ -31,7 +31,6 @@ private:
   void set_key_callback(GLFWwindow *window);
   void set_scroll_callback(GLFWwindow *window);
   void set_mouse_callback(GLFWwindow *window);
-
 };
 
 #endif // INPUT_H

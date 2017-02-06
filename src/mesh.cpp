@@ -1,18 +1,18 @@
 #include "mesh.hpp"
+#include "shaderprogram.hpp"   // for Shader
+#include "texturemanager.hpp"  // for TextureManager
 #include <GL/glew.h>           // for GLuint, glBindVertexArray, etc
 #include <assimp/color4.h>     // for aiColor4D
 #include <assimp/material.h>   // for aiGetMaterialColor, etc
+#include <assimp/material.inl> // for aiMaterial::GetTextureCount
 #include <assimp/mesh.h>       // for aiMesh, aiFace
 #include <assimp/scene.h>      // for aiScene
 #include <assimp/vector3.h>    // for aiVector3t, aiVector3D
 #include <ext/alloc_traits.h>  // for __alloc_traits<>::value_type
-#include <stddef.h>            // for offsetof
-#include <assimp/material.inl> // for aiMaterial::GetTextureCount
-#include <iterator>            // for back_insert_iterator, etc
 #include <iostream>
-#include <sstream>            // for stringstream, basic_ostream
-#include "shaderprogram.hpp"  // for Shader
-#include "texturemanager.hpp" // for TextureManager
+#include <iterator> // for back_insert_iterator, etc
+#include <sstream>  // for stringstream, basic_ostream
+#include <stddef.h> // for offsetof
 
 Mesh::Mesh(std::vector<Vertex> &&Vertices, std::vector<GLuint> &&Indices,
            std::vector<Texture> &&Specular_Textures,
@@ -97,11 +97,12 @@ void Mesh::setupMesh() {
   // Set the vertex attribute pointers
   // Vertex Positions
   glEnableVertexAttribArray(0);
-  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof_vertex, (GLvoid *)nullptr);
+  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof_vertex,
+                        (GLvoid *)nullptr);
   // Vertex Normals
   glEnableVertexAttribArray(1);
   glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof_vertex,
-                        (GLvoid *)offsetof(Vertex, Normal));  
+                        (GLvoid *)offsetof(Vertex, Normal));
   // Vertex Texture Coords
   glEnableVertexAttribArray(2);
   glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof_vertex,

@@ -23,7 +23,7 @@ Window::Window() {
   glfwMakeContextCurrent(window);
   glfwSwapInterval(1);
 
-    // Options
+  // Options
   glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
   // Set this to true so GLEW knows to use a modern approach to retrieving
@@ -46,10 +46,7 @@ Window::Window() {
   glEnable(GL_DEPTH_TEST);
 }
 
-Input Window::createInput() 
-{
-  return Input(window);
-}
+Input Window::createInput() { return Input(window); }
 
 Window::~Window() { glfwTerminate(); }
 
@@ -58,4 +55,3 @@ bool Window::shouldClose() { return glfwWindowShouldClose(window); }
 void Window::pollEvents() { glfwPollEvents(); }
 
 void Window::swapBuffers() { glfwSwapBuffers(window); }
-

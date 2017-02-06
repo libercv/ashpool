@@ -1,18 +1,18 @@
 #include "deferredshader.hpp"
-#include <GL/glew.h>    
-#include <glm/glm.hpp>
-#include <iostream>     
-#include <string>      
-#include "camera.hpp"                
-#include "model.hpp"                
-#include "shaderprogram.hpp"       
-#include "window.hpp"             
+#include "camera.hpp"
+#include "model.hpp"
+#include "shaderprogram.hpp"
+#include "window.hpp"
 #include "world.hpp"
+#include <GL/glew.h>
+#include <glm/glm.hpp>
+#include <iostream>
+#include <string>
 
 DeferredShader::DeferredShader(const World *w)
     : gBufferShader{"shaders/gbuffer.vert", "shaders/gbuffer.frag"},
       lightingPassShader{"shaders/lighting.vert", "shaders/lighting.frag"},
-      world {w} {
+      world{w} {
   lightingPassShader.use();
   init_pass1_gBuffer();
   init_pass2_lighting();
@@ -71,26 +71,24 @@ void DeferredShader::init_pass1_gBuffer() {
   // - Finally check if framebuffer is complete
   if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
     std::cout << "Framebuffer not complete!" << std::endl;
-}
+  }
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
 void DeferredShader::init_pass2_lighting() {
-  
+
   auto lPos = world->getPointLights();
   auto lCol = glm::vec3(1.0f, 1.0f, 1.0f);
+  /*
   for (unsigned int i = 0; i < lPos.size(); i++) {
     glUniform3fv(lightingPassShader.getUniformLocation(
                      "lights[" + std::to_string(i) + "].Position"),
-                 1, &(lPos[i].getPosition()[0]));
+                 1, &(lPos[i].position));
     glUniform3fv(lightingPassShader.getUniformLocation(
                      "lights[" + std::to_string(i) + "].Color"),
                  1, &lCol[0]);
-    // Update attenuation parameters and calculate radius
-    /*
-    const GLfloat constant = 1.0; // Note that we don't send this to the shader,
-                                  // we assume it is always 1.0 (in our case)
-    */
+                 
+    
     // const GLfloat linear = 0.7;
     // const GLfloat quadratic = 1.8;
     const GLfloat linear = 0.6;
@@ -102,12 +100,14 @@ void DeferredShader::init_pass2_lighting() {
                     "lights[" + std::to_string(i) + "].Quadratic"),
                 quadratic);
   }
+  */
   glUniform1f(lightingPassShader.getUniformLocation("lights[0].Linear"), 0.1f);
   glUniform1f(lightingPassShader.getUniformLocation("lights[0].Quadratic"),
               0.1f);
   auto camPos = glm::vec3(0.0f, 0.5f, 0.0f);
   glUniform3fv(lightingPassShader.getUniformLocation("viewPos"), 1, &camPos[0]);
-  glUniform1i(lightingPassShader.getUniformLocation("NR_LIGHTS"), world->getPointLightsNr());
+  glUniform1i(lightingPassShader.getUniformLocation("NR_LIGHTS"),
+              world->getPointLightsNr());
 }
 
 void DeferredShader::render() {

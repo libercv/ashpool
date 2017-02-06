@@ -1,8 +1,8 @@
 #ifndef MATERIAL_H
 #define MATERIAL_H
 
-#include <glm/glm.hpp>
 #include <GL/glew.h>
+#include <glm/glm.hpp>
 
 struct Material {
   glm::vec4 diffuse{0.8f, 0.8f, 0.8f, 1.0f};

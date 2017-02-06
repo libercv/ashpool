@@ -1,8 +1,8 @@
 #include "shaderprogram.hpp"
 #include "shaderloader.hpp"
+#include <fstream>
 #include <iostream>
 #include <sstream>
-#include <fstream>
 
 ShaderProgram::ShaderProgram(const GLchar *vertexPath,
                              const GLchar *fragmentPath) {
@@ -32,8 +32,8 @@ void ShaderProgram::createProgram(GLuint vertexId, GLuint fragmentId) {
   if (!success) {
     GLchar infoLog[512];
     glGetProgramInfoLog(mProgram, 512, NULL, infoLog);
-    std::cerr << "ERROR::SHADER::PROGRAM::LINKING_FAILED\n" << infoLog
-              << std::endl;
+    std::cerr << "ERROR::SHADER::PROGRAM::LINKING_FAILED\n"
+              << infoLog << std::endl;
     std::exit(1);
   }
 }

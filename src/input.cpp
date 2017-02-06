@@ -1,18 +1,14 @@
 #include "input.hpp"
-#include  "camera.hpp"
+#include "camera.hpp"
 
 #include <cstring>
 
-Input::Input(GLFWwindow *window) {
-  init(window);
-} 
+Input::Input(GLFWwindow *window) { init(window); }
 
-Input::Input(GLFWwindow *window, Camera *c) : camera{c} {
-  init(window);
-}
+Input::Input(GLFWwindow *window, Camera *c) : camera{c} { init(window); }
 
 void Input::init(GLFWwindow *window) {
-  glfwSetWindowUserPointer(window, reinterpret_cast<void*>(this));
+  glfwSetWindowUserPointer(window, reinterpret_cast<void *>(this));
   std::memset(keys, false, sizeof keys);
   set_key_callback(window);
   set_mouse_callback(window);
@@ -22,14 +18,17 @@ void Input::init(GLFWwindow *window) {
 // Moves/alters the camera->positions based on user input
 void Input::move(GLfloat deltaTime) {
   // Camera controls
-  if (keys[GLFW_KEY_W])
+  if (keys[GLFW_KEY_UP])
     camera->ProcessKeyboard(Camera::FORWARD, deltaTime);
-  if (keys[GLFW_KEY_S])
+  if (keys[GLFW_KEY_DOWN])
     camera->ProcessKeyboard(Camera::BACKWARD, deltaTime);
-  if (keys[GLFW_KEY_A])
+  if (keys[GLFW_KEY_LEFT])
     camera->ProcessKeyboard(Camera::LEFT, deltaTime);
-  if (keys[GLFW_KEY_D])
+  if (keys[GLFW_KEY_RIGHT])
     camera->ProcessKeyboard(Camera::RIGHT, deltaTime);
+  
+  
+  
 }
 
 // Is called whenever a key is pressed/released via GLFW
@@ -39,6 +38,8 @@ void Input::set_key_callback(GLFWwindow *window) {
     auto thiz = reinterpret_cast<Input *>(glfwGetWindowUserPointer(window));
     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
       glfwSetWindowShouldClose(window, GL_TRUE);
+    if(key == GLFW_KEY_S && action == GLFW_PRESS)
+      thiz->camera->shadowsEnabled=!thiz->camera->shadowsEnabled;  
     if (key >= 0 && key < 1024) {
       if (action == GLFW_PRESS)
         thiz->keys[key] = true;
@@ -80,4 +81,3 @@ void Input::set_scroll_callback(GLFWwindow *window) {
         thiz->camera->ProcessMouseScroll(yoffset);
       });
 }
-

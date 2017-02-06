@@ -1,12 +1,12 @@
 #ifndef MODELLOADER_H
 #define MODELLOADER_H
 
+#include <GL/glew.h>
 #include <string>
 #include <vector>
-#include <GL/glew.h>
 
-#include "vertex.hpp"
 #include "texturemanager.hpp"
+#include "vertex.hpp"
 
 struct aiScene;
 struct aiMesh;

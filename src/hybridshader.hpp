@@ -40,13 +40,13 @@ private:
   void secondPass();
   void updateGBuffer();
 
-  struct SceneAttribs {
+  struct SceneAttribs {    
     cl_float diffuse;
-    cl_float linear;
-    cl_float quadratic;
+    cl_bool shadowsEnabled;
   };
-  
-  SceneAttribs scene_attribs;   
+
+  SceneAttribs scene_attribs;
+
 public:
   void render() {
     updateGBuffer();

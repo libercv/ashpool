@@ -16,6 +16,4 @@ public:
   const ShaderProgram &getModelShader() { return elem.getModelShader(); }
 };
 
-
-
 #endif // SHADER_H
