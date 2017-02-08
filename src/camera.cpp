@@ -62,7 +62,8 @@ void Camera::ProcessMouseScroll(GLfloat yoffset) {
   if (this->fovy >= 45.0f)
     this->fovy = 45.0f;
 
-  projMatrix = glm::perspective(glm::radians(fovy), Window::RATIO, zNear, zFar);
+  projMatrix =
+      glm::perspective(glm::radians(fovy), Config::window_ratio, zNear, zFar);
 }
 
 // Calculates the front vector from the Camera's (updated) Eular Angles

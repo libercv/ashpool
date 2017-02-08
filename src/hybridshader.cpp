@@ -1,5 +1,6 @@
 #include "hybridshader.hpp"
 #include "camera.hpp"
+#include "config.hpp"
 #include "model.hpp"
 #include "shaderprogram.hpp"
 #include "window.hpp"
@@ -12,9 +13,11 @@
 #include <string>
 
 HybridShader::HybridShader(const World *w)
-    : gBufferShader{"shaders/gbuffer.vert", "shaders/gbuffer.frag"},
-      lightingPassShader{"shaders/lighting.vert", "shaders/lighting.frag"},
-      world{w} { 
+    : gBufferShader{Config::gbuffer_shader_vert.c_str(),
+                    Config::gbuffer_shader_frag.c_str()},
+      lightingPassShader{Config::lighting_shader_vert.c_str(),
+                         Config::lighting_shader_frag.c_str()},
+      world{w} {
 
   init_pass1_gBuffer();
   init_pass2_lighting();
@@ -22,7 +25,7 @@ HybridShader::HybridShader(const World *w)
 }
 
 void HybridShader::init_opencl() {
-  opencl.loadProgram("shaders/render.cl");
+  opencl.loadProgram(Config::lighting_kernel);
   std::cout << "Binding textures OpenGL->OpenCL\n";
   cl_gPosition =
       opencl.createFromGLTexture(gPosition, CL_MEM_READ_ONLY, "gPosition");
@@ -52,7 +55,8 @@ void HybridShader::init_opencl() {
   opencl.setKernelArg(2, sizeof(cl_mem), &cl_gNormal);
   opencl.setKernelArg(3, sizeof(cl_mem), &cl_point_lights);
   opencl.setKernelArg(4, sizeof(cl_int), &nr_point_lights);
-  opencl.setKernelArg(5, sizeof(scene_attribs), (void *)&world->scene_attribs);  
+  opencl.setKernelArg(5, sizeof(world->scene_attribs),
+                      (void *)&world->scene_attribs);
   opencl.setKernelArg(6, sizeof(cl_mem), &cl_primitives);
   opencl.setKernelArg(7, sizeof(cl_mem), &cl_nodesbvh);
   opencl.setKernelArg(8, sizeof(cl_mem), &cl_gScene);
@@ -71,9 +75,9 @@ void HybridShader::init_pass1_gBuffer() {
 
   // - Position color buffer
   glGenTextures(1, &gPosition);
-  glBindTexture(GL_TEXTURE_2D, gPosition);  
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, Window::WIDTH, Window::HEIGHT, 0,
-               GL_RGBA, GL_FLOAT, nullptr);
+  glBindTexture(GL_TEXTURE_2D, gPosition);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, Config::window_width,
+               Config::window_height, 0, GL_RGBA, GL_FLOAT, nullptr);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
   glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
@@ -81,9 +85,9 @@ void HybridShader::init_pass1_gBuffer() {
 
   // - Normal color buffer
   glGenTextures(1, &gNormal);
-  glBindTexture(GL_TEXTURE_2D, gNormal);  
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, Window::WIDTH, Window::HEIGHT, 0,
-               GL_RGBA, GL_FLOAT, nullptr);
+  glBindTexture(GL_TEXTURE_2D, gNormal);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, Config::window_width,
+               Config::window_height, 0, GL_RGBA, GL_FLOAT, nullptr);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
   glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D,
@@ -92,8 +96,8 @@ void HybridShader::init_pass1_gBuffer() {
   // - Color + Specular color buffer
   glGenTextures(1, &gAlbedoSpec);
   glBindTexture(GL_TEXTURE_2D, gAlbedoSpec);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, Window::WIDTH, Window::HEIGHT, 0,
-               GL_RGBA, GL_FLOAT, nullptr);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, Config::window_width,
+               Config::window_height, 0, GL_RGBA, GL_FLOAT, nullptr);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
   glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D,
@@ -107,8 +111,8 @@ void HybridShader::init_pass1_gBuffer() {
 
   glGenRenderbuffers(1, &rboDepth);
   glBindRenderbuffer(GL_RENDERBUFFER, rboDepth);
-  glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, Window::WIDTH,
-                        Window::HEIGHT);
+  glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT,
+                        Config::window_width, Config::window_height);
   glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
                             GL_RENDERBUFFER, rboDepth);
   // - Finally check if framebuffer is complete
@@ -126,8 +130,8 @@ void HybridShader::init_pass2_lighting() {
   // - Scene will be rendered here
   glGenTextures(1, &gSceneTexture);
   glBindTexture(GL_TEXTURE_2D, gSceneTexture);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, Window::WIDTH, Window::HEIGHT, 0,
-               GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, Config::window_width,
+               Config::window_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
   glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
@@ -160,7 +164,6 @@ void HybridShader::init_pass2_lighting() {
   glEnableVertexAttribArray(1);
   glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat),
                         (GLvoid *)(3 * sizeof(GLfloat)));
-  
 }
 
 void HybridShader::updateGBuffer() {
@@ -187,13 +190,14 @@ void HybridShader::updateGBuffer() {
   }
 }
 
-void HybridShader::secondPass() {  
+void HybridShader::secondPass() {
   auto lPos = world->getPointLights();
   cl_point_lights =
       opencl.createBuffer(sizeof(PointLight) * lPos.size(), lPos.data());
-  
-  opencl.setKernelArg(3, sizeof(cl_mem), &cl_point_lights);  
-  opencl.setKernelArg(5, sizeof(scene_attribs), (void *)&world->scene_attribs); 
+
+  opencl.setKernelArg(3, sizeof(cl_mem), &cl_point_lights);
+  opencl.setKernelArg(5, sizeof(world->scene_attribs),
+                      (void *)&world->scene_attribs);
 
   cl_event kernel_event;
   glFinish();
@@ -218,6 +222,7 @@ void HybridShader::renderQuad() {
   glBindFramebuffer(GL_READ_FRAMEBUFFER, gSceneBuffer);
   glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
   /* Do the copy */
-  glBlitFramebuffer(0, 0, Window::WIDTH, Window::HEIGHT, 0, 0, Window::WIDTH,
-                    Window::HEIGHT, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+  glBlitFramebuffer(0, 0, Config::window_width, Config::window_height, 0, 0,
+                    Config::window_width, Config::window_height,
+                    GL_COLOR_BUFFER_BIT, GL_NEAREST);
 }

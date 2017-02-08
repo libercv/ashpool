@@ -8,6 +8,7 @@
 #include <sstream>
 
 #include "cl_device.hpp"
+#include "config.hpp"
 #include <CL/cl_gl.h>
 #include <CL/cl_gl_ext.h>
 #include <GLFW/glfw3.h>
@@ -177,7 +178,7 @@ CL_Init::~CL_Init() {
 }
 
 void CL_Init::loadProgram(const std::string &path) {
-  std::string code = readFile("shaders/render.cl");
+  std::string code = readFile(path);
   size_t p_source_len = code.size();
   cl_int status;
   const char *data = code.data();
@@ -220,7 +221,7 @@ void CL_Init::setKernelArg(cl_uint index, size_t size, const void *value) {
 }
 
 void CL_Init::executeKernel(cl_event *event) {
-  size_t globalWorkSize[2] = {1280, 720};
+  size_t globalWorkSize[2] = {Config::window_width, Config::window_height};
   cl_int status = clEnqueueNDRangeKernel(cmdQueue, kernel, 2, nullptr,
                                          globalWorkSize, nullptr, 0, 0, event);
   if (status != CL_SUCCESS) {

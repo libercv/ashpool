@@ -3,31 +3,15 @@
 #include "model.hpp"       // for Model
 #include "modelloader.hpp" // for ModelLoader
 #include <memory>          // for make_unique, allocator
+#include <sstream>
 
 World::World() : camera{std::make_unique<Camera>()} {
   ModelLoader mLoader;
-  // models.emplace_back(mLoader.loadModel("models/sponza3/sponza.obj"));
-  //models.emplace_back(mLoader.loadModel("models/sibenik/sibenik.obj"));
-  models.emplace_back(mLoader.loadModel("models/sponzacry/sponza.obj"));
-  models.at(0).init_cl_data();
-
-  //PointLights.emplace_back(-4.0f, 1.5f, 2.0f);
-  PointLight p(-680.0f, 1900.0f, 160.0f);
-  p.color=cl_float3{1.0f,0.9f,0.8f};
-  p.diffuse=1.0f;
-  p.linear=0.0001f;
-  p.quadratic=0.0f;
-  
-  
-  
-  PointLights.emplace_back(p);
-  //PointLights.emplace_back(-570.0f, 710.0f, -565.0f);
-  /*
-  PointLights.emplace_back(-3.5f, 1.5f, -5.0f);
-  PointLights.emplace_back(3.5f, 1.5f, 5.0f);
-  */
+  for (std::string model : Config::models)
+    models.emplace_back(mLoader.loadModel(model));
 
   for (auto &m : models) {
+    m.init_cl_data();
     auto t = m.ExportTriangles();
     std::copy_n(t.data(), t.size(), back_inserter(bvh.primitives));
   }
@@ -41,8 +25,31 @@ void World::initModelsUniforms(const ShaderProgram &shader) {
   };
 }
 
-void World::update() {  
-  scene_attribs.shadowsEnabled=camera.get()->shadowsEnabled;  
+void World::init() {
+  // PointLights
+  // PointLights.emplace_back(-4.0f, 1.5f, 2.0f);
+
+  // Point Lights
+  for (std::vector<float> result : Config::point_lights) {
+    /*
+    std::vector<std::string> result;
+    std::istringstream isss(s);
+    for(std::string t; isss >> t; )
+        result.push_back(t);
+    */
+    if (result.size() != 9)
+      continue;
+    PointLight p(result[0], result[1], result[2]);
+    p.color = cl_float3{{result[3], result[4], result[5]}};
+    p.diffuse = result[6];
+    p.linear = result[7];
+    p.quadratic = result[8];
+    PointLights.push_back(p);
+  }
+}
+
+void World::update() {
+  scene_attribs.shadowsEnabled = Config::option_shadows_enabled;
   /*
   luz_rad = luz_rad + 0.02f;
   if (luz_rad > 2 * 3.1415)

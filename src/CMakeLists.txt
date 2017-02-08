@@ -7,6 +7,8 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH}
                       ${CMAKE_CURRENT_SOURCE_DIR}/../cmake/)
 add_executable(ashpool main.cpp 
 		camera.hpp camera.cpp
+    config.hpp 
+    configloader.hpp configloader.cpp
     bvh.hpp bvh.cpp
     input.hpp input.cpp
 		shaderloader.cpp shaderloader.hpp 

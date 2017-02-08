@@ -29,8 +29,8 @@ void DeferredShader::init_pass1_gBuffer() {
   // - Position color buffer
   glGenTextures(1, &gPosition);
   glBindTexture(GL_TEXTURE_2D, gPosition);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, Window::WIDTH, Window::HEIGHT, 0,
-               GL_RGB, GL_FLOAT, nullptr);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, Config::window_width,
+               Config::window_height, 0, GL_RGB, GL_FLOAT, nullptr);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
   glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
@@ -39,8 +39,8 @@ void DeferredShader::init_pass1_gBuffer() {
   // - Normal color buffer
   glGenTextures(1, &gNormal);
   glBindTexture(GL_TEXTURE_2D, gNormal);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, Window::WIDTH, Window::HEIGHT, 0,
-               GL_RGB, GL_FLOAT, nullptr);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, Config::window_width,
+               Config::window_height, 0, GL_RGB, GL_FLOAT, nullptr);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
   glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D,
@@ -49,8 +49,8 @@ void DeferredShader::init_pass1_gBuffer() {
   // - Color + Specular color buffer
   glGenTextures(1, &gAlbedoSpec);
   glBindTexture(GL_TEXTURE_2D, gAlbedoSpec);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, Window::WIDTH, Window::HEIGHT, 0,
-               GL_RGBA, GL_FLOAT, nullptr);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, Config::window_width,
+               Config::window_height, 0, GL_RGBA, GL_FLOAT, nullptr);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
   glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D,
@@ -64,8 +64,8 @@ void DeferredShader::init_pass1_gBuffer() {
 
   glGenRenderbuffers(1, &rboDepth);
   glBindRenderbuffer(GL_RENDERBUFFER, rboDepth);
-  glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, Window::WIDTH,
-                        Window::HEIGHT);
+  glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT,
+                        Config::window_width, Config::window_height);
   glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
                             GL_RENDERBUFFER, rboDepth);
   // - Finally check if framebuffer is complete
@@ -87,8 +87,8 @@ void DeferredShader::init_pass2_lighting() {
     glUniform3fv(lightingPassShader.getUniformLocation(
                      "lights[" + std::to_string(i) + "].Color"),
                  1, &lCol[0]);
-                 
-    
+
+
     // const GLfloat linear = 0.7;
     // const GLfloat quadratic = 1.8;
     const GLfloat linear = 0.6;

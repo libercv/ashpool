@@ -26,9 +26,6 @@ void Input::move(GLfloat deltaTime) {
     camera->ProcessKeyboard(Camera::LEFT, deltaTime);
   if (keys[GLFW_KEY_RIGHT])
     camera->ProcessKeyboard(Camera::RIGHT, deltaTime);
-  
-  
-  
 }
 
 // Is called whenever a key is pressed/released via GLFW
@@ -38,8 +35,8 @@ void Input::set_key_callback(GLFWwindow *window) {
     auto thiz = reinterpret_cast<Input *>(glfwGetWindowUserPointer(window));
     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
       glfwSetWindowShouldClose(window, GL_TRUE);
-    if(key == GLFW_KEY_S && action == GLFW_PRESS)
-      thiz->camera->shadowsEnabled=!thiz->camera->shadowsEnabled;  
+    if (key == GLFW_KEY_S && action == GLFW_PRESS)
+      Config::option_shadows_enabled = !Config::option_shadows_enabled;
     if (key >= 0 && key < 1024) {
       if (action == GLFW_PRESS)
         thiz->keys[key] = true;

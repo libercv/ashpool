@@ -6,6 +6,7 @@
 #include <GL/glew.h>
 
 // GLFW
+#include "config.hpp"
 #include <GLFW/glfw3.h>
 
 class Input;
@@ -21,9 +22,9 @@ public:
 
   void move();
 
-  static constexpr GLuint WIDTH = 1280;
-  static constexpr GLuint HEIGHT = 720;
-  static constexpr float RATIO = (float)WIDTH / (float)HEIGHT;
+  GLuint WIDTH = Config::window_width;
+  GLuint HEIGHT = Config::window_height;
+  float RATIO = (float)WIDTH / (float)HEIGHT;
 
 private:
   GLFWwindow *window;

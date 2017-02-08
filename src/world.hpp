@@ -11,17 +11,17 @@ class ShaderProgram;
 #include "triangle.hpp"
 
 class World {
-public: 
-  
-  struct SceneAttribs {    
-    cl_float diffuse=0.25f;
-    cl_bool shadowsEnabled=true;
+public:
+  struct SceneAttribs {
+    cl_float diffuse = 0.25f;
+    cl_bool shadowsEnabled = true;
   };
 
   SceneAttribs scene_attribs;
-  
+
   World();
   ~World() {}
+  void init();
 
   void initModelsUniforms(const ShaderProgram &shader);
 
@@ -35,14 +35,14 @@ public:
 private:
   // Light animation. Should be in a "trajectory" class, applied to each
   // PointLight
+  /*
   float cx = -570.0f;
-  //float cy = -9.0f;
   float cy = 300.0f;
   float cz = -65.0f;
   float r = 150.0f;
   float delta = 0.15f;
   float luz_rad = 0.0f;
-  
+  */
   std::unique_ptr<Camera> camera;
   std::vector<Model> models;
   // lights

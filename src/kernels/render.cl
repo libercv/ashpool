@@ -1,6 +1,6 @@
 __constant sampler_t imageSampler =
     CLK_NORMALIZED_COORDS_FALSE | CLK_ADDRESS_CLAMP | CLK_FILTER_NEAREST;
-__constant float EPSILON = 0.0001f;
+__constant float EPSILON = 0.001f;
 
 typedef struct _BVHNode {
   float3 bounds_pMin;
@@ -166,14 +166,11 @@ render(__read_only image2d_t g_albedo_spec, __read_only image2d_t g_position,
   int2 coord = (int2)(get_global_id(0), get_global_id(1));
   float3 gdiffuse = read_imagef(g_albedo_spec, imageSampler, coord).xyz;
   float3 gpos = read_imagef(g_position, imageSampler, coord).xyz;
-  float3 gnormal = read_imagef(g_normal, imageSampler, coord).xyz;
-  //float3 light_color = (float3)(1.0f, 1.0f, 1.0f);
+  float3 gnormal = read_imagef(g_normal, imageSampler, coord).xyz;  
   float3 light = gdiffuse * attribs.diffuse;
+  
   for (int i = 0; i < point_lights_nr; i++) {  
-    __global const PointLight *pLight=&point_lights[i];
-    
-    //float3 light_pos = (float3)(point_lights[i * 3], point_lights[i * 3 + 1],
-    //                            point_lights[i * 3 + 2]);                                
+    __global const PointLight *pLight=&point_lights[i];    
     float3 light_pos = pLight->p_position;
     
     float3 light_dir = normalize(light_pos - gpos);

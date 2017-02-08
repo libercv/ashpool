@@ -1,6 +1,7 @@
 #ifndef CAMERA_H
 #define CAMERA_H
 
+#include "config.hpp"
 #include <GL/glew.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -14,8 +15,8 @@ class Camera {
 private:
   const glm::vec3 upVector = glm::vec3(0.0f, 1.0f, 0.0f);
   float fovy;
-  static constexpr float zNear{0.1f};
-  static constexpr float zFar{3000.0f};
+  float zNear;
+  float zFar;
 
   glm::vec3 position;
   glm::vec3 target;
@@ -23,17 +24,6 @@ private:
   glm::mat4 projMatrix;
 
 public:
-  float shadowsEnabled=true;
-  
-  // Default camera values
-  //static constexpr GLfloat YAW = -90.0f;
-  static constexpr GLfloat YAW = 0.0f;
-  static constexpr GLfloat PITCH = 0.0f;
-  //static constexpr GLfloat SPEED = 4.00f;
-  static constexpr GLfloat SPEED = 400.00f;
-  static constexpr GLfloat SENSITIVTY = 0.25f;  // Mouse 
-  static constexpr GLfloat ZOOM = 45.0f;
-
   enum Camera_Movement { FORWARD, BACKWARD, LEFT, RIGHT };
 
   // Camera Attributes
@@ -51,13 +41,17 @@ public:
   // GLfloat Zoom;
 
   // Constructor with vectors
-  Camera(glm::vec3 position = glm::vec3(-1100.0f, 150.0f, -40.0f),
-         glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f), GLfloat yaw = YAW,
-         GLfloat pitch = PITCH)
-      : fovy(ZOOM), projMatrix(glm::perspective(glm::radians(fovy),
-                                                Window::RATIO, zNear, zFar)),
-        Front(glm::vec3(0.0f, 0.0f, -1.0f)), MovementSpeed(SPEED),
-        MouseSensitivity(SENSITIVTY) {
+  Camera(glm::vec3 position = glm::vec3(Config::camera_position.x,
+                                        Config::camera_position.y,
+                                        Config::camera_position.z),
+         glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f),
+         GLfloat yaw = Config::camera_yaw, GLfloat pitch = Config::camera_pitch)
+      : fovy(Config::movement_zoom),
+        projMatrix(glm::perspective(glm::radians(fovy), Config::window_ratio,
+                                    Config::camera_znear, Config::camera_zfar)),
+        Front(glm::vec3(0.0f, 0.0f, -1.0f)),
+        MovementSpeed(Config::movement_speed),
+        MouseSensitivity(Config::movement_sensitivity) {
     this->Position = position;
     this->WorldUp = up;
     this->Yaw = yaw;
@@ -67,10 +61,12 @@ public:
   // Constructor with scalar values
   Camera(GLfloat posX, GLfloat posY, GLfloat posZ, GLfloat upX, GLfloat upY,
          GLfloat upZ, GLfloat yaw, GLfloat pitch)
-      : fovy(ZOOM), projMatrix(glm::perspective(glm::radians(fovy),
-                                                Window::RATIO, zNear, zFar)),
-        Front(glm::vec3(0.0f, 0.0f, -1.0f)), MovementSpeed(SPEED),
-        MouseSensitivity(SENSITIVTY) {
+      : fovy(Config::movement_zoom),
+        projMatrix(glm::perspective(glm::radians(fovy), Config::window_ratio,
+                                    Config::camera_znear, Config::camera_zfar)),
+        Front(glm::vec3(0.0f, 0.0f, -1.0f)),
+        MovementSpeed(Config::movement_speed),
+        MouseSensitivity(Config::movement_sensitivity) {
     this->Position = glm::vec3(posX, posY, posZ);
     this->WorldUp = glm::vec3(upX, upY, upZ);
     this->Yaw = yaw;
