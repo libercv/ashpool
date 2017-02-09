@@ -19,6 +19,7 @@ public:
       : vertices(std::move(other.vertices)), indices(std::move(other.indices)),
         specular_textures(std::move(other.specular_textures)),
         diffuse_textures(std::move(other.diffuse_textures)),
+        normal_textures(std::move(other.normal_textures)),
         material(std::move(other.material)), VAO(other.VAO), VBO(other.VBO),
         EBO(other.EBO), indicesSize(other.indicesSize) {
     other.VBO = 0;
@@ -29,7 +30,8 @@ public:
 
   Mesh(std::vector<Vertex> &&vertices, std::vector<GLuint> &&indices,
        std::vector<Texture> &&specular_textures,
-       std::vector<Texture> &&diffuse_textures, Material &&material);
+       std::vector<Texture> &&diffuse_textures, 
+       std::vector<Texture> &&Normal_Textures, Material &&material);
   ~Mesh();
 
   Mesh &operator=(const Mesh &other) = delete;
@@ -47,6 +49,7 @@ private:
   std::vector<GLuint> indices;
   std::vector<Texture> specular_textures;
   std::vector<Texture> diffuse_textures;
+  std::vector<Texture> normal_textures;
   struct Material material;
   GLuint VAO{0}, VBO{0}, EBO{0};
   GLuint indicesSize{0};

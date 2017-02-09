@@ -39,6 +39,7 @@ std::vector<std::vector<float>> Config::point_lights;
 
 // Runtime Options
 bool Config::option_shadows_enabled = true;
+bool Config::option_normal_mapping_enabled = false;
 
 ConfigLoader::ConfigLoader(const std::string &file) {
   std::cout << "Reading configuration file: " << file << "\n";

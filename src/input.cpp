@@ -35,8 +35,16 @@ void Input::set_key_callback(GLFWwindow *window) {
     auto thiz = reinterpret_cast<Input *>(glfwGetWindowUserPointer(window));
     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
       glfwSetWindowShouldClose(window, GL_TRUE);
-    if (key == GLFW_KEY_S && action == GLFW_PRESS)
+    if (key == GLFW_KEY_S && action == GLFW_PRESS) {
       Config::option_shadows_enabled = !Config::option_shadows_enabled;
+      if (Config::option_shadows_enabled) std::cout << "Shadows ON \n";
+      else std::cout << "Shadows OFF \n";      
+    }
+    if (key == GLFW_KEY_N && action == GLFW_PRESS) {
+      Config::option_normal_mapping_enabled = !Config::option_normal_mapping_enabled;
+      if (Config::option_normal_mapping_enabled) std::cout << "Normal mapping ON \n";
+      else std::cout << "Normal mapping OFF \n";
+    }
     if (key >= 0 && key < 1024) {
       if (action == GLFW_PRESS)
         thiz->keys[key] = true;

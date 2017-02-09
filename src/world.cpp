@@ -44,6 +44,7 @@ void World::init() {
     p.diffuse = result[6];
     p.linear = result[7];
     p.quadratic = result[8];
+    std::cout << "Quadratic:" << p.quadratic << "\n";
     PointLights.push_back(p);
   }
 }

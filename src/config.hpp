@@ -36,6 +36,7 @@ public:
 
   // Options
   static bool option_shadows_enabled;
+  static bool option_normal_mapping_enabled;
 };
 
 #endif // CONFIG_H

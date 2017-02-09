@@ -36,7 +36,7 @@ public:
   void init();
 
 private:
-  const unsigned int PRIMITIVES_PER_NODE = 15;
+  const unsigned int PRIMITIVES_PER_NODE = 25;
   std::vector<Triangle> orderedPrims;
   void recursiveBuild(BVHBuildNode *node,
                       std::vector<BVHPrimitiveInfo> &buildData, uint32_t start,

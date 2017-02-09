@@ -15,7 +15,7 @@ TextureManager::loadMaterialTextures(aiMaterial *mat, aiTextureType aiType,
                                      const std::string &directory) {
 
   std::vector<Texture> textures;
-
+    
   for (GLuint i = 0; i < mat->GetTextureCount(aiType); i++) {
     // Get texture name
     aiString str;

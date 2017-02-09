@@ -12,6 +12,7 @@ camera     -10.0f -12.0f 0.0f        0.1f   100.0f  0.0f    0.0f
 movement    20.0f   45.0f  0.25f
   
 //         position                color           diffuse  linear    quadratic
-pointlight -5.0f 0.5f 2.0f         1.0f 1.0f 1.0f  1.0f     0.0001f   0.0f
+pointlight -5.0f 0.5f 2.0f         1.0f 1.0f 1.0f  1.0f     0.045f   0.0075f
+pointlight -15.0f -14.0f 0.0f      1.0f 0.0f 0.0f  1.0f     0.35f     0.44f
 
 

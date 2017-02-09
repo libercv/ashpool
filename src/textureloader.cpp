@@ -3,6 +3,7 @@
 #include <GL/glew.h>   // for GLbyte
 #include <memory>      // for unique_ptr, make_unique
 #include <string>      // for string
+#include <iostream>
 
 TextureLoader::TextureLoader(const std::string &filename) {
   // Check the file signature and deduce its format
@@ -20,7 +21,7 @@ TextureLoader::TextureLoader(const std::string &filename) {
     return;
 
   // Convert non-32 bit images
-  if (FreeImage_GetBPP(dib) != 32) {
+  if (FreeImage_GetBPP(dib) != 32) {    
     FIBITMAP *oldDib = dib;
     dib = FreeImage_ConvertTo32Bits(oldDib);
     FreeImage_Unload(oldDib);
@@ -52,7 +53,7 @@ TextureLoader::TextureLoader(const std::string &filename) {
       dst_ptr++;
       *dst_ptr = bits[src_offset + FI_RGBA_ALPHA];
       dst_ptr++;
-      src_offset += bytes_per_pixel;
+      src_offset += bytes_per_pixel;        
     }
     src_offset -= line_length * 2;
   }

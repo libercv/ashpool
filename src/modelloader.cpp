@@ -27,7 +27,8 @@ Model ModelLoader::loadModel(const std::string &path) {
   Assimp::Importer importer;
   auto directory = path.substr(0, path.find_last_of('/'));
   const aiScene *scene = importer.ReadFile(
-      path, aiProcess_GenNormals | aiProcess_Triangulate | aiProcess_FlipUVs);
+      path, aiProcess_GenNormals | aiProcess_Triangulate | aiProcess_FlipUVs |
+                           aiProcess_CalcTangentSpace);
 
   // Check for errors
   if (!scene || scene->mFlags == AI_SCENE_FLAGS_INCOMPLETE ||
@@ -55,6 +56,8 @@ std::vector<Mesh> ModelLoader::loadMeshes(const aiScene *scene,
                             mat, aiTextureType_SPECULAR, directory),
                         mTextureManager.loadMaterialTextures(
                             mat, aiTextureType_DIFFUSE, directory),
+                        mTextureManager.loadMaterialTextures(
+                            mat, aiTextureType_HEIGHT, directory),
                         loadMaterial(mat));
   }
 
@@ -67,6 +70,7 @@ std::vector<Vertex> ModelLoader::loadMeshVertices(const aiMesh *mesh) const {
   std::vector<Vertex> vertices;
   vertices.reserve(mesh->mNumVertices);
 
+ 
   for (GLuint i = 0; i < mesh->mNumVertices; i++) {
     auto vv = &mesh->mVertices[i];
     auto vn = &mesh->mNormals[i];
@@ -74,13 +78,22 @@ std::vector<Vertex> ModelLoader::loadMeshVertices(const aiMesh *mesh) const {
     if (mesh->mTextureCoords[0]) {
       // Load only 1st texture coordinates set. It could have up to 8.
       auto vt = &mesh->mTextureCoords[0][i];
+      auto vtan = &mesh->mTangents[i];
+      auto vbitan = &mesh->mBitangents[i];
+      
       vertices.emplace_back(glm::vec3(vv->x, vv->y, vv->z),
                             glm::vec3(vn->x, vn->y, vn->z),
-                            glm::vec2(vt->x, vt->y));
+                            glm::vec2(vt->x, vt->y),
+                            glm::vec3(vtan->x, vtan->y, vtan->z),
+                            glm::vec3(vbitan->x, vbitan->y, vbitan->z));      
+      //std::cout << vtan->x << "," << vtan->y << "," << vtan->z << "\n";
+      //std::cout << vbitan->x << "," << vbitan->y << "," << vbitan->z << "\n";
     } else {
       vertices.emplace_back(glm::vec3(vv->x, vv->y, vv->z),
                             glm::vec3(vn->x, vn->y, vn->z),
-                            glm::vec2(0.0f, 0.0f));
+                            glm::vec2(0.0f, 0.0f),
+                            glm::vec3(0.0f, 0.0f, 0.0f),
+                            glm::vec3(0.0f, 0.0f, 0.0f));      
     }
   }
   return vertices;
@@ -102,6 +115,8 @@ std::vector<GLuint> ModelLoader::loadMeshIndices(const aiMesh *mesh) const {
 Material ModelLoader::loadMaterial(const aiMaterial *mtl) const {
 
   Material mat;
+  
+  mat.texCount=0;
 
   if (mtl->GetTextureCount(aiTextureType_DIFFUSE) > 0)
     mat.texCount = 1;
@@ -118,7 +133,7 @@ Material ModelLoader::loadMaterial(const aiMaterial *mtl) const {
 
   if (AI_SUCCESS == aiGetMaterialColor(mtl, AI_MATKEY_COLOR_EMISSIVE, &color))
     mat.emissive = glm::vec4(color.r, color.g, color.b, color.a);
-
+  
   unsigned int max;
   aiGetMaterialFloatArray(mtl, AI_MATKEY_SHININESS, &mat.shininess, &max);
 

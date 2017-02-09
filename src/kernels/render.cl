@@ -31,7 +31,7 @@ typedef struct _PointLight {
 } PointLight;
 
 typedef struct _SceneAttribs {
-  float diffuse;
+  float ambient;
   bool shadowsEnabled;
 } SceneAttribs;
 
@@ -118,7 +118,6 @@ bool test_ray_bbox(const Ray *ray, __global const BVHNode *node) {
 bool intersects(const Ray *ray, __global const Triangle *triangles,
                 __global const BVHNode *nodes) {
 
-  bool hit = false;
   int todoOffset = 0, nodeNum = 0;
   int todo[64];
 
@@ -161,20 +160,26 @@ render(__read_only image2d_t g_albedo_spec, __read_only image2d_t g_position,
        __read_only image2d_t g_normal, __global const PointLight *point_lights,
        int point_lights_nr, const SceneAttribs attribs,
        __global const Triangle *triangles, __global const BVHNode *nodes,
+       float3 position,
        __write_only image2d_t output) {
 
   int2 coord = (int2)(get_global_id(0), get_global_id(1));
   float3 gdiffuse = read_imagef(g_albedo_spec, imageSampler, coord).xyz;
   float3 gpos = read_imagef(g_position, imageSampler, coord).xyz;
   float3 gnormal = read_imagef(g_normal, imageSampler, coord).xyz;  
-  float3 light = gdiffuse * attribs.diffuse;
-  
+  float3 light = gdiffuse * attribs.ambient;
+  float3 view_dir = normalize(position- gpos);
+    
   for (int i = 0; i < point_lights_nr; i++) {  
     __global const PointLight *pLight=&point_lights[i];    
-    float3 light_pos = pLight->p_position;
     
-    float3 light_dir = normalize(light_pos - gpos);
+    float3 light_pos = pLight->p_position;
     float dist = distance(light_pos, gpos);
+    float attenuation = 1.0f / (1.0f + (pLight->linear * dist) +
+                            (pLight->quadratic * dist * dist));                            
+    //if (attenuation<0.00001f) continue;
+                            
+    float3 light_dir = normalize(light_pos - gpos);    
     float3 light_color = pLight->p_color;
     
     if(attribs.shadowsEnabled) {
@@ -183,14 +188,19 @@ render(__read_only image2d_t g_albedo_spec, __read_only image2d_t g_position,
       if (shadows == true)
         continue;
     }
-
+        
+    // Diffuse
     float ang = max(dot(gnormal, light_dir), 0.0f);
     float3 diffuse = ang * gdiffuse * light_color;
+    
+    // Specular
+    //float3 reflect_dir = -light_dir-2.0f*dot(-light_dir,gnormal)*gnormal;
+    //float spec = pow(max(dot(view_dir, reflect_dir), 0.0f), 8.0f);
+    float3 halfway_dir = normalize(light_dir+view_dir);
+    float spec = pow(max(dot(gnormal, halfway_dir), 0.0f), 16.0f);
+    float3 specular = light_color * spec;
 
-    float attenuation = 1.0f / (1.0f + (pLight->linear * dist) +
-                                (pLight->quadratic * dist * dist));
-    diffuse *= attenuation;
-    light += diffuse;
+    light += (diffuse + specular) * attenuation;
   }
 
   float4 l = (float4)(light.x, light.y, light.z, 0.0f);

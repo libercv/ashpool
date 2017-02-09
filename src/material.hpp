@@ -13,7 +13,7 @@ struct Material {
   GLuint shininess_uniform{0};
   GLuint diffuse_uniform{0};
   GLuint ambient_uniform{0};
-  GLuint texCount_uniform{0};
+  GLuint specular_uniform{0};
 
   float shininess{0.0f};
   int texCount{0};

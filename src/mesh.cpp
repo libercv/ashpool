@@ -13,19 +13,25 @@
 #include <iterator> // for back_insert_iterator, etc
 #include <sstream>  // for stringstream, basic_ostream
 #include <stddef.h> // for offsetof
+#include "config.hpp"
 
 Mesh::Mesh(std::vector<Vertex> &&Vertices, std::vector<GLuint> &&Indices,
            std::vector<Texture> &&Specular_Textures,
-           std::vector<Texture> &&Diffuse_Textures, Material &&mtl)
+           std::vector<Texture> &&Diffuse_Textures, 
+           std::vector<Texture> &&Normal_Textures, 
+           Material &&mtl)
     : vertices{std::move(Vertices)}, indices{std::move(Indices)},
       specular_textures{std::move(Specular_Textures)},
-      diffuse_textures{std::move(Diffuse_Textures)}, material{std::move(mtl)} {
+      diffuse_textures{std::move(Diffuse_Textures)}, 
+      normal_textures{std::move(Normal_Textures)},
+      material{std::move(mtl)} {
   this->setupMesh();
 }
 
 void Mesh::refreshUniforms(const ShaderProgram &shader) {
   static constexpr auto diffuse_name = "texture_diffuse";
   static constexpr auto specular_name = "texture_specular";
+  static constexpr auto normal_name = "texture_normal";
 
   for (GLuint i = 0; i < diffuse_textures.size(); i++)
     diffuse_textures[i].uniformId =
@@ -34,11 +40,15 @@ void Mesh::refreshUniforms(const ShaderProgram &shader) {
   for (GLuint i = 0; i < specular_textures.size(); i++)
     specular_textures[i].uniformId =
         shader.getUniformLocation(specular_name + std::to_string(i));
+  
+  for (GLuint i = 0; i < normal_textures.size(); i++)
+    specular_textures[i].uniformId =
+        shader.getUniformLocation(normal_name + std::to_string(i));
 
-  material.shininess_uniform = shader.getUniformLocation("material_shininess");
-  material.diffuse_uniform = shader.getUniformLocation("material_diffuse");
-  material.ambient_uniform = shader.getUniformLocation("material_ambient");
-  material.texCount_uniform = shader.getUniformLocation("material_texCount");
+  material.shininess_uniform = shader.getUniformLocation("material.shininess");
+  material.diffuse_uniform = shader.getUniformLocation("material.diffuse");
+  material.ambient_uniform = shader.getUniformLocation("material.ambient");
+  material.specular_uniform = shader.getUniformLocation("material.specular");
 }
 
 void Mesh::draw(const ShaderProgram &shader) const {
@@ -59,16 +69,26 @@ void Mesh::draw(const ShaderProgram &shader) const {
     glBindTexture(GL_TEXTURE_2D, tex.id);
     i = i + 1;
   }
+  
+  for (auto &tex : normal_textures) {
+    glActiveTexture(GL_TEXTURE0 + i);
+    glUniform1i(tex.uniformId, i);
+    glBindTexture(GL_TEXTURE_2D, tex.id);
+    i = i + 1;
+  }
+  
+  GLuint normal_mapping = shader.getUniformLocation("options_normal_mapping");
+  glUniform1i(normal_mapping, Config::option_normal_mapping_enabled);
 
-  // Bind material
-  /*
+  // Bind material  
   glUniform1f(material.shininess_uniform, material.shininess);
-  glUniform4f(material.diffuse_uniform, material.diffuse.x, material.diffuse.y,
-              material.diffuse.z, material.diffuse.w);
-  glUniform4f(material.ambient_uniform, material.ambient.x, material.ambient.y,
-              material.ambient.z, material.ambient.w);
-  glUniform1i(material.texCount_uniform, material.texCount);
-    */
+  glUniform3f(material.diffuse_uniform, material.diffuse.x, material.diffuse.y,
+              material.diffuse.z);
+  glUniform3f(material.ambient_uniform, material.ambient.x, material.ambient.y,
+              material.ambient.z);
+  glUniform3f(material.specular_uniform, material.specular.x, material.specular.y,
+              material.specular.z);
+    
   // Draw
   glBindVertexArray(this->VAO);
   glDrawElements(GL_TRIANGLES, this->indicesSize, GL_UNSIGNED_INT, nullptr);
@@ -107,6 +127,16 @@ void Mesh::setupMesh() {
   glEnableVertexAttribArray(2);
   glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof_vertex,
                         (GLvoid *)offsetof(Vertex, TexCoords));
+  
+  // Vertex Tangents
+  glEnableVertexAttribArray(3);
+  glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof_vertex,
+                        (GLvoid *)offsetof(Vertex, MTangent));
+  
+  // Vertex BiTangents
+  glEnableVertexAttribArray(4);
+  glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, sizeof_vertex,
+                        (GLvoid *)offsetof(Vertex, BiTangent));
 
   glBindVertexArray(0);
 }

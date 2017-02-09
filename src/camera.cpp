@@ -85,5 +85,5 @@ void Camera::updateCameraVectors() {
   /*
   std::cout << "x: " << Position.x << ", y: " << Position.y
             << ", z: " << Position.z << "\n";
-            */
+    */        
 }

@@ -59,7 +59,8 @@ void HybridShader::init_opencl() {
                       (void *)&world->scene_attribs);
   opencl.setKernelArg(6, sizeof(cl_mem), &cl_primitives);
   opencl.setKernelArg(7, sizeof(cl_mem), &cl_nodesbvh);
-  opencl.setKernelArg(8, sizeof(cl_mem), &cl_gScene);
+  //opencl.setKernelArg(8, sizeof(cl_float3), &cl_nodesbvh);
+  opencl.setKernelArg(9, sizeof(cl_mem), &cl_gScene);
 
   std::cout << "OpenCL initialized\n";
 }
@@ -198,6 +199,10 @@ void HybridShader::secondPass() {
   opencl.setKernelArg(3, sizeof(cl_mem), &cl_point_lights);
   opencl.setKernelArg(5, sizeof(world->scene_attribs),
                       (void *)&world->scene_attribs);
+  
+  glm::vec3 *pos=&(world->getCamera()->Position);
+  cl_float3 p = cl_float3{{pos->x, pos->y, pos->z}};  
+  opencl.setKernelArg(8, sizeof(cl_float3), &p);
 
   cl_event kernel_event;
   glFinish();
