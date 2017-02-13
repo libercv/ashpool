@@ -1,3 +1,11 @@
+/***************************************************
+ * Texture
+ *
+ * Contains OpenGL texture id and its type 
+ * (diffuse, specular, normal...)
+ *
+ * 2017 - Liberto Camús
+ * **************************************************/
 #ifndef TEXTURE_H
 #define TEXTURE_H
 

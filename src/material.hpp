@@ -1,3 +1,11 @@
+/***************************************************
+ * Material
+ *
+ * Stores material properties. Diffuse, ambient, 
+ * specular... 
+ *
+ * 2017 - Liberto Camús
+ * **************************************************/
 #ifndef MATERIAL_H
 #define MATERIAL_H
 
@@ -14,6 +22,7 @@ struct Material {
   GLuint diffuse_uniform{0};
   GLuint ambient_uniform{0};
   GLuint specular_uniform{0};
+  GLuint tex_count_uniform{0};
 
   float shininess{0.0f};
   int texCount{0};

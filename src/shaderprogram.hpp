@@ -1,5 +1,15 @@
-#ifndef SHADERMANAGER_H
-#define SHADERMANAGER_H
+/***************************************************
+ * ShaderProgram
+ *
+ * It stores a Shader program and allows to use it.
+ * During its initialization loads a vertex and a fragment 
+ * shaders (using ShaderLoader) and creates the program, 
+ * linking them. 
+ *
+ * 2017 - Liberto Camús
+ * **************************************************/
+#ifndef SHADERPROGRAM_H
+#define SHADERPROGRAM_H
 
 #include <GL/glew.h> // for GLuint, GLchar
 #include <string>    // for string
@@ -17,4 +27,4 @@ private:
   void createProgram(GLuint, GLuint);
 };
 
-#endif // SHADERMANAGER_H
+#endif // SHADERPROGRAM_H

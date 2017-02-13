@@ -27,6 +27,7 @@ void main()
     
     // Then calculate lighting as usual
     vec3 lighting  = Diffuse * 0.2; // hard-coded ambient component
+    
     vec3 viewDir  = normalize(viewPos - FragPos);
     for(int i = 0; i < NR_LIGHTS; ++i)
     {
@@ -43,6 +44,7 @@ void main()
         diffuse *= attenuation;
         specular *= attenuation;
         lighting += diffuse + specular;
-    }    
+    }        
     FragColor = vec4(lighting, 1.0);
+    
 }

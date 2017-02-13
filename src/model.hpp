@@ -1,3 +1,14 @@
+/***************************************************
+ * Model
+ *
+ * Set of meshes which constitutes an entity.
+ * The model contains the "ModelMatrix", to translate,
+ * spin and scale it.
+ * Has a method for drawing itself (calling each
+ * mesh draw methods)
+ *
+ * 2017 - Liberto Camús
+ * **************************************************/
 #ifndef MODEL_H
 #define MODEL_H
 
@@ -11,12 +22,6 @@ class ShaderProgram;
 
 class Model {
 public:
-  typedef struct {
-    cl_int vertex_offset;
-    cl_int first_index;
-    cl_int index_nr;
-  } cl_mesh;
-
   Model() = delete;
   Model(std::vector<Mesh> &&m) : meshes{std::move(m)} {}
   Model &operator=(const Model &other) = delete;
@@ -26,17 +31,17 @@ public:
         modelMatrix{std::move(other.modelMatrix)} {}
 
   ~Model() = default;
+
   void draw(const ShaderProgram &shader) const;
+    const glm::mat4 &getModelMatrix() const { return modelMatrix; }
+  
+  // Updates/sets information about its meshes into the OpenGL shader
   void refreshUniforms(const ShaderProgram &shader);
-  const glm::mat4 &getModelMatrix() const { return modelMatrix; }
-
+  
+  // Exports its geometry (the vertices of all of its meshes)
+  // in a format to be used by the BVH acceleration structure
+  // and exported to OpenCL
   std::vector<Triangle> ExportTriangles();
-
-  std::vector<cl_float3> cl_vertices;
-  std::vector<cl_int> cl_indices;
-  std::vector<cl_mesh> cl_meshes;
-
-  void init_cl_data();
 
 private:
   std::vector<Mesh> meshes;

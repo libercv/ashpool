@@ -1,7 +1,13 @@
+/***************************************************
+ * System
+ *
+ * Contains the timer, input and window objects
+ *
+ * 2017 - Liberto Camús
+ * **************************************************/
 #ifndef SYSTEM_H
 #define SYSTEM_H
 
-#include "cl_init.hpp"
 #include "input.hpp"
 #include "timer.hpp"
 #include "window.hpp"

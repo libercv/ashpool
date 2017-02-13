@@ -1,3 +1,11 @@
+/***************************************************
+ * BBox
+ *
+ * Bounding box implementation
+ *
+ * 2017 - Liberto Camús
+ * **************************************************/
+
 #ifndef BBOX_H
 #define BBOX_H
 

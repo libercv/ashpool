@@ -1,3 +1,12 @@
+/***************************************************
+ * ConfigLoader
+ *
+ * Initialization of "Config.hpp" values. Reads and
+ * parses configuration files.
+ *
+ * 2017 - Liberto Camús
+ * **************************************************/
+
 #ifndef CONFIGLOADER_H
 #define CONFIGLOADER_H
 #include <string>
@@ -17,6 +26,7 @@ private:
   void setCamera(const std::vector<std::string> &);
   void setMovement(const std::vector<std::string> &);
   void setPointLight(const std::vector<std::string> &);
+  void setAmbientLightIntensity(const std::vector<std::string> &);
 
   std::vector<std::string> readFile(const std::string &path);
 };

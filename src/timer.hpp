@@ -1,3 +1,11 @@
+/***************************************************
+ * Timer
+ *
+ * Keeps track of time elapsed between calls to its
+ * "update" method.
+ *
+ * 2017 - Liberto Camús
+ * **************************************************/
 #ifndef TIMER_H
 #define TIMER_H
 #include <GL/glew.h>    // for GLfloat

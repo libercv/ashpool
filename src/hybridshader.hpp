@@ -1,7 +1,18 @@
+/***************************************************
+ * DeferredShader
+ *
+ * Renders the scene in 3 passes:
+ * - Generate GBuffer with OpenGL
+ * - Generate final Scene texture with OpenCL using 
+ *    GBuffer from previous pass and geometry (BVH) and lighting information
+ * - Blit the result of the second pass to the render buffer (openGL)
+ *
+ * 2017 - Liberto Camús
+ * **************************************************/
 #ifndef HYBRIDSHADER_H
 #define HYBRIDSHADER_H
 
-#include "cl_init.hpp"
+#include "clkernelmanager.hpp"
 #include "shaderprogram.hpp" // for ShaderProgram
 #include <GL/glew.h>         // for GLuint
 #include <vector>            // for vector
@@ -11,44 +22,55 @@ class World;
 
 class HybridShader {
 private:
-  CL_Init opencl;
+  CLKernelManager opencl;
 
   // GBUFFER FRAMEBUFFER
   GLuint gBuffer;                         // Framebuffer
   GLuint gNormal, gPosition, gAlbedoSpec; // Color attachments
   GLuint rboDepth;
-  GLuint quadVAO = 0;
-  GLuint quadVBO;
 
   // OPENCL RENDER FRAMEBUFFER
   GLuint gSceneBuffer;  // Framebuffer
   GLuint gSceneTexture; // Color attachment
 
   // OPENGL-OPENCL Shared Textures
-  cl_mem cl_gPosition, cl_gAlbedoSpec, cl_gNormal;
-  cl_mem cl_gScene;
+  enum CL_SHARED_OBJECTS : uint {
+    GPOSITION = 0,
+    GALBEDOSPEC,
+    GNORMAL,
+    GSCENE,
+    CL_SHARED_OBJECTS_COUNT
+  };
+  cl_mem cl_shared_objects[CL_SHARED_OBJECTS::CL_SHARED_OBJECTS_COUNT];
+
+  // OPENCL kernel argument: Point Lights. The might change
+  // from frame to frame, so we update it.
   cl_mem cl_point_lights;
 
   ShaderProgram gBufferShader;
-  ShaderProgram lightingPassShader;
-  const World *world;
+  World *world;
 
   void init_pass1_gBuffer();
   void init_pass2_lighting();
-  void init_opencl();
-  void renderQuad();
-  void secondPass();
-  void updateGBuffer();
+  void init_pass3_blit();
+  void pass1_gBuffer();
+  void pass2_lighting();
+  void pass3_blit();
+
+  const std::string GBUFFER_POSITION_TEXTURE = "gPosition";
+  const std::string GBUFFER_ALBEDO_SPEC_TEXTURE = "gAlbedoSpec";
+  const std::string GBUFFER_NORMAL_TEXTURE = "gNormal";
+  const std::string GBUFFER_SCENE_TEXTURE = "gScene";
+
+  const std::string UNIFORM_MODEL_MATRIX = "model";
+  const std::string UNIFORM_VIEW_MATRIX = "view";
+  const std::string UNIFORM_PROJECTION_MATRIX = "projection";
 
 public:
-  void render() {
-    updateGBuffer();
-    secondPass();
-    renderQuad();
-  }
+  void render();
   const ShaderProgram &getModelShader() { return gBufferShader; }
 
-  HybridShader(const World *w);
+  HybridShader(World *w);
   ~HybridShader() {}
 };
 

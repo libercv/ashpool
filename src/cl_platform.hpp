@@ -1,3 +1,11 @@
+/***************************************************
+ * CL_Platform
+ *
+ * Obtains information about OpenCL platforms in the
+ * system
+ *
+ * 2017 - Liberto Camús
+ * **************************************************/
 #ifndef CL_PLATFORM_H
 #define CL_PLATFORM_H
 #include <memory>

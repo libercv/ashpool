@@ -1,3 +1,14 @@
+/***************************************************
+ * Input
+ *
+ * Manages input from keyboard and mouse. Calls Camera 
+ * methods to update its position and orientation.
+ * Uses "glfwGetWindowUserPointer" to store a pointer
+ * to itself in the Window object and thus be able
+ * to access its methods and properties from the callback code. 
+ *
+ * 2017 - Liberto Camús
+ * **************************************************/
 #ifndef INPUT_H
 #define INPUT_H
 

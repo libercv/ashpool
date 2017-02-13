@@ -1,3 +1,11 @@
+/***************************************************
+ * Window
+ *
+ * Destop window initialization, event polling and swaping
+ * methods. Uses GLFW3 and GLEW
+ *
+ * 2017 - Liberto Camús
+ * **************************************************/
 #include "window.hpp"
 #include "input.hpp"
 #include <functional>

@@ -1,3 +1,14 @@
+/***************************************************
+ * TextureManager
+ *
+ * Loads textures corresponding to ASSIMP materials from disk,
+ * using "TextureLoader", uploads it to OpenGL GPU memory and 
+ * returns a "Texture" object with its type and OpenGL id.
+ * Stores internally already loaded textures to avoid loading a 
+ * texture more than once. 
+ *
+ * 2017 - Liberto Camús
+ * **************************************************/
 #ifndef TEXTUREMANAGER_H
 #define TEXTUREMANAGER_H
 
@@ -20,11 +31,7 @@ private:
   };
 
   std::vector<TextureLoaded> textures_loaded;
-  GLint TextureFromFile(const std::string &filename) const;
-  GLbyte *readTextureFromDisk(std::string path, unsigned int *widthp,
-                              unsigned int *heightp, bool scale,
-                              GLbyte **smallTexData) const;
-  // GLuint load2dTexture(const std::string& path) const;
+  GLint TextureFromFile(const std::string &filename) const;  
 };
 
 #endif // TEXTUREMANAGER_H

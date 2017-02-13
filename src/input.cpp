@@ -1,3 +1,14 @@
+/***************************************************
+ * Input
+ *
+ * Manages input from keyboard and mouse. Calls Camera 
+ * methods to update its position and orientation.
+ * Uses "glfwGetWindowUserPointer" to store a pointer
+ * to itself in the Window object and thus be able
+ * to access its methods and properties from the callback code. 
+ *
+ * 2017 - Liberto Camús
+ * **************************************************/
 #include "input.hpp"
 #include "camera.hpp"
 
@@ -19,13 +30,13 @@ void Input::init(GLFWwindow *window) {
 void Input::move(GLfloat deltaTime) {
   // Camera controls
   if (keys[GLFW_KEY_UP])
-    camera->ProcessKeyboard(Camera::FORWARD, deltaTime);
+    camera->move(Camera::FORWARD, deltaTime);
   if (keys[GLFW_KEY_DOWN])
-    camera->ProcessKeyboard(Camera::BACKWARD, deltaTime);
+    camera->move(Camera::BACKWARD, deltaTime);
   if (keys[GLFW_KEY_LEFT])
-    camera->ProcessKeyboard(Camera::LEFT, deltaTime);
+    camera->move(Camera::LEFT, deltaTime);
   if (keys[GLFW_KEY_RIGHT])
-    camera->ProcessKeyboard(Camera::RIGHT, deltaTime);
+    camera->move(Camera::RIGHT, deltaTime);
 }
 
 // Is called whenever a key is pressed/released via GLFW
@@ -37,13 +48,18 @@ void Input::set_key_callback(GLFWwindow *window) {
       glfwSetWindowShouldClose(window, GL_TRUE);
     if (key == GLFW_KEY_S && action == GLFW_PRESS) {
       Config::option_shadows_enabled = !Config::option_shadows_enabled;
-      if (Config::option_shadows_enabled) std::cout << "Shadows ON \n";
-      else std::cout << "Shadows OFF \n";      
+      if (Config::option_shadows_enabled)
+        std::cout << "Shadows ON \n";
+      else
+        std::cout << "Shadows OFF \n";
     }
     if (key == GLFW_KEY_N && action == GLFW_PRESS) {
-      Config::option_normal_mapping_enabled = !Config::option_normal_mapping_enabled;
-      if (Config::option_normal_mapping_enabled) std::cout << "Normal mapping ON \n";
-      else std::cout << "Normal mapping OFF \n";
+      Config::option_normal_mapping_enabled =
+          !Config::option_normal_mapping_enabled;
+      if (Config::option_normal_mapping_enabled)
+        std::cout << "Normal mapping ON \n";
+      else
+        std::cout << "Normal mapping OFF \n";
     }
     if (key >= 0 && key < 1024) {
       if (action == GLFW_PRESS)
@@ -73,7 +89,7 @@ void Input::set_mouse_callback(GLFWwindow *window) {
         thiz->lastX = xpos;
         thiz->lastY = ypos;
 
-        thiz->camera->ProcessMouseMovement(xoffset, yoffset);
+        thiz->camera->changeOrientation(xoffset, yoffset);
       });
 }
 
@@ -81,8 +97,7 @@ void Input::set_scroll_callback(GLFWwindow *window) {
 
   glfwSetScrollCallback(
       window, [](GLFWwindow *window, double /*xoffset*/, double yoffset) {
-
         auto thiz = reinterpret_cast<Input *>(glfwGetWindowUserPointer(window));
-        thiz->camera->ProcessMouseScroll(yoffset);
+        thiz->camera->changeFovy(yoffset);
       });
 }

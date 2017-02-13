@@ -1,21 +1,22 @@
+/***************************************************
+ * Camera
+ *
+ * Controls camera position, orientation and related
+ * matrices (Projection and View).
+ *
+ * Includes methods for moving, zooming and changing
+ * orientation.
+ *
+ * 2017 - Liberto Camús
+ * **************************************************/
+
 #include "camera.hpp"
-#include "shaderprogram.hpp"
-
-#include "window.hpp"
-#include <GL/glew.h>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/type_ptr.hpp>
 #include <iostream>
-
-// Returns the view matrix calculated using Eular Angles and the LookAt Matrix
-glm::mat4 Camera::GetViewMatrix() const {
-  return glm::lookAt(this->Position, this->Position + this->Front, this->Up);
-}
 
 // Processes input received from any keyboard-like input system. Accepts input
 // parameter in the form of camera defined ENUM (to abstract it from windowing
 // systems)
-void Camera::ProcessKeyboard(Camera_Movement direction, GLfloat deltaTime) {
+void Camera::move(Camera_Movement direction, GLfloat deltaTime) {
   GLfloat velocity = this->MovementSpeed * deltaTime;
   if (direction == FORWARD)
     this->Position += this->Front * velocity;
@@ -27,18 +28,22 @@ void Camera::ProcessKeyboard(Camera_Movement direction, GLfloat deltaTime) {
     this->Position += this->Right * velocity;
 
   this->updateCameraVectors();
+  /*
+  std::cout << "x: " << Position.x << ", y: " << Position.y
+            << ", z: " << Position.z << "\n";
+  */
 }
 
 // Processes input received from a mouse input system. Expects the offset value
 // in both the x and y direction.
-void Camera::ProcessMouseMovement(GLfloat xoffset, GLfloat yoffset,
-                                  GLboolean constrainPitch) {
+void Camera::changeOrientation(GLfloat delta_yaw, GLfloat delta_pitch,
+                               GLboolean constrainPitch) {
 
-  xoffset *= this->MouseSensitivity;
-  yoffset *= this->MouseSensitivity;
+  delta_yaw *= this->MouseSensitivity;
+  delta_pitch *= this->MouseSensitivity;
 
-  this->Yaw += xoffset;
-  this->Pitch += yoffset;
+  this->Yaw += delta_yaw;
+  this->Pitch += delta_pitch;
 
   // Make sure that when pitch is out of bounds, screen doesn't get flipped
   if (constrainPitch) {
@@ -54,7 +59,7 @@ void Camera::ProcessMouseMovement(GLfloat xoffset, GLfloat yoffset,
 
 // Processes input received from a mouse scroll-wheel event. Only requires input
 // on the vertical wheel-axis
-void Camera::ProcessMouseScroll(GLfloat yoffset) {
+void Camera::changeFovy(GLfloat yoffset) {
   if (this->fovy >= 1.0f && this->fovy <= 45.0f)
     this->fovy -= 3 * yoffset;
   if (this->fovy <= 1.0f)
@@ -68,22 +73,18 @@ void Camera::ProcessMouseScroll(GLfloat yoffset) {
 
 // Calculates the front vector from the Camera's (updated) Eular Angles
 void Camera::updateCameraVectors() {
+
   // Calculate the new Front vector
-  glm::vec3 front;
-  front.x = cos(glm::radians(this->Yaw)) * cos(glm::radians(this->Pitch));
-  front.y = sin(glm::radians(this->Pitch));
-  front.z = sin(glm::radians(this->Yaw)) * cos(glm::radians(this->Pitch));
+  glm::vec3 front = {
+      cos(glm::radians(this->Yaw)) * cos(glm::radians(this->Pitch)),
+      sin(glm::radians(this->Pitch)),
+      sin(glm::radians(this->Yaw)) * cos(glm::radians(this->Pitch))};
   this->Front = glm::normalize(front);
+
   // Also re-calculate the Right and Up vector
-  this->Right = glm::normalize(
-      glm::cross(this->Front, this->WorldUp)); // Normalize the vectors, because
-                                               // their length gets closer to 0
-                                               // the more you look up or down
-                                               // which results in slower
-                                               // movement.
+  this->Right = glm::normalize(glm::cross(this->Front, this->WorldUp));
   this->Up = glm::normalize(glm::cross(this->Right, this->Front));
-  /*
-  std::cout << "x: " << Position.x << ", y: " << Position.y
-            << ", z: " << Position.z << "\n";
-    */        
+
+  this->viewMatrix =
+      glm::lookAt(this->Position, this->Position + this->Front, this->Up);
 }

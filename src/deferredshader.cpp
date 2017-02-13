@@ -1,3 +1,13 @@
+/***************************************************
+ * DeferredShader
+ *
+ * Renders the scene using OpenGL deferred shader
+ * algorithm. No OpenCL involved.
+ * One of the two alternative methods implemented
+ * (the other one is hybridshader)
+ *
+ * 2017 - Liberto Camús
+ * **************************************************/
 #include "deferredshader.hpp"
 #include "camera.hpp"
 #include "model.hpp"
@@ -9,28 +19,29 @@
 #include <iostream>
 #include <string>
 
-DeferredShader::DeferredShader(const World *w)
+DeferredShader::DeferredShader(World *w)
     : gBufferShader{"shaders/gbuffer.vert", "shaders/gbuffer.frag"},
       lightingPassShader{"shaders/lighting.vert", "shaders/lighting.frag"},
       world{w} {
-  lightingPassShader.use();
+
+  world->initModelsUniforms(gBufferShader);
+
   init_pass1_gBuffer();
   init_pass2_lighting();
 }
 
+// Initialize GBuffer -> textures(albedo+specular, normals, positions)
+//                       and render buffer
 void DeferredShader::init_pass1_gBuffer() {
-  glUniform1i(lightingPassShader.getUniformLocation("gPosition"), 0);
-  glUniform1i(lightingPassShader.getUniformLocation("gNormal"), 1);
-  glUniform1i(lightingPassShader.getUniformLocation("gAlbedoSpec"), 2);
-
+  gBufferShader.use();
   glGenFramebuffers(1, &gBuffer);
   glBindFramebuffer(GL_FRAMEBUFFER, gBuffer);
 
   // - Position color buffer
   glGenTextures(1, &gPosition);
   glBindTexture(GL_TEXTURE_2D, gPosition);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, Config::window_width,
-               Config::window_height, 0, GL_RGB, GL_FLOAT, nullptr);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, Config::window_width,
+               Config::window_height, 0, GL_RGBA, GL_FLOAT, nullptr);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
   glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
@@ -39,8 +50,8 @@ void DeferredShader::init_pass1_gBuffer() {
   // - Normal color buffer
   glGenTextures(1, &gNormal);
   glBindTexture(GL_TEXTURE_2D, gNormal);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, Config::window_width,
-               Config::window_height, 0, GL_RGB, GL_FLOAT, nullptr);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, Config::window_width,
+               Config::window_height, 0, GL_RGBA, GL_FLOAT, nullptr);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
   glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D,
@@ -49,7 +60,7 @@ void DeferredShader::init_pass1_gBuffer() {
   // - Color + Specular color buffer
   glGenTextures(1, &gAlbedoSpec);
   glBindTexture(GL_TEXTURE_2D, gAlbedoSpec);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, Config::window_width,
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, Config::window_width,
                Config::window_height, 0, GL_RGBA, GL_FLOAT, nullptr);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -61,13 +72,13 @@ void DeferredShader::init_pass1_gBuffer() {
   GLuint attachments[3] = {GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1,
                            GL_COLOR_ATTACHMENT2};
   glDrawBuffers(3, attachments);
-
   glGenRenderbuffers(1, &rboDepth);
   glBindRenderbuffer(GL_RENDERBUFFER, rboDepth);
   glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT,
                         Config::window_width, Config::window_height);
   glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
                             GL_RENDERBUFFER, rboDepth);
+
   // - Finally check if framebuffer is complete
   if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
     std::cout << "Framebuffer not complete!" << std::endl;
@@ -75,42 +86,66 @@ void DeferredShader::init_pass1_gBuffer() {
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
+// Initialize lighting pass -> uniforms for textures
+//                             quad for rendering final scene
+//                             pass point lights information to the shader
 void DeferredShader::init_pass2_lighting() {
+  lightingPassShader.use();
+  glUniform1i(lightingPassShader.getUniformLocation("gPosition"), 0);
+  glUniform1i(lightingPassShader.getUniformLocation("gNormal"), 1);
+  glUniform1i(lightingPassShader.getUniformLocation("gAlbedoSpec"), 2);
 
-  auto lPos = world->getPointLights();
-  auto lCol = glm::vec3(1.0f, 1.0f, 1.0f);
-  /*
-  for (unsigned int i = 0; i < lPos.size(); i++) {
-    glUniform3fv(lightingPassShader.getUniformLocation(
-                     "lights[" + std::to_string(i) + "].Position"),
-                 1, &(lPos[i].position));
-    glUniform3fv(lightingPassShader.getUniformLocation(
-                     "lights[" + std::to_string(i) + "].Color"),
-                 1, &lCol[0]);
+  GLfloat quadVertices[] = {
+      // Positions        // Texture Coords
+      -1.0f, 1.0f, 0.0f, 0.0f, 1.0f, -1.0f, -1.0f, 0.0f, 0.0f, 0.0f,
+      1.0f,  1.0f, 0.0f, 1.0f, 1.0f, 1.0f,  -1.0f, 0.0f, 1.0f, 0.0f,
+  };
+  // Setup plane VAO
+  glGenVertexArrays(1, &quadVAO);
+  glGenBuffers(1, &quadVBO);
+  glBindVertexArray(quadVAO);
+  glBindBuffer(GL_ARRAY_BUFFER, quadVBO);
+  glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), &quadVertices,
+               GL_STATIC_DRAW);
+  glEnableVertexAttribArray(0);
+  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat),
+                        (GLvoid *)nullptr);
+  glEnableVertexAttribArray(1);
+  glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat),
+                        (GLvoid *)(3 * sizeof(GLfloat)));
 
-
-    // const GLfloat linear = 0.7;
-    // const GLfloat quadratic = 1.8;
-    const GLfloat linear = 0.6;
-    const GLfloat quadratic = 0.2;
-    glUniform1f(lightingPassShader.getUniformLocation(
-                    "lights[" + std::to_string(i) + "].Linear"),
-                linear);
-    glUniform1f(lightingPassShader.getUniformLocation(
-                    "lights[" + std::to_string(i) + "].Quadratic"),
-                quadratic);
-  }
-  */
-  glUniform1f(lightingPassShader.getUniformLocation("lights[0].Linear"), 0.1f);
-  glUniform1f(lightingPassShader.getUniformLocation("lights[0].Quadratic"),
-              0.1f);
-  auto camPos = glm::vec3(0.0f, 0.5f, 0.0f);
-  glUniform3fv(lightingPassShader.getUniformLocation("viewPos"), 1, &camPos[0]);
+  // Pass point light information to the shader
+  auto pLights = world->getPointLights();
   glUniform1i(lightingPassShader.getUniformLocation("NR_LIGHTS"),
               world->getPointLightsNr());
+  for (unsigned int i = 0; i < pLights.size(); i++) {
+    PointLight p = pLights[i];
+    glm::vec3 lightPos = {p.position.x, p.position.y, p.position.z};
+    glm::vec3 lightCol = {p.color.x, p.color.y, p.color.z};
+
+    glUniform3fv(lightingPassShader.getUniformLocation(
+                     "lights[" + std::to_string(i) + "].Position"),
+                 1, &lightPos[0]);
+    glUniform3fv(lightingPassShader.getUniformLocation(
+                     "lights[" + std::to_string(i) + "].Color"),
+                 1, &lightCol[0]);
+    glUniform1f(lightingPassShader.getUniformLocation(
+                    "lights[" + std::to_string(i) + "].Linear"),
+                p.linear);
+    glUniform1f(lightingPassShader.getUniformLocation(
+                    "lights[" + std::to_string(i) + "].Quadratic"),
+                p.quadratic);
+  }
 }
 
+// Main method, called once every frame
 void DeferredShader::render() {
+  pass1_gBuffer();
+  pass2_lighting();
+}
+
+// Produces GBuffer textures
+void DeferredShader::pass1_gBuffer() {
   glBindFramebuffer(GL_FRAMEBUFFER, gBuffer);
   glClearColor(0.05f, 0.05f, 0.05f, 1.0f);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -119,11 +154,11 @@ void DeferredShader::render() {
   const Camera *camera = world->getCamera();
   const std::vector<Model> *models = world->getModels();
 
-  auto vMat = camera->GetViewMatrix();
+  auto vMat = camera->getViewMatrix();
   auto loc = gBufferShader.getUniformLocation("view");
   glUniformMatrix4fv(loc, 1, GL_FALSE, glm::value_ptr(vMat));
 
-  auto projMatrix = camera->GetProjectionMatrix();
+  auto projMatrix = camera->getProjectionMatrix();
   auto projLoc = gBufferShader.getUniformLocation("projection");
   glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(projMatrix));
 
@@ -132,16 +167,19 @@ void DeferredShader::render() {
                        glm::value_ptr(m.getModelMatrix()));
     m.draw(gBufferShader);
   }
-  renderQuad();
 }
 
-// RenderQuad() Renders a 1x1 quad in NDC, best used for framebuffer color
-// targets
-// and post-processing effects.
-void DeferredShader::renderQuad() {
+// Renders the scene using light information and GBuffer textures
+void DeferredShader::pass2_lighting() {
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   lightingPassShader.use();
+
+  // Update camera position
+  auto camPos = world->getCamera()->getPosition();
+  glUniform3fv(lightingPassShader.getUniformLocation("viewPos"), 1, &camPos[0]);
+
+  // Bind GBuffer textures as input
   glActiveTexture(GL_TEXTURE0);
   glBindTexture(GL_TEXTURE_2D, gPosition);
   glActiveTexture(GL_TEXTURE1);
@@ -149,26 +187,7 @@ void DeferredShader::renderQuad() {
   glActiveTexture(GL_TEXTURE2);
   glBindTexture(GL_TEXTURE_2D, gAlbedoSpec);
 
-  if (quadVAO == 0) {
-    GLfloat quadVertices[] = {
-        // Positions        // Texture Coords
-        -1.0f, 1.0f, 0.0f, 0.0f, 1.0f, -1.0f, -1.0f, 0.0f, 0.0f, 0.0f,
-        1.0f,  1.0f, 0.0f, 1.0f, 1.0f, 1.0f,  -1.0f, 0.0f, 1.0f, 0.0f,
-    };
-    // Setup plane VAO
-    glGenVertexArrays(1, &quadVAO);
-    glGenBuffers(1, &quadVBO);
-    glBindVertexArray(quadVAO);
-    glBindBuffer(GL_ARRAY_BUFFER, quadVBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), &quadVertices,
-                 GL_STATIC_DRAW);
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat),
-                          (GLvoid *)nullptr);
-    glEnableVertexAttribArray(1);
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat),
-                          (GLvoid *)(3 * sizeof(GLfloat)));
-  }
+  // Draw the scene
   glBindVertexArray(quadVAO);
   glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
   glBindVertexArray(0);

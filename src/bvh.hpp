@@ -1,17 +1,37 @@
+/***************************************************
+ * BVH
+ *
+ * Bounding Volume Hierarchy creation code.
+ * Creates a BVH tree and if flattens it to an array
+ * Based on algorith from "Physically based Rendering,
+ * 2nd edition"
+ *
+ * TODO: Use SAH
+ *
+ * 2017 - Liberto Camús
+ * **************************************************/
+
 #ifndef BVH_H
 #define BVH_H
-#include "CL/cl.h"
-#include "bvhprimitiveinfo.hpp"
+
+#include "bbox.hpp"
 #include "triangle.hpp"
-#include <GL/glew.h>      // for GLuint
-#include <algorithm>      // for move
-#include <assimp/types.h> // for aiString
+
+#include "CL/cl.h"
 #include <glm/glm.hpp>
 #include <memory>
-#include <string> // for string
-#include <vector> // for vector
+#include <vector>
 
 struct BVHBuildNode;
+
+struct BVHPrimitiveInfo {
+  BVHPrimitiveInfo(int pn, const BBox &b) : primitiveNumber(pn), bounds(b) {
+    centroid = .5f * b.pMin + .5f * b.pMax;
+  }
+  int primitiveNumber;
+  glm::vec3 centroid;
+  BBox bounds;
+};
 
 class BVH {
 public:
@@ -24,7 +44,7 @@ public:
       cl_uint secondChildOffset; // interior
     };
     cl_uchar nPrimitives; // 0 -> Interior
-    cl_uchar axis;        // interior node: xyz    
+    cl_uchar axis;        // interior node: xyz
   };
 
   uint32_t totalNodes = 0;
@@ -36,7 +56,7 @@ public:
   void init();
 
 private:
-  const unsigned int PRIMITIVES_PER_NODE = 25;
+  const unsigned int PRIMITIVES_PER_NODE = 50;
   std::vector<Triangle> orderedPrims;
   void recursiveBuild(BVHBuildNode *node,
                       std::vector<BVHPrimitiveInfo> &buildData, uint32_t start,

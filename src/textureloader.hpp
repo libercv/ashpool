@@ -1,3 +1,12 @@
+/***************************************************
+ * TextureLoader
+ *
+ * Loads a texture from disk into memory and converts it
+ * to RGBA format if it wasn't already.
+ * Uses FreeImage library
+ *
+ * 2017 - Liberto Camús
+ * **************************************************/
 #ifndef TEXTURELOADER_H
 #define TEXTURELOADER_H
 

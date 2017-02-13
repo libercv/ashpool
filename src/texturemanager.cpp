@@ -1,3 +1,14 @@
+/***************************************************
+ * TextureManager
+ *
+ * Loads textures corresponding to ASSIMP materials from disk,
+ * using "TextureLoader", uploads it to OpenGL GPU memory and 
+ * returns a "Texture" object with its type and OpenGL id.
+ * Stores internally already loaded textures to avoid loading a 
+ * texture more than once. 
+ *
+ * 2017 - Liberto Camús
+ * **************************************************/
 #include "texturemanager.hpp"
 #include "textureloader.hpp" // for TextureLoader
 #include "vertex.hpp"
@@ -15,7 +26,7 @@ TextureManager::loadMaterialTextures(aiMaterial *mat, aiTextureType aiType,
                                      const std::string &directory) {
 
   std::vector<Texture> textures;
-    
+
   for (GLuint i = 0; i < mat->GetTextureCount(aiType); i++) {
     // Get texture name
     aiString str;

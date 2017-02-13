@@ -1,3 +1,10 @@
+/***************************************************
+ * Config
+ *
+ * Configuration and scene descripton values
+ *
+ * 2017 - Liberto Camús
+ * **************************************************/
 #ifndef CONFIG_H
 #define CONFIG_H
 #include <glm/glm.hpp>
@@ -33,6 +40,7 @@ public:
   // Scene
   static std::vector<std::string> models;
   static std::vector<std::vector<float>> point_lights;
+  static float ambient;
 
   // Options
   static bool option_shadows_enabled;

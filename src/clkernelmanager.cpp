@@ -1,4 +1,12 @@
-#include "cl_init.hpp"
+/***************************************************
+ * CLKernelManager
+ *
+ * Encapsulates OpenCL initialization and functions
+ * Also loads and compiles a kernel.
+ *
+ * 2017 - Liberto Camús
+ * **************************************************/
+#include "clkernelmanager.hpp"
 
 #define GLFW_EXPOSE_NATIVE_GLX
 #define GLFW_EXPOSE_NATIVE_X11
@@ -25,7 +33,7 @@ typedef CL_API_ENTRY cl_int(CL_API_CALL *clGetGLContextInfoKHR_fn)(
 #define clGetGLContextInfoKHR clGetGLContextInfoKHR_proc
 static clGetGLContextInfoKHR_fn clGetGLContextInfoKHR;
 
-CL_Init::CL_Init() {
+CLKernelManager::CLKernelManager() {
   auto plat_ids = CL_Platform::get_platforms_ids();
   if (plat_ids.size() == 0) {
     std::cout << "No OpenCL platforms detected\n";
@@ -99,8 +107,9 @@ CL_Init::CL_Init() {
   }
 }
 
-cl_mem CL_Init::createFromGLBuffer(GLuint GLBuffer, cl_mem_flags mem_flags,
-                                   const std::string &str) {
+cl_mem CLKernelManager::createFromGLBuffer(GLuint GLBuffer,
+                                           cl_mem_flags mem_flags,
+                                           const std::string &str) {
   cl_int err;
   cl_mem buffer = clCreateFromGLBuffer(ctxt, mem_flags, GLBuffer, &err);
   if (!buffer || err != CL_SUCCESS) {
@@ -110,8 +119,9 @@ cl_mem CL_Init::createFromGLBuffer(GLuint GLBuffer, cl_mem_flags mem_flags,
   return buffer;
 }
 
-cl_mem CL_Init::createFromGLTexture(GLuint GLtexture, cl_mem_flags mem_flags,
-                                    const std::string &str) {
+cl_mem CLKernelManager::createFromGLTexture(GLuint GLtexture,
+                                            cl_mem_flags mem_flags,
+                                            const std::string &str) {
   cl_int err;
   cl_mem texture =
       clCreateFromGLTexture(ctxt, mem_flags, GL_TEXTURE_2D, 0, GLtexture, &err);
@@ -143,11 +153,12 @@ cl_mem CL_Init::createFromGLTexture(GLuint GLtexture, cl_mem_flags mem_flags,
       std::cout << "CL_OUT_OF_HOST_MEMORY\n";
       break;
     }
+    exit(-1);
   }
   return texture;
 }
 
-void CL_Init::checkForCLGLSharing() {
+void CLKernelManager::checkForCLGLSharing() {
   /*
     auto dev_ids = CL_Device::get_devices_ids(plat_id);
     if (dev_ids.size() == 0) {
@@ -172,12 +183,12 @@ void CL_Init::checkForCLGLSharing() {
   */
 }
 
-CL_Init::~CL_Init() {
+CLKernelManager::~CLKernelManager() {
   clReleaseCommandQueue(cmdQueue);
   clReleaseContext(ctxt);
 }
 
-void CL_Init::loadProgram(const std::string &path) {
+void CLKernelManager::loadKernelFromFile(const std::string &path) {
   std::string code = readFile(path);
   size_t p_source_len = code.size();
   cl_int status;
@@ -204,7 +215,7 @@ void CL_Init::loadProgram(const std::string &path) {
                           buildLogSize, buildLog.get(), nullptr);
 
     std::cout << buildLog.get() << std::endl;
-    exit(-1);
+    std::exit(-1);
   }
 
   status = clCreateKernelsInProgram(program, 1, &kernel, nullptr);
@@ -216,11 +227,12 @@ void CL_Init::loadProgram(const std::string &path) {
   std::cout << "OpenCL kernel loaded:" << path << "\n";
 }
 
-void CL_Init::setKernelArg(cl_uint index, size_t size, const void *value) {
+void CLKernelManager::setKernelArg(cl_uint index, size_t size,
+                                   const void *value) {
   clSetKernelArg(kernel, index, size, value);
 }
 
-void CL_Init::executeKernel(cl_event *event) {
+void CLKernelManager::executeKernel(cl_event *event) {
   size_t globalWorkSize[2] = {Config::window_width, Config::window_height};
   cl_int status = clEnqueueNDRangeKernel(cmdQueue, kernel, 2, nullptr,
                                          globalWorkSize, nullptr, 0, 0, event);
@@ -229,7 +241,7 @@ void CL_Init::executeKernel(cl_event *event) {
   }
 }
 
-std::string CL_Init::readFile(const std::string &path) {
+std::string CLKernelManager::readFile(const std::string &path) {
   std::string code{""};
   try {
     std::ifstream file;
@@ -240,7 +252,7 @@ std::string CL_Init::readFile(const std::string &path) {
     file.close();
     code = fStream.str();
   } catch (std::ifstream::failure &e) {
-    std::cerr << "ERROR::CL_INIT::FILE_NOT_SUCCESFULLY_READ\n";
+    std::cerr << "Error reading OpenCL file \n";
     std::cerr << "File: " << path << std::endl;
     std::exit(1);
   }

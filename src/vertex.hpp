@@ -1,3 +1,12 @@
+/***************************************************
+ * Vertex
+ *
+ * Contains a vertex in a format suitable to be passed
+ * to OpenGL. Stores its position, normal and texture 
+ * coordinates
+ *
+ * 2017 - Liberto Camús
+ * **************************************************/
 #ifndef VERTEX_H
 #define VERTEX_H
 #include <GL/glew.h>      // for GLuint
@@ -12,19 +21,16 @@ public:
   Vertex() = default;
   Vertex(Vertex &&other)
       : Position(std::move(other.Position)), Normal(std::move(other.Normal)),
-        TexCoords(std::move(other.TexCoords)), MTangent(std::move(other.MTangent)),
-        BiTangent(std::move(other.BiTangent)){}
-  Vertex(glm::vec3 pos, glm::vec3 nor, glm::vec2 tex, glm::vec3 mtan, glm::vec3 bitan)
+        TexCoords(std::move(other.TexCoords)) {}
+  Vertex(glm::vec3 pos, glm::vec3 nor, glm::vec2 tex)
       : Position(std::move(pos)), Normal(std::move(nor)),
-        TexCoords(std::move(tex)), MTangent(std::move(mtan)), BiTangent(std::move(bitan)) {}
+        TexCoords(std::move(tex)) {}
   Vertex &operator=(const Vertex &other) = default;
   Vertex(const Vertex &other) = default;
 
   glm::vec3 Position;
   glm::vec3 Normal;
   glm::vec2 TexCoords;
-  glm::vec3 MTangent;
-  glm::vec3 BiTangent;
 };
 
 #endif // VERTEX_H

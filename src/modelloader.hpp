@@ -1,3 +1,12 @@
+/***************************************************
+ * ModelLoader
+ *
+ * Loads a model from a file into a Model object.
+ * Uses ASSIMP to import different possible formats and it
+ * loads meshes, textures and material properties
+ *
+ * 2017 - Liberto Camús
+ * **************************************************/
 #ifndef MODELLOADER_H
 #define MODELLOADER_H
 

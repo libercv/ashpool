@@ -10,6 +10,9 @@ camera     -10.0f -12.0f 0.0f        0.1f   100.0f  0.0f    0.0f
 
 //          speed   zoom   sensitivity
 movement    20.0f   45.0f  0.25f
+
+// ambient light intensity
+ambient 0.2  
   
 //         position                color           diffuse  linear    quadratic
 pointlight -5.0f 0.5f 2.0f         1.0f 1.0f 1.0f  1.0f     0.045f   0.0075f

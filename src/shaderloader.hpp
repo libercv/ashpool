@@ -1,5 +1,13 @@
-#ifndef SHADER_H
-#define SHADER_H
+/***************************************************
+ * ShaderLoader
+ *
+ * Loads a GLSL OpenGL shader from a disk file and
+ * compiles it.
+ *
+ * 2017 - Liberto Camús
+ * **************************************************/
+#ifndef SHADERLOADER_H
+#define SHADERLOADER_H
 
 #include <GL/glew.h> // for GLuint, GLchar
 #include <string>    // for string
@@ -16,4 +24,4 @@ private:
   void compile(const GLchar *, GLuint);
 };
 
-#endif // SHADER_H
+#endif // SHADERLOADER_H

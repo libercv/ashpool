@@ -5,34 +5,37 @@ set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -pedantic -fno-omit-frame-pointer")
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH}
                       ${CMAKE_CURRENT_SOURCE_DIR}/../cmake/)
-add_executable(ashpool main.cpp 
-		camera.hpp camera.cpp
-    config.hpp 
-    configloader.hpp configloader.cpp
+add_executable(ashpool 
+    bbox.hpp
     bvh.hpp bvh.cpp
-    input.hpp input.cpp
-		shaderloader.cpp shaderloader.hpp 
-		shaderprogram.cpp shaderprogram.hpp 
-    shader.hpp
-		window.cpp window.hpp
-		model.cpp model.hpp
-		mesh.cpp mesh.hpp
-		modelloader.cpp modelloader.hpp
+		camera.hpp camera.cpp
+    cl_device.cpp cl_device.hpp
+    clkernelmanager.cpp clkernelmanager.hpp
+    cl_platform.cpp cl_platform.hpp
+    config.hpp 
+    configloader.cpp configloader.hpp
     deferredshader.cpp deferredshader.hpp
     hybridshader.cpp hybridshader.hpp
-		texture.hpp
-		vertex.hpp
-		material.hpp
-    timer.hpp
-    system.hpp
-    renderengine.hpp
+    input.hpp input.cpp
+    main.cpp 
+    material.hpp
+    mesh.cpp mesh.hpp
+    model.cpp model.hpp
+    modelloader.cpp modelloader.hpp
     pointlight.hpp
-		texturemanager.cpp texturemanager.hpp
-		cl_init.cpp cl_init.hpp
-		cl_platform.cpp cl_platform.hpp
-		cl_device.cpp cl_device.hpp
+    renderengine.hpp
+    renderingmethod.hpp
+		shaderloader.cpp shaderloader.hpp 
+		shaderprogram.cpp shaderprogram.hpp 
+    system.hpp
+    texture.hpp		
+		textureloader.cpp textureloader.hpp    
+    texturemanager.cpp texturemanager.hpp
+		timer.hpp
+		vertex.hpp
+		window.cpp window.hpp
     world.cpp world.hpp
-		textureloader.cpp textureloader.hpp)
+		)
 find_package(PkgConfig REQUIRED)
 #find_package(SOIL  REQUIRED)
 pkg_search_module(GLFW REQUIRED glfw3)

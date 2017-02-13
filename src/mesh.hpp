@@ -1,3 +1,13 @@
+/***************************************************
+ * Mesh
+ *
+ * Set of triangles, material properties, textures
+ * and its methods for drawing and updating OpenGL 
+ * shaders.
+ * A Model is made out of Meshes.
+ *
+ * 2017 - Liberto Camús
+ * **************************************************/
 #ifndef MESH_H
 #define MESH_H
 
@@ -30,7 +40,7 @@ public:
 
   Mesh(std::vector<Vertex> &&vertices, std::vector<GLuint> &&indices,
        std::vector<Texture> &&specular_textures,
-       std::vector<Texture> &&diffuse_textures, 
+       std::vector<Texture> &&diffuse_textures,
        std::vector<Texture> &&Normal_Textures, Material &&material);
   ~Mesh();
 

@@ -1,3 +1,13 @@
+/***************************************************
+ * ShaderProgram
+ *
+ * It stores a Shader program and allows to use it.
+ * During its initialization loads a vertex and a fragment 
+ * shaders (using ShaderLoader) and creates the program, 
+ * linking them. 
+ *
+ * 2017 - Liberto Camús
+ * **************************************************/
 #include "shaderprogram.hpp"
 #include "shaderloader.hpp"
 #include <fstream>
@@ -32,7 +42,7 @@ void ShaderProgram::createProgram(GLuint vertexId, GLuint fragmentId) {
   if (!success) {
     GLchar infoLog[512];
     glGetProgramInfoLog(mProgram, 512, NULL, infoLog);
-    std::cerr << "ERROR::SHADER::PROGRAM::LINKING_FAILED\n"
+    std::cerr << "Error linking OpenGL shaders \n"
               << infoLog << std::endl;
     std::exit(1);
   }

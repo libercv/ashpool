@@ -1,3 +1,11 @@
+/***************************************************
+ * World
+ *
+ * Main Scene object. Contains its models, lights, 
+ * cameras, BVH geometry structure and options.
+ *
+ * 2017 - Liberto Camús
+ * **************************************************/
 #ifndef WORLD_H
 #define WORLD_H
 
@@ -13,17 +21,15 @@ class ShaderProgram;
 class World {
 public:
   struct SceneAttribs {
-    cl_float diffuse = 0.25f;
-    cl_bool shadowsEnabled = true;
+    cl_float ambient;
+    cl_bool shadowsEnabled;
   };
-
   SceneAttribs scene_attribs;
 
   World();
   ~World() {}
   void init();
-
-  void initModelsUniforms(const ShaderProgram &shader);
+  void initModelsUniforms(ShaderProgram &shader);
 
   Camera *getCamera() const { return camera.get(); }
   const std::vector<Model> *getModels() const { return &models; }
@@ -32,17 +38,7 @@ public:
   void update();
   BVH bvh;
 
-private:
-  // Light animation. Should be in a "trajectory" class, applied to each
-  // PointLight
-  /*
-  float cx = -570.0f;
-  float cy = 300.0f;
-  float cz = -65.0f;
-  float r = 150.0f;
-  float delta = 0.15f;
-  float luz_rad = 0.0f;
-  */
+private:  
   std::unique_ptr<Camera> camera;
   std::vector<Model> models;
   // lights

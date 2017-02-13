@@ -1,3 +1,11 @@
+/***************************************************
+ * ShaderLoader
+ *
+ * Loads a GLSL OpenGL shader from a disk file and
+ * compiles it.
+ *
+ * 2017 - Liberto Camús
+ * **************************************************/
 #include "shaderloader.hpp"
 #include <fstream>
 #include <iostream>
@@ -27,7 +35,7 @@ void ShaderLoader::compile(const GLchar *code, GLuint shader_type) {
   if (!success) {
     GLchar infoLog[512];
     glGetShaderInfoLog(mId, 512, NULL, infoLog);
-    std::cerr << "ERROR::SHADER::COMPILATION_FAILED\n" << infoLog;
+    std::cerr << "Error compiling GLSL shader\n" << infoLog;
     std::exit(1);
   }
 }
@@ -43,7 +51,7 @@ std::string ShaderLoader::readFile(const std::string &path) {
     file.close();
     code = fStream.str();
   } catch (std::ifstream::failure &e) {
-    std::cerr << "ERROR::SHADER::FILE_NOT_SUCCESFULLY_READ\n";
+    std::cerr << "Error loading GLSL shader from disk\n";
     std::cerr << "File: " << path << std::endl;
     std::exit(1);
   }

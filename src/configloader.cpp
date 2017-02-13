@@ -1,3 +1,12 @@
+/***************************************************
+ * ConfigLoader
+ *
+ * Initialization of "Config.hpp" values. Reads and
+ * parses configuration files.
+ *
+ * 2017 - Liberto Camús
+ * **************************************************/
+
 #include "configloader.hpp"
 #include "config.hpp"
 
@@ -36,6 +45,7 @@ float Config::movement_sensitivity = 0.0f;
 // Scene
 std::vector<std::string> Config::models;
 std::vector<std::vector<float>> Config::point_lights;
+float Config::ambient = 0.0f;
 
 // Runtime Options
 bool Config::option_shadows_enabled = true;
@@ -74,6 +84,8 @@ ConfigLoader::ConfigLoader(const std::string &file) {
       setCamera(result);
     } else if (title.compare("movement") == 0) {
       setMovement(result);
+    } else if (title.compare("ambient") == 0) {
+      setAmbientLightIntensity(result);
     } else if (title.compare("pointlight") == 0) {
       setPointLight(result);
     }
@@ -133,6 +145,10 @@ void ConfigLoader::setPointLight(const std::vector<std::string> &v) {
   v_f.push_back((float)std::atof(v.at(9).c_str())); // quadratic
 
   Config::point_lights.emplace_back(v_f);
+}
+
+void ConfigLoader::setAmbientLightIntensity(const std::vector<std::string> &v) {
+  Config::ambient = (float)std::atof(v.at(1).c_str());
 }
 
 std::vector<std::string> ConfigLoader::readFile(const std::string &path) {

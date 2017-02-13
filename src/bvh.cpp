@@ -1,3 +1,15 @@
+/***************************************************
+ * BVH
+ *
+ * Bounding Volume Hierarchy creation code.
+ * Creates a BVH tree and if flattens it to an array
+ * Based on algorith from "Physically based Rendering,
+ * 2nd edition"
+ *
+ * TODO: Use SAH
+ *
+ * 2017 - Liberto Camús
+ * **************************************************/
 #include "bvh.hpp"
 #include <iostream>
 #include <memory>
@@ -47,14 +59,14 @@ struct CompareToMid {
 };
 
 void BVH::init() {
-  // Initialize buildData array for primitives
+  // Initialize buildData array for triangles
   buildData.reserve(primitives.size());
   for (uint32_t i = 0; i < primitives.size(); ++i) {
     BBox bbox = primitives[i].WorldBound();
     buildData.push_back(BVHPrimitiveInfo(i, bbox));
   }
 
-  // Recursively build BVH tree for primitives
+  // Recursively build BVH tree for triangles
   std::unique_ptr<BVHBuildNode> root = std::make_unique<BVHBuildNode>();
   recursiveBuild(root.get(), buildData, 0, primitives.size(), &totalNodes,
                  orderedPrims);
@@ -70,12 +82,10 @@ void BVH::init() {
 uint32_t BVH::flattenBVHTree(const BVHBuildNode *node, uint32_t *offset) {
   LinearBVHNode *linearNode = &nodes[*offset];
   // linearNode->bounds = node->bounds;
-  linearNode->pMin.x = node->bounds.pMin.x;
-  linearNode->pMin.y = node->bounds.pMin.y;
-  linearNode->pMin.z = node->bounds.pMin.z;
-  linearNode->pMax.x = node->bounds.pMax.x;
-  linearNode->pMax.y = node->bounds.pMax.y;
-  linearNode->pMax.z = node->bounds.pMax.z;
+  linearNode->pMin = {
+      {node->bounds.pMin.x, node->bounds.pMin.y, node->bounds.pMin.z}};
+  linearNode->pMax = {
+      {node->bounds.pMax.x, node->bounds.pMax.y, node->bounds.pMax.z}};
 
   uint32_t myOffset = (*offset)++;
   if (node->nPrimitives > 0) {

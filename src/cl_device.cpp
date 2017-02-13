@@ -1,3 +1,11 @@
+/***************************************************
+ * CL_Device
+ *
+ * Obtains information about OpenCL devices in the
+ * system
+ *
+ * 2017 - Liberto Camús
+ * **************************************************/
 #include "cl_device.hpp"
 #include <iostream>
 

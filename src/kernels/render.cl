@@ -1,7 +1,21 @@
+/*********************************************************************
+*  render.cl
+*
+*  Uses G-Buffer textures (Diffuse+Specular, Positions, Normals),
+*  a Bounding Volume Hierarchy containing the geometry (triangles) and
+*  lighting information to produce a rendered texture.
+*
+*  2017 - Liberto Camús
+************************************************************************/
 __constant sampler_t imageSampler =
     CLK_NORMALIZED_COORDS_FALSE | CLK_ADDRESS_CLAMP | CLK_FILTER_NEAREST;
-__constant float EPSILON = 0.001f;
 
+// Minimum distance to avoid self-intersection
+__constant float EPSILON = 0.001f;
+// Threshold to discard light contribution
+__constant float ATTENUATION_SENSITIVITY = 0.001f;
+
+// Struct of each Bounding Volume Hierarchy node
 typedef struct _BVHNode {
   float3 bounds_pMin;
   float3 bounds_pMax;
@@ -32,9 +46,11 @@ typedef struct _PointLight {
 
 typedef struct _SceneAttribs {
   float ambient;
-  bool shadowsEnabled;
+  int shadows_enabled;
 } SceneAttribs;
 
+// Checks ray-triangle intersection
+// Based on algorithm in "Physically based rendering, 2nd edition"
 bool test_ray_triangle(__global const Triangle *tri, const Ray *ray) {
   float3 e1 = tri->p1 - tri->p0;
   float3 e2 = tri->p2 - tri->p0;
@@ -64,49 +80,40 @@ bool test_ray_triangle(__global const Triangle *tri, const Ray *ray) {
 }
 
 void swap(float *f1, float *f2) {
-  float tmp;
-  tmp = *f1;
+  float tmp = *f1;
   *f1 = *f2;
   *f2 = tmp;
 }
 
-bool test_ray_bbox(const Ray *ray, __global const BVHNode *node) {
-
-  // Update interval for ith bounding box slab
+// Checks ray-bounding box intersection
+// Based on algorithm in "Physically based rendering, 2nd edition"
+bool test_ray_bbox(const Ray *ray, __global const BVHNode *node,
+                   const float3 *invDir) {
   float tmin = ray->mint;
   float tmax = ray->maxt;
 
-  float invRayDir = 1.f / ray->d.x;
-  float tNear = (node->bounds_pMin.x - ray->o.x) * invRayDir;
-  float tFar = (node->bounds_pMax.x - ray->o.x) * invRayDir;
-
-  if (tNear > tFar) {
+  float tNear = (node->bounds_pMin.x - ray->o.x) * (*invDir).x;
+  float tFar = (node->bounds_pMax.x - ray->o.x) * (*invDir).x;
+  if (tNear > tFar)
     swap(&tNear, &tFar);
-  }
   tmin = tNear > tmin ? tNear : tmin;
   tmax = tFar < tmax ? tFar : tmax;
   if (tmin > tmax)
     return false;
 
-  invRayDir = 1.f / ray->d.y;
-  tNear = (node->bounds_pMin.y - ray->o.y) * invRayDir;
-  tFar = (node->bounds_pMax.y - ray->o.y) * invRayDir;
-  if (tNear > tFar) {
+  tNear = (node->bounds_pMin.y - ray->o.y) * (*invDir).y;
+  tFar = (node->bounds_pMax.y - ray->o.y) * (*invDir).y;
+  if (tNear > tFar)
     swap(&tNear, &tFar);
-  }
-
   tmin = tNear > tmin ? tNear : tmin;
   tmax = tFar < tmax ? tFar : tmax;
   if (tmin > tmax)
     return false;
 
-  invRayDir = 1.f / ray->d.z;
-  tNear = (node->bounds_pMin.z - ray->o.z) * invRayDir;
-  tFar = (node->bounds_pMax.z - ray->o.z) * invRayDir;
-
-  if (tNear > tFar) {
+  tNear = (node->bounds_pMin.z - ray->o.z) * (*invDir).z;
+  tFar = (node->bounds_pMax.z - ray->o.z) * (*invDir).z;
+  if (tNear > tFar)
     swap(&tNear, &tFar);
-  }
   tmin = tNear > tmin ? tNear : tmin;
   tmax = tFar < tmax ? tFar : tmax;
   if (tmin > tmax)
@@ -115,6 +122,9 @@ bool test_ray_bbox(const Ray *ray, __global const BVHNode *node) {
   return true;
 }
 
+// Checks if a ray intersects with a collection of triangles, using
+// a BVH tree to accelerate the process.
+// Based on algorithm in "Physically based rendering, 2nd edition"
 bool intersects(const Ray *ray, __global const Triangle *triangles,
                 __global const BVHNode *nodes) {
 
@@ -127,7 +137,7 @@ bool intersects(const Ray *ray, __global const Triangle *triangles,
   while (true) {
     const __global BVHNode *node = &nodes[nodeNum];
     // Check ray against BVH node
-    if (test_ray_bbox(ray, node)) {
+    if (test_ray_bbox(ray, node, &invDir)) {
       if (node->nPrimitives > 0) {
         // Intersect ray with primitives in leaf BVH node
         for (int i = 0; i < node->nPrimitives; i++)
@@ -155,54 +165,76 @@ bool intersects(const Ray *ray, __global const Triangle *triangles,
   return false;
 }
 
+// Calculates point lights contribution to shading a specific point
+// on a surface
+float3 pointLightsColor(__global const PointLight *point_lights,
+                        int point_lights_nr, __global const Triangle *triangles,
+                        __global const BVHNode *nodes, bool shadows_enabled,
+                        float3 view_pos, float3 surface_pos,
+                        float3 surface_normal, float3 surface_diffuse,
+                        float surface_specular) {
+
+  float3 color = (float3)(0.0f, 0.0f, 0.0f);
+  float3 view_dir = normalize(view_pos - surface_pos);
+
+  for (int i = 0; i < point_lights_nr; i++) {
+    __global const PointLight *pLight = &point_lights[i];
+
+    // Attenuation
+    float3 light_pos = pLight->p_position;
+    float dist = distance(light_pos, surface_pos);
+    float attenuation = 1.0f / (1.0f + (pLight->linear * dist) +
+                                (pLight->quadratic * dist * dist));
+    if (attenuation < ATTENUATION_SENSITIVITY)
+      continue;
+
+    float3 light_dir = normalize(light_pos - surface_pos);
+    float3 light_color = pLight->p_color;
+
+    // Check if shadowed
+    if (shadows_enabled) {
+      Ray r = (Ray){surface_pos, light_dir, EPSILON, dist};
+      if (intersects(&r, triangles, nodes))
+        continue;
+    }
+
+    // Diffuse Lambertian
+    float ang = max(dot(surface_normal, light_dir), 0.0f);
+    float3 diffuse = ang * surface_diffuse * light_color;
+
+    // Specular Blinn-Phong
+    float3 halfway_dir = normalize(light_dir + view_dir);
+    float spec = pow(max(dot(surface_normal, halfway_dir), 0.0f), 16.0f);
+    float3 specular = light_color * spec * surface_specular;
+
+    color += (diffuse + specular) * attenuation;
+  }
+  return color;
+}
+
+//
+//
 __kernel void
 render(__read_only image2d_t g_albedo_spec, __read_only image2d_t g_position,
        __read_only image2d_t g_normal, __global const PointLight *point_lights,
        int point_lights_nr, const SceneAttribs attribs,
        __global const Triangle *triangles, __global const BVHNode *nodes,
-       float3 position,
-       __write_only image2d_t output) {
+       float3 view_position, __write_only image2d_t output) {
 
   int2 coord = (int2)(get_global_id(0), get_global_id(1));
-  float3 gdiffuse = read_imagef(g_albedo_spec, imageSampler, coord).xyz;
-  float3 gpos = read_imagef(g_position, imageSampler, coord).xyz;
-  float3 gnormal = read_imagef(g_normal, imageSampler, coord).xyz;  
-  float3 light = gdiffuse * attribs.ambient;
-  float3 view_dir = normalize(position- gpos);
-    
-  for (int i = 0; i < point_lights_nr; i++) {  
-    __global const PointLight *pLight=&point_lights[i];    
-    
-    float3 light_pos = pLight->p_position;
-    float dist = distance(light_pos, gpos);
-    float attenuation = 1.0f / (1.0f + (pLight->linear * dist) +
-                            (pLight->quadratic * dist * dist));                            
-    //if (attenuation<0.00001f) continue;
-                            
-    float3 light_dir = normalize(light_pos - gpos);    
-    float3 light_color = pLight->p_color;
-    
-    if(attribs.shadowsEnabled) {
-      Ray r= (Ray){gpos, light_dir, EPSILON, dist};
-      bool shadows = intersects(&r, triangles, nodes);
-      if (shadows == true)
-        continue;
-    }
-        
-    // Diffuse
-    float ang = max(dot(gnormal, light_dir), 0.0f);
-    float3 diffuse = ang * gdiffuse * light_color;
-    
-    // Specular
-    //float3 reflect_dir = -light_dir-2.0f*dot(-light_dir,gnormal)*gnormal;
-    //float spec = pow(max(dot(view_dir, reflect_dir), 0.0f), 8.0f);
-    float3 halfway_dir = normalize(light_dir+view_dir);
-    float spec = pow(max(dot(gnormal, halfway_dir), 0.0f), 16.0f);
-    float3 specular = light_color * spec;
+  float3 diffuse = read_imagef(g_albedo_spec, imageSampler, coord).xyz;
+  float specular = read_imagef(g_albedo_spec, imageSampler, coord).w;
+  float3 pos = read_imagef(g_position, imageSampler, coord).xyz;
+  float3 normal = read_imagef(g_normal, imageSampler, coord).xyz;
 
-    light += (diffuse + specular) * attenuation;
-  }
+  // Ambient light
+  float3 color = diffuse * attribs.ambient;
+  // Point Lights (diffuse + specular)
+  color += pointLightsColor(point_lights, point_lights_nr, triangles, nodes,
+                            (bool)attribs.shadows_enabled, view_position, pos,
+                            normal, diffuse, specular);
 
-  float4 l = (float4)(light.x, light.y, light.z, 0.0f);
-  write_imagef(output, coord, l);
+  // Write result
+  write_imagef(output, coord, (float4)(color.x, color.y, color.z, 0.0f));
+  //write_imagef(output, coord, (float4)(specular, 0.0f, 0.0f, 0.0f));
 }
