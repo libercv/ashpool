@@ -76,10 +76,20 @@ void BVH::init() {
   // Compute representation of depth-first traversal of BVH tree
   nodes = std::make_unique<LinearBVHNode[]>(totalNodes);
   uint32_t offset = 0;
-  flattenBVHTree(root.get(), &offset);
+  int maxlevel=1;
+  flattenBVHTree(root.get(), &offset, &maxlevel, 1);
+  
+  std::cout << "Size of each BVH node:" << sizeof(BVH::LinearBVHNode) << " bytes \n";
+  std::cout << "Size of BVH structure:" << totalNodes * sizeof(BVH::LinearBVHNode) / 1024 << " KB\n";
+  std::cout << "Size of primitives:" << primitives.size() * sizeof(Triangle) / 1024 << " KB\n";
+  std::cout << "Max levels:" << maxlevel << "\n";
+  std::cout << "Number of nodes:" << totalNodes << "\n";
+  std::cout << "Number of primitives: " << primitives.size() << "\n";
 }
 
-uint32_t BVH::flattenBVHTree(const BVHBuildNode *node, uint32_t *offset) {
+uint32_t BVH::flattenBVHTree(const BVHBuildNode *node, uint32_t *offset, int *maxlevel, int level) {  
+  if (*maxlevel<level) *maxlevel=level;
+  
   LinearBVHNode *linearNode = &nodes[*offset];
   // linearNode->bounds = node->bounds;
   linearNode->pMin = {
@@ -94,9 +104,9 @@ uint32_t BVH::flattenBVHTree(const BVHBuildNode *node, uint32_t *offset) {
   } else {
     // Create interior flattened BVH node
     linearNode->axis = node->splitAxis;
-    linearNode->nPrimitives = 0;
-    flattenBVHTree(node->getChild0(), offset);
-    linearNode->secondChildOffset = flattenBVHTree(node->getChild1(), offset);
+    linearNode->nPrimitives = 0;    
+    flattenBVHTree(node->getChild0(), offset, maxlevel, level+1);
+    linearNode->secondChildOffset = flattenBVHTree(node->getChild1(), offset, maxlevel, level+1);
   }
   return myOffset;
 }

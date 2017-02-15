@@ -1,29 +1,29 @@
 /***************************************************
- * HybridShader
+ * HybridShaderCPU
  *
  * Renders the scene in 3 passes:
  * - Generate GBuffer with OpenGL
- * - Generate final Scene texture with OpenCL using 
+ * - Generate final Scene texture with OpenCL using
  *    GBuffer from previous pass and geometry (BVH) and lighting information
  * - Blit the result of the second pass to the render buffer (openGL)
  *
  * 2017 - Liberto Camús
  * **************************************************/
-#ifndef HYBRIDSHADER_H
-#define HYBRIDSHADER_H
+#ifndef HYBRIDSHADERCPU_H
+#define HYBRIDSHADERCPU_H
 
-#include "clkernelmanager.hpp"
 #include "shaderprogram.hpp" // for ShaderProgram
 #include <GL/glew.h>         // for GLuint
-#include <vector>            // for vector
+#include <glm/glm.hpp>
+#include <memory>
+#include <vector> // for vector
+#include <vector>
 class Camera;
 class Model;
 class World;
 
-class HybridShader {
+class HybridShaderCPU {
 private:
-  CLKernelManager opencl;
-
   // GBUFFER FRAMEBUFFER
   GLuint gBuffer;                         // Framebuffer
   GLuint gNormal, gPosition, gAlbedoSpec; // Color attachments
@@ -33,20 +33,11 @@ private:
   GLuint gSceneBuffer;  // Framebuffer
   GLuint gSceneTexture; // Color attachment
 
-  // OPENGL-OPENCL Shared Textures
-  enum CL_SHARED_OBJECTS : uint {
-    GPOSITION = 0,
-    GALBEDOSPEC,
-    GNORMAL,
-    GSCENE,
-    CL_SHARED_OBJECTS_COUNT
-  };
-  cl_mem cl_shared_objects[CL_SHARED_OBJECTS::CL_SHARED_OBJECTS_COUNT];
-
-  cl_mem cl_nodesbvh, cl_primitives;
-  // OPENCL kernel argument: Point Lights. The might change
-  // from frame to frame, so we update it.
-  cl_mem cl_point_lights;
+  //
+  std::vector<GLfloat> gNormal_text;
+  std::vector<GLfloat> gPosition_text;
+  std::vector<GLfloat> gAlbedoSpec_text;
+  std::vector<GLubyte> gScene_text;
 
   ShaderProgram gBufferShader;
   World *world;
@@ -67,12 +58,16 @@ private:
   const std::string UNIFORM_VIEW_MATRIX = "view";
   const std::string UNIFORM_PROJECTION_MATRIX = "projection";
 
+  glm::vec3 pointLightsColor(const glm::vec3 &position, const glm::vec3 &normal,
+                             const glm::vec3 &albedo, float specular,
+                             const glm::vec3 &viewDir);
+
 public:
   void render();
   const ShaderProgram &getModelShader() { return gBufferShader; }
 
-  HybridShader(World *w);
-  ~HybridShader();
+  HybridShaderCPU(World *w);
+  ~HybridShaderCPU();
 };
 
-#endif // HYBRIDSHADER_H
+#endif // HYBRIDSHADERCPU_H

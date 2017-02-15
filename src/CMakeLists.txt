@@ -16,6 +16,7 @@ add_executable(ashpool
     configloader.cpp configloader.hpp
     deferredshader.cpp deferredshader.hpp
     hybridshader.cpp hybridshader.hpp
+    hybridshadercpu.cpp hybridshadercpu.hpp
     input.hpp input.cpp
     main.cpp 
     material.hpp
@@ -45,6 +46,12 @@ find_package(GLEW REQUIRED)
 find_package(ASSIMP REQUIRED) 
 find_package(FreeImage REQUIRED) 
 find_package(OpenCL REQUIRED) 
+
+find_package(OpenMP)
+if (OPENMP_FOUND)
+    set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
+    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+endif()
 
 include_directories( ${OPENGL_INCLUDE_DIRS}  
 	${GLFW_INCLUDE_DIRS} 

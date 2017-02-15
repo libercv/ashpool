@@ -67,7 +67,7 @@ private:
                   uint32_t start, uint32_t end,
                   std::vector<Triangle> &orderedPrims, BBox &bbox,
                   uint32_t nPrimitives);
-  uint32_t flattenBVHTree(const BVHBuildNode *node, uint32_t *offset);
+  uint32_t flattenBVHTree(const BVHBuildNode *node, uint32_t *offset, int *maxlevel, int level);
 };
 
 #endif // BVH_H
