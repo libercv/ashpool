@@ -11,16 +11,18 @@
 #ifndef RENDERENGINE_H
 #define RENDERENGINE_H
 
+#include "hybridshader.hpp"
 #include "hybridshadercpu.hpp"
+#include "deferredshader.hpp"
 #include "renderingmethod.hpp"
 class World;
 
 class RenderEngine {
 private:
-  RenderingMethod<HybridShaderCPU> shader;
+  RenderingMethod<HybridShader> shader;
 
 public:
-  RenderEngine(World *w) : shader(RenderingMethod<HybridShaderCPU>(w)){};
+  RenderEngine(World *w) : shader(RenderingMethod<HybridShader>(w)){};
   ~RenderEngine(){};
   void render() { shader.render(); }
   void clear(){};

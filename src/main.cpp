@@ -37,6 +37,6 @@ int main(int argc, char *argv[]) {
     // Render the scene
     renderer.render();
   }
-
+  system.printStatistics();
   return 0;
 }

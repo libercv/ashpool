@@ -22,6 +22,7 @@
 #include <string>
 //#include <omp.h>
 
+
 HybridShaderCPU::HybridShaderCPU(World *w)
     : gBufferShader{Config::gbuffer_shader_vert.c_str(),
                     Config::gbuffer_shader_frag.c_str()},
@@ -37,7 +38,28 @@ HybridShaderCPU::HybridShaderCPU(World *w)
 
   // We need GBuffer and Scene texture before initializing OpenCL
   init_pass2_lighting();
+  
+  init_geometry();
 }
+
+void HybridShaderCPU::init_geometry() {
+  for(unsigned int i=0; i<world->bvh.totalNodes; i++) {
+    BVH::LinearBVHNode clnode=world->bvh.nodes[i];
+    
+    bvhnodes.emplace_back(_BVHNode{glm::vec3(clnode.pMin.x, clnode.pMin.y, clnode.pMin.z),
+                         glm::vec3(clnode.pMax.x, clnode.pMax.y, clnode.pMax.z),
+                         clnode.primitivesOffset, clnode.nPrimitives, clnode.axis});        
+  }
+  
+  for (Triangle cltriangle: world->bvh.primitives) {    
+    triangles.emplace_back(_Triangle{glm::vec3(cltriangle.v1.x, cltriangle.v1.y, cltriangle.v1.z), 
+                           glm::vec3(cltriangle.v2.x, cltriangle.v2.y, cltriangle.v2.z), 
+                           glm::vec3(cltriangle.v3.x, cltriangle.v3.y, cltriangle.v3.z)});
+  }
+    
+}
+
+
 
 void HybridShaderCPU::render() {
   pass1_gBuffer();
@@ -232,10 +254,19 @@ glm::vec3 HybridShaderCPU::pointLightsColor(const glm::vec3 &position,
 
   // Compute each point light contribution
   for (PointLight l : world->getPointLights()) {
-    // Diffuse
+    
+    
     glm::vec3 lpos = cltoglm(l.position);
     glm::vec3 lcol = cltoglm(l.color);
     glm::vec3 lightDir = glm::normalize(lpos - position);
+    float dist = glm::distance(lpos, position);    
+    if (world->scene_attribs.shadowsEnabled) {
+       _Ray r = _Ray{position, lightDir, EPSILON, dist};
+      if(intersects(&r))
+        continue;
+    }
+    
+    // Diffuse
     glm::vec3 diffuse =
         albedo * glm::max(glm::dot(normal, lightDir), 0.0f) * lcol;
 
@@ -264,3 +295,122 @@ void HybridShaderCPU::pass3_blit() {
 }
 
 HybridShaderCPU::~HybridShaderCPU() {}
+
+
+
+
+
+// Checks ray-triangle intersection
+// Based on algorithm in "Physically based rendering, 2nd edition"
+bool HybridShaderCPU::test_ray_triangle(const _Triangle *tri, const _Ray *ray) {
+  glm::vec3 e1 = tri->p1 - tri->p0;
+  glm::vec3 e2 = tri->p2 - tri->p0;
+
+  glm::vec3 s1 = glm::cross(ray->d, e2);
+  float a = glm::dot(s1, e1);
+  if (a > -EPSILON && a < EPSILON)
+    return false;
+
+  float invDivisor = 1.0f / a;
+
+  glm::vec3 d = ray->o - tri->p0;
+  float b1 = invDivisor * glm::dot(d, s1);
+  if (b1 < 0.0f || b1 > 1.0f)
+    return false;
+
+  glm::vec3 s2 = glm::cross(d, e1);
+  float b2 = invDivisor * glm::dot(ray->d, s2);
+  if (b2 < 0.0f || b1 + b2 > 1.0f)
+    return false;
+
+  float t = invDivisor * glm::dot(e2, s2);
+  if (t < ray->mint || t > ray->maxt)
+    return false;
+  else
+    return true;
+}
+
+void swap(float *f1, float *f2) {
+  float tmp = *f1;
+  *f1 = *f2;
+  *f2 = tmp;
+}
+
+// Checks ray-bounding box intersection
+// Based on algorithm in "Physically based rendering, 2nd edition"
+bool HybridShaderCPU::test_ray_bbox(const _Ray *ray, const _BVHNode *node,
+                   const glm::vec3 *invDir) {
+  float tmin = ray->mint;
+  float tmax = ray->maxt;
+
+  float tNear = (node->bounds_pMin.x - ray->o.x) * (*invDir).x;
+  float tFar = (node->bounds_pMax.x - ray->o.x) * (*invDir).x;
+  if (tNear > tFar)
+    swap(&tNear, &tFar);
+  tmin = tNear > tmin ? tNear : tmin;
+  tmax = tFar < tmax ? tFar : tmax;
+  if (tmin > tmax)
+    return false;
+
+  tNear = (node->bounds_pMin.y - ray->o.y) * (*invDir).y;
+  tFar = (node->bounds_pMax.y - ray->o.y) * (*invDir).y;
+  if (tNear > tFar)
+    swap(&tNear, &tFar);
+  tmin = tNear > tmin ? tNear : tmin;
+  tmax = tFar < tmax ? tFar : tmax;
+  if (tmin > tmax)
+    return false;
+
+  tNear = (node->bounds_pMin.z - ray->o.z) * (*invDir).z;
+  tFar = (node->bounds_pMax.z - ray->o.z) * (*invDir).z;
+  if (tNear > tFar)
+    swap(&tNear, &tFar);
+  tmin = tNear > tmin ? tNear : tmin;
+  tmax = tFar < tmax ? tFar : tmax;
+  if (tmin > tmax)
+    return false;
+
+  return true;
+}
+
+// Checks if a ray intersects with a collection of triangles, using
+// a BVH tree to accelerate the process.
+// Based on algorithm in "Physically based rendering, 2nd edition"
+bool HybridShaderCPU::intersects(const _Ray *ray) {
+
+  int todoOffset = 0, nodeNum = 0;
+  int todo[64];
+
+  glm::vec3 invDir =glm::vec3(1.0f / ray->d.x, 1.0f / ray->d.y, 1.0f / ray->d.z);
+  int dirIsNeg[3] = {invDir.x < 0, invDir.y < 0, invDir.z < 0};
+
+  while (true) {
+    const _BVHNode *node = &bvhnodes[nodeNum];
+    // Check ray against BVH node
+    if (test_ray_bbox(ray, node, &invDir)) {
+      if (node->nPrimitives > 0) {
+        // Intersect ray with primitives in leaf BVH node
+        for (int i = 0; i < node->nPrimitives; i++)
+          if (test_ray_triangle(&triangles[node->uf.primitivesOffset + i], ray))
+            return true;
+        if (todoOffset == 0)
+          break;
+        nodeNum = todo[--todoOffset];
+      } else {
+        // Put far BVH node on todo stack, advance to near node
+        if (dirIsNeg[node->axis]) {
+          todo[todoOffset++] = nodeNum + 1;
+          nodeNum = node->uf.secondChildOffset;
+        } else {
+          todo[todoOffset++] = node->uf.secondChildOffset;
+          nodeNum = nodeNum + 1;
+        }
+      }
+    } else {
+      if (todoOffset == 0)
+        break;
+      nodeNum = todo[--todoOffset];
+    }
+  }
+  return false;
+}

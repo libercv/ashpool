@@ -29,10 +29,11 @@ Window::Window() {
     exit(1);
   }
   glfwMakeContextCurrent(window);
-  glfwSwapInterval(1);
+  glfwSwapInterval(0); // 0-> no sync, more than 60fps possible
 
   // Options
-  glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+  glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+  //glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
   // Set this to true so GLEW knows to use a modern approach to retrieving
   // function pointers and extensions

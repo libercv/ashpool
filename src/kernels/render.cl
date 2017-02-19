@@ -167,7 +167,7 @@ bool intersects(const Ray *ray, __global const Triangle *triangles,
 
 // Calculates point lights contribution to shading a specific point
 // on a surface
-float3 pointLightsColor(__global const PointLight *point_lights,
+float3 pointLightsColor(__constant  PointLight *point_lights,
                         int point_lights_nr, __global const Triangle *triangles,
                         __global const BVHNode *nodes, bool shadows_enabled,
                         float3 view_pos, float3 surface_pos,
@@ -178,15 +178,15 @@ float3 pointLightsColor(__global const PointLight *point_lights,
   float3 view_dir = normalize(view_pos - surface_pos);
 
   for (int i = 0; i < point_lights_nr; i++) {
-    __global const PointLight *pLight = &point_lights[i];
+    __constant PointLight *pLight = &point_lights[i];
 
     // Attenuation
     float3 light_pos = pLight->p_position;
     float dist = distance(light_pos, surface_pos);
     float attenuation = 1.0f / (1.0f + (pLight->linear * dist) +
                                 (pLight->quadratic * dist * dist));
-    if (attenuation < ATTENUATION_SENSITIVITY)
-      continue;
+    //if (attenuation < ATTENUATION_SENSITIVITY)
+    //  continue;
 
     float3 light_dir = normalize(light_pos - surface_pos);
     float3 light_color = pLight->p_color;
@@ -216,7 +216,7 @@ float3 pointLightsColor(__global const PointLight *point_lights,
 //
 __kernel void
 render(__read_only image2d_t g_albedo_spec, __read_only image2d_t g_position,
-       __read_only image2d_t g_normal, __global const PointLight *point_lights,
+       __read_only image2d_t g_normal, __constant PointLight *point_lights,
        int point_lights_nr, const SceneAttribs attribs,
        __global const Triangle *triangles, __global const BVHNode *nodes,
        float3 view_position, __write_only image2d_t output) {
@@ -230,6 +230,7 @@ render(__read_only image2d_t g_albedo_spec, __read_only image2d_t g_position,
   // Ambient light
   float3 color = diffuse * attribs.ambient;
   // Point Lights (diffuse + specular)
+  
   color += pointLightsColor(point_lights, point_lights_nr, triangles, nodes,
                             (bool)attribs.shadows_enabled, view_position, pos,
                             normal, diffuse, specular);
