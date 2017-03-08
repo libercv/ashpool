@@ -74,9 +74,9 @@ private:
   GLuint gSceneTexture; // Color attachment
 
   //
-  std::vector<GLfloat> gNormal_text;
+  std::vector<GLubyte> gNormal_text;
   std::vector<GLfloat> gPosition_text;
-  std::vector<GLfloat> gAlbedoSpec_text;
+  std::vector<GLubyte> gAlbedoSpec_text;
   std::vector<GLubyte> gScene_text;
 
   ShaderProgram gBufferShader;

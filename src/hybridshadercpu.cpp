@@ -85,8 +85,8 @@ void HybridShaderCPU::init_pass1_gBuffer() {
   // - Normal color buffer
   glGenTextures(1, &gNormal);
   glBindTexture(GL_TEXTURE_2D, gNormal);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, Config::window_width,
-               Config::window_height, 0, GL_RGBA, GL_FLOAT, nullptr);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, Config::window_width,
+               Config::window_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
   glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D,
@@ -95,8 +95,8 @@ void HybridShaderCPU::init_pass1_gBuffer() {
   // - Color + Specular color buffer
   glGenTextures(1, &gAlbedoSpec);
   glBindTexture(GL_TEXTURE_2D, gAlbedoSpec);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, Config::window_width,
-               Config::window_height, 0, GL_RGBA, GL_FLOAT, nullptr);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, Config::window_width,
+               Config::window_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
   glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D,
@@ -124,9 +124,9 @@ void HybridShaderCPU::init_pass1_gBuffer() {
 // Reserve host memory for GBuffer ans Scene
 void HybridShaderCPU::init_pass2_lighting() {
   gAlbedoSpec_text.reserve(Config::window_height * Config::window_width *
-                           sizeof(GLfloat) * 4);
+                           sizeof(GLubyte) * 4);
   gNormal_text.reserve(Config::window_height * Config::window_width *
-                       sizeof(GLfloat) * 4);
+                       sizeof(GLubyte) * 4);
   gPosition_text.reserve(Config::window_height * Config::window_width *
                          sizeof(GLfloat) * 4);
   gScene_text.reserve(Config::window_height * Config::window_width *
@@ -195,10 +195,10 @@ void HybridShaderCPU::pass2_lighting() {
                GL_FLOAT, gPosition_text.data());
   glReadBuffer(GL_COLOR_ATTACHMENT1);
   glReadPixels(0, 0, Config::window_width, Config::window_height, GL_RGBA,
-               GL_FLOAT, gNormal_text.data());
+               GL_UNSIGNED_BYTE, gNormal_text.data());
   glReadBuffer(GL_COLOR_ATTACHMENT2);
   glReadPixels(0, 0, Config::window_width, Config::window_height, GL_RGBA,
-               GL_FLOAT, gAlbedoSpec_text.data());
+               GL_UNSIGNED_BYTE, gAlbedoSpec_text.data());
 
   // Loop through rows and columns
   glm::vec3 viewDir = world->getCamera()->getPosition();
@@ -213,10 +213,10 @@ void HybridShaderCPU::pass2_lighting() {
       glm::vec3 albedo =
           glm::vec3(gAlbedoSpec_text[xoffset], gAlbedoSpec_text[xoffset + 1],
                     gAlbedoSpec_text[xoffset + 2]);
-      float specular = gAlbedoSpec_text[xoffset + 3];
+      float specular = (float)(gAlbedoSpec_text[xoffset + 3])/255.0f;
       glm::vec3 normal =
-          glm::vec3(gNormal_text[xoffset], gNormal_text[xoffset + 1],
-                    gNormal_text[xoffset + 2]);
+          glm::normalize(glm::vec3(gNormal_text[xoffset], gNormal_text[xoffset + 1],
+                    gNormal_text[xoffset + 2]));
       glm::vec3 position =
           glm::vec3(gPosition_text[xoffset], gPosition_text[xoffset + 1],
                     gPosition_text[xoffset + 2]);
@@ -227,11 +227,12 @@ void HybridShaderCPU::pass2_lighting() {
 
       // Point Lights
       out += pointLightsColor(position, normal, albedo, specular, viewDir);
+      //out += pointLightsColor(position, normal, albedo, 0.0f, viewDir);
 
       // Output
-      gScene_text[xoffset] = (GLubyte)(out.x * 255);
-      gScene_text[xoffset + 1] = (GLubyte)(out.y * 255);
-      gScene_text[xoffset + 2] = (GLubyte)(out.z * 255);
+      gScene_text[xoffset] = (GLubyte)(out.x); // * 255);
+      gScene_text[xoffset + 1] = (GLubyte)(out.y); // * 255);
+      gScene_text[xoffset + 2] = (GLubyte)(out.z); // * 255);
       gScene_text[xoffset + 3] = 0;
     }
     yoffset += Config::window_width * 4;

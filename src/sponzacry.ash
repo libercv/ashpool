@@ -1,4 +1,5 @@
 window 1280 720
+//window 640 480 
 model models/sponzacry/sponza.obj
 
 gbuffer_shader shaders/gbuffer

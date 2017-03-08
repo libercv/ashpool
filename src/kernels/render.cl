@@ -193,7 +193,7 @@ float3 pointLightsColor(__constant  PointLight *point_lights,
 
     // Check if shadowed
     if (shadows_enabled) {
-      Ray r = (Ray){surface_pos, light_dir, EPSILON, dist};
+      Ray r = (Ray){surface_pos, light_dir, EPSILON, dist};      
       if (intersects(&r, triangles, nodes))
         continue;
     }

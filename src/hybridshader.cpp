@@ -54,6 +54,8 @@ void HybridShader::init_pass1_gBuffer() {
   glBindTexture(GL_TEXTURE_2D, gPosition);
   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, Config::window_width,
                Config::window_height, 0, GL_RGBA, GL_FLOAT, nullptr);
+  //glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, Config::window_width,
+  //          Config::window_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
   glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
@@ -62,8 +64,10 @@ void HybridShader::init_pass1_gBuffer() {
   // - Normal color buffer
   glGenTextures(1, &gNormal);
   glBindTexture(GL_TEXTURE_2D, gNormal);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, Config::window_width,
-               Config::window_height, 0, GL_RGBA, GL_FLOAT, nullptr);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, Config::window_width,
+               Config::window_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+  //glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, Config::window_width,
+  //               Config::window_height, 0, GL_RGBA, GL_FLOAT, nullptr);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
   glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D,
@@ -72,8 +76,8 @@ void HybridShader::init_pass1_gBuffer() {
   // - Color + Specular color buffer
   glGenTextures(1, &gAlbedoSpec);
   glBindTexture(GL_TEXTURE_2D, gAlbedoSpec);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, Config::window_width,
-               Config::window_height, 0, GL_RGBA, GL_FLOAT, nullptr);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, Config::window_width,
+               Config::window_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
   glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D,
@@ -203,7 +207,7 @@ void HybridShader::pass1_gBuffer() {
 // Update variable kernel arguments
 void HybridShader::pass2_lighting() {
 
-  // Update Point Lights (the might change)
+  // Update Point Lights (they might change)
   auto lPos = world->getPointLights();
   cl_point_lights =
       opencl.createBuffer(sizeof(PointLight) * lPos.size(), lPos.data());
