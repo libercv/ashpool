@@ -1,7 +1,7 @@
 /***************************************************
  * World
  *
- * Main Scene object. Contains its models, lights, 
+ * Main Scene object. Contains its models, lights,
  * cameras, BVH geometry structure and options.
  *
  * 2017 - Liberto Camús

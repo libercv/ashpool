@@ -2,7 +2,7 @@
  * Mesh
  *
  * Set of triangles, material properties, textures
- * and its methods for drawing and updating OpenGL 
+ * and its methods for drawing and updating OpenGL
  * shaders.
  * A Model is made out of Meshes.
  *

@@ -2,7 +2,7 @@
  * Vertex
  *
  * Contains a vertex in a format suitable to be passed
- * to OpenGL. Stores its position, normal and texture 
+ * to OpenGL. Stores its position, normal and texture
  * coordinates
  *
  * 2017 - Liberto Camús

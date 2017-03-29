@@ -53,7 +53,7 @@ void Camera::changeOrientation(GLfloat delta_yaw, GLfloat delta_pitch,
       this->Pitch = -89.0f;
   }
 
-  // Update Front, Right and Up Vectors using the updated Eular angles
+  // Update Front, Right and Up Vectors using the updated Euler angles
   this->updateCameraVectors();
 }
 
@@ -71,7 +71,7 @@ void Camera::changeFovy(GLfloat yoffset) {
       glm::perspective(glm::radians(fovy), Config::window_ratio, zNear, zFar);
 }
 
-// Calculates the front vector from the Camera's (updated) Eular Angles
+// Calculates the front vector from the Camera's (updated) Euler Angles
 void Camera::updateCameraVectors() {
 
   // Calculate the new Front vector

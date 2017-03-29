@@ -20,8 +20,8 @@
 #include <glm/glm.hpp>
 #include <iostream>
 #include <string>
+#include <utility>
 //#include <omp.h>
-
 
 HybridShaderCPU::HybridShaderCPU(World *w)
     : gBufferShader{Config::gbuffer_shader_vert.c_str(),
@@ -38,28 +38,27 @@ HybridShaderCPU::HybridShaderCPU(World *w)
 
   // We need GBuffer and Scene texture before initializing OpenCL
   init_pass2_lighting();
-  
+
   init_geometry();
 }
 
 void HybridShaderCPU::init_geometry() {
-  for(unsigned int i=0; i<world->bvh.totalNodes; i++) {
-    BVH::LinearBVHNode clnode=world->bvh.nodes[i];
-    
-    bvhnodes.emplace_back(_BVHNode{glm::vec3(clnode.pMin.x, clnode.pMin.y, clnode.pMin.z),
-                         glm::vec3(clnode.pMax.x, clnode.pMax.y, clnode.pMax.z),
-                         clnode.primitivesOffset, clnode.nPrimitives, clnode.axis});        
+  for (unsigned int i = 0; i < world->bvh.totalNodes; i++) {
+    BVH::LinearBVHNode clnode = world->bvh.nodes[i];
+
+    bvhnodes.emplace_back(
+        _BVHNode{glm::vec3(clnode.pMin.x, clnode.pMin.y, clnode.pMin.z),
+                 glm::vec3(clnode.pMax.x, clnode.pMax.y, clnode.pMax.z),
+                 clnode.primitivesOffset, clnode.nPrimitives, clnode.axis});
   }
-  
-  for (Triangle cltriangle: world->bvh.primitives) {    
-    triangles.emplace_back(_Triangle{glm::vec3(cltriangle.v1.x, cltriangle.v1.y, cltriangle.v1.z), 
-                           glm::vec3(cltriangle.v2.x, cltriangle.v2.y, cltriangle.v2.z), 
-                           glm::vec3(cltriangle.v3.x, cltriangle.v3.y, cltriangle.v3.z)});
+
+  for (Triangle cltriangle : world->bvh.primitives) {
+    triangles.emplace_back(_Triangle{
+        glm::vec3(cltriangle.v1.x, cltriangle.v1.y, cltriangle.v1.z),
+        glm::vec3(cltriangle.v2.x, cltriangle.v2.y, cltriangle.v2.z),
+        glm::vec3(cltriangle.v3.x, cltriangle.v3.y, cltriangle.v3.z)});
   }
-    
 }
-
-
 
 void HybridShaderCPU::render() {
   pass1_gBuffer();
@@ -213,10 +212,11 @@ void HybridShaderCPU::pass2_lighting() {
       glm::vec3 albedo =
           glm::vec3(gAlbedoSpec_text[xoffset], gAlbedoSpec_text[xoffset + 1],
                     gAlbedoSpec_text[xoffset + 2]);
-      float specular = (float)(gAlbedoSpec_text[xoffset + 3])/255.0f;
+      float specular = (float)(gAlbedoSpec_text[xoffset + 3]); /// 255.0f;
       glm::vec3 normal =
-          glm::normalize(glm::vec3(gNormal_text[xoffset], gNormal_text[xoffset + 1],
-                    gNormal_text[xoffset + 2]));
+          glm::vec3(gNormal_text[xoffset], gNormal_text[xoffset + 1],
+                    gNormal_text[xoffset + 2]) /
+          255.0f;
       glm::vec3 position =
           glm::vec3(gPosition_text[xoffset], gPosition_text[xoffset + 1],
                     gPosition_text[xoffset + 2]);
@@ -227,10 +227,10 @@ void HybridShaderCPU::pass2_lighting() {
 
       // Point Lights
       out += pointLightsColor(position, normal, albedo, specular, viewDir);
-      //out += pointLightsColor(position, normal, albedo, 0.0f, viewDir);
+      // out += pointLightsColor(position, normal, albedo, 0.0f, viewDir);
 
       // Output
-      gScene_text[xoffset] = (GLubyte)(out.x); // * 255);
+      gScene_text[xoffset] = (GLubyte)(out.x);     // * 255);
       gScene_text[xoffset + 1] = (GLubyte)(out.y); // * 255);
       gScene_text[xoffset + 2] = (GLubyte)(out.z); // * 255);
       gScene_text[xoffset + 3] = 0;
@@ -255,18 +255,17 @@ glm::vec3 HybridShaderCPU::pointLightsColor(const glm::vec3 &position,
 
   // Compute each point light contribution
   for (PointLight l : world->getPointLights()) {
-    
-    
+
     glm::vec3 lpos = cltoglm(l.position);
     glm::vec3 lcol = cltoglm(l.color);
     glm::vec3 lightDir = glm::normalize(lpos - position);
-    float dist = glm::distance(lpos, position);    
+    float dist = glm::distance(lpos, position);
     if (world->scene_attribs.shadowsEnabled) {
-       _Ray r = _Ray{position, lightDir, EPSILON, dist};
-      if(intersects(&r))
+      _Ray r = _Ray{position, lightDir, EPSILON, dist};
+      if (intersects(&r))
         continue;
     }
-    
+
     // Diffuse
     glm::vec3 diffuse =
         albedo * glm::max(glm::dot(normal, lightDir), 0.0f) * lcol;
@@ -297,10 +296,6 @@ void HybridShaderCPU::pass3_blit() {
 
 HybridShaderCPU::~HybridShaderCPU() {}
 
-
-
-
-
 // Checks ray-triangle intersection
 // Based on algorithm in "Physically based rendering, 2nd edition"
 bool HybridShaderCPU::test_ray_triangle(const _Triangle *tri, const _Ray *ray) {
@@ -330,24 +325,24 @@ bool HybridShaderCPU::test_ray_triangle(const _Triangle *tri, const _Ray *ray) {
   else
     return true;
 }
-
+/*
 void swap(float *f1, float *f2) {
   float tmp = *f1;
   *f1 = *f2;
   *f2 = tmp;
 }
-
+*/
 // Checks ray-bounding box intersection
 // Based on algorithm in "Physically based rendering, 2nd edition"
 bool HybridShaderCPU::test_ray_bbox(const _Ray *ray, const _BVHNode *node,
-                   const glm::vec3 *invDir) {
+                                    const glm::vec3 *invDir) {
   float tmin = ray->mint;
   float tmax = ray->maxt;
 
   float tNear = (node->bounds_pMin.x - ray->o.x) * (*invDir).x;
   float tFar = (node->bounds_pMax.x - ray->o.x) * (*invDir).x;
   if (tNear > tFar)
-    swap(&tNear, &tFar);
+    std::swap(tNear, tFar);
   tmin = tNear > tmin ? tNear : tmin;
   tmax = tFar < tmax ? tFar : tmax;
   if (tmin > tmax)
@@ -356,7 +351,7 @@ bool HybridShaderCPU::test_ray_bbox(const _Ray *ray, const _BVHNode *node,
   tNear = (node->bounds_pMin.y - ray->o.y) * (*invDir).y;
   tFar = (node->bounds_pMax.y - ray->o.y) * (*invDir).y;
   if (tNear > tFar)
-    swap(&tNear, &tFar);
+    std::swap(tNear, tFar);
   tmin = tNear > tmin ? tNear : tmin;
   tmax = tFar < tmax ? tFar : tmax;
   if (tmin > tmax)
@@ -365,7 +360,7 @@ bool HybridShaderCPU::test_ray_bbox(const _Ray *ray, const _BVHNode *node,
   tNear = (node->bounds_pMin.z - ray->o.z) * (*invDir).z;
   tFar = (node->bounds_pMax.z - ray->o.z) * (*invDir).z;
   if (tNear > tFar)
-    swap(&tNear, &tFar);
+    std::swap(tNear, tFar);
   tmin = tNear > tmin ? tNear : tmin;
   tmax = tFar < tmax ? tFar : tmax;
   if (tmin > tmax)
@@ -382,7 +377,8 @@ bool HybridShaderCPU::intersects(const _Ray *ray) {
   int todoOffset = 0, nodeNum = 0;
   int todo[64];
 
-  glm::vec3 invDir =glm::vec3(1.0f / ray->d.x, 1.0f / ray->d.y, 1.0f / ray->d.z);
+  glm::vec3 invDir =
+      glm::vec3(1.0f / ray->d.x, 1.0f / ray->d.y, 1.0f / ray->d.z);
   int dirIsNeg[3] = {invDir.x < 0, invDir.y < 0, invDir.z < 0};
 
   while (true) {

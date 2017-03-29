@@ -3,7 +3,7 @@
  *
  * Renders the scene in 3 passes:
  * - Generate GBuffer with OpenGL
- * - Generate final Scene texture with OpenCL using 
+ * - Generate final Scene texture with OpenCL using
  *    GBuffer from previous pass and geometry (BVH) and lighting information
  * - Blit the result of the second pass to the render buffer (openGL)
  *
@@ -13,6 +13,7 @@
 #define HYBRIDSHADER_H
 
 #include "clkernelmanager.hpp"
+#include "renderengine.hpp"
 #include "shaderprogram.hpp" // for ShaderProgram
 #include <GL/glew.h>         // for GLuint
 #include <vector>            // for vector
@@ -20,7 +21,7 @@ class Camera;
 class Model;
 class World;
 
-class HybridShader {
+class HybridShader : public RenderEngine {
 private:
   CLKernelManager opencl;
 

@@ -25,7 +25,7 @@ private:
   const glm::vec3 upVector = glm::vec3(0.0f, 1.0f, 0.0f);
   float fovy, zNear, zFar;
   glm::vec3 Position, Front, Up, Right, WorldUp;
-  GLfloat Yaw, Pitch; // Eular Angles
+  GLfloat Yaw, Pitch; // Euler Angles
   glm::mat4 viewMatrix, projMatrix;
   GLfloat MovementSpeed, MouseSensitivity; // Camera options
 

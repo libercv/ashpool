@@ -3,7 +3,7 @@
  *
  * Renders the scene in 3 passes:
  * - Generate GBuffer with OpenGL
- * - Generate final Scene texture with OpenCL using 
+ * - Generate final Scene texture with OpenCL using
  *    GBuffer from previous pass and geometry (BVH) and lighting information
  * - Blit the result of the second pass to the render buffer (openGL)
  *
@@ -54,7 +54,7 @@ void HybridShader::init_pass1_gBuffer() {
   glBindTexture(GL_TEXTURE_2D, gPosition);
   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, Config::window_width,
                Config::window_height, 0, GL_RGBA, GL_FLOAT, nullptr);
-  //glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, Config::window_width,
+  // glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, Config::window_width,
   //          Config::window_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -66,7 +66,7 @@ void HybridShader::init_pass1_gBuffer() {
   glBindTexture(GL_TEXTURE_2D, gNormal);
   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, Config::window_width,
                Config::window_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
-  //glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, Config::window_width,
+  // glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, Config::window_width,
   //               Config::window_height, 0, GL_RGBA, GL_FLOAT, nullptr);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -120,8 +120,8 @@ void HybridShader::init_pass2_lighting() {
       gSceneTexture, CL_MEM_WRITE_ONLY, GBUFFER_SCENE_TEXTURE);
 
   // Create point lights memory structure
-  //auto lPos = world->getPointLights();
-  //cl_point_lights =
+  // auto lPos = world->getPointLights();
+  // cl_point_lights =
   //    opencl.createBuffer(3 * sizeof(float) * lPos.size(), lPos.data());
   cl_int nr_point_lights = world->getPointLightsNr();
 
@@ -132,7 +132,7 @@ void HybridShader::init_pass2_lighting() {
   cl_primitives =
       opencl.createBuffer(world->bvh.primitives.size() * sizeof(Triangle),
                           (void *)world->bvh.primitives.data());
-  
+
   // Set kernel arguments
   opencl.setKernelArg(0, sizeof(cl_mem),
                       &cl_shared_objects[CL_SHARED_OBJECTS::GALBEDOSPEC]);
@@ -140,7 +140,7 @@ void HybridShader::init_pass2_lighting() {
                       &cl_shared_objects[CL_SHARED_OBJECTS::GPOSITION]);
   opencl.setKernelArg(2, sizeof(cl_mem),
                       &cl_shared_objects[CL_SHARED_OBJECTS::GNORMAL]);
-  //opencl.setKernelArg(3, sizeof(cl_mem), &cl_point_lights);
+  // opencl.setKernelArg(3, sizeof(cl_mem), &cl_point_lights);
   opencl.setKernelArg(4, sizeof(cl_int), &nr_point_lights);
   opencl.setKernelArg(5, sizeof(world->scene_attribs),
                       (void *)&world->scene_attribs);
@@ -235,7 +235,7 @@ void HybridShader::pass2_lighting() {
   clWaitForEvents(1, &kernel_event);
   opencl.enqueueReleaseGLObjects(CL_SHARED_OBJECTS::CL_SHARED_OBJECTS_COUNT,
                                  cl_shared_objects);
-  //opencl.finish();
+  // opencl.finish();
   clReleaseEvent(kernel_event);
   clReleaseMemObject(cl_point_lights);
 }
@@ -249,12 +249,11 @@ void HybridShader::pass3_blit() {
                     GL_COLOR_BUFFER_BIT, GL_NEAREST);
 }
 
-
 HybridShader::~HybridShader() {
   clReleaseMemObject(cl_shared_objects[CL_SHARED_OBJECTS::GALBEDOSPEC]);
   clReleaseMemObject(cl_shared_objects[CL_SHARED_OBJECTS::GPOSITION]);
   clReleaseMemObject(cl_shared_objects[CL_SHARED_OBJECTS::GNORMAL]);
-  clReleaseMemObject(cl_shared_objects[CL_SHARED_OBJECTS::GSCENE]);  
+  clReleaseMemObject(cl_shared_objects[CL_SHARED_OBJECTS::GSCENE]);
   clReleaseMemObject(cl_primitives);
-  clReleaseMemObject(cl_nodesbvh);      
+  clReleaseMemObject(cl_nodesbvh);
 }

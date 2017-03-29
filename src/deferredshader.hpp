@@ -11,13 +11,14 @@
 #ifndef DEFERREDSHADER_H
 #define DEFERREDSHADER_H
 
+#include "renderengine.hpp"
 #include "shaderprogram.hpp" // for ShaderProgram
 #include <GL/glew.h>         // for GLuint
 #include <vector>            // for vector
 
 class World;
 
-class DeferredShader {
+class DeferredShader : public RenderEngine {
 private:
   GLuint gBuffer;                         // Framebuffer
   GLuint gNormal, gPosition, gAlbedoSpec; // Color attachments

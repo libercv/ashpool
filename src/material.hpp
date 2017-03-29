@@ -1,8 +1,8 @@
 /***************************************************
  * Material
  *
- * Stores material properties. Diffuse, ambient, 
- * specular... 
+ * Stores material properties. Diffuse, ambient,
+ * specular...
  *
  * 2017 - Liberto Camús
  * **************************************************/

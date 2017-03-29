@@ -1,11 +1,11 @@
 /***************************************************
  * Input
  *
- * Manages input from keyboard and mouse. Calls Camera 
+ * Manages input from keyboard and mouse. Calls Camera
  * methods to update its position and orientation.
  * Uses "glfwGetWindowUserPointer" to store a pointer
  * to itself in the Window object and thus be able
- * to access its methods and properties from the callback code. 
+ * to access its methods and properties from the callback code.
  *
  * 2017 - Liberto Camús
  * **************************************************/
@@ -52,6 +52,18 @@ void Input::set_key_callback(GLFWwindow *window) {
         std::cout << "Shadows ON \n";
       else
         std::cout << "Shadows OFF \n";
+    }
+    if (key == GLFW_KEY_C && action == GLFW_PRESS) {
+      Config::option_rendering_method_change_requested = true;
+      Config::rendering_method = Config::HYBRID_CPU;
+    }
+    if (key == GLFW_KEY_H && action == GLFW_PRESS) {
+      Config::option_rendering_method_change_requested = true;
+      Config::rendering_method = Config::HYBRID;
+    }
+    if (key == GLFW_KEY_D && action == GLFW_PRESS) {
+      Config::option_rendering_method_change_requested = true;
+      Config::rendering_method = Config::DEFERRED;
     }
     if (key == GLFW_KEY_N && action == GLFW_PRESS) {
       Config::option_normal_mapping_enabled =

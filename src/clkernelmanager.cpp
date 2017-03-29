@@ -185,7 +185,7 @@ void CLKernelManager::checkForCLGLSharing() {
 
 CLKernelManager::~CLKernelManager() {
   clReleaseProgram(program);
-  clReleaseKernel(kernel);  
+  clReleaseKernel(kernel);
   clReleaseCommandQueue(cmdQueue);
   clReleaseContext(ctxt);
 }

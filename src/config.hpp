@@ -13,6 +13,8 @@
 
 class Config {
 public:
+  enum RENDERING_METHOD { HYBRID, DEFERRED, HYBRID_CPU };
+
   // window
   static uint window_width;
   static uint window_height;
@@ -45,6 +47,11 @@ public:
   // Options
   static bool option_shadows_enabled;
   static bool option_normal_mapping_enabled;
+  static bool option_rendering_method_change_requested;
+  static bool option_no_capture_mouse;
+
+  // Rendering method
+  static RENDERING_METHOD rendering_method;
 };
 
 #endif // CONFIG_H

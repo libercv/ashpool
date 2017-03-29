@@ -1,7 +1,7 @@
 /***************************************************
  * Texture
  *
- * Contains OpenGL texture id and its type 
+ * Contains OpenGL texture id and its type
  * (diffuse, specular, normal...)
  *
  * 2017 - Liberto Camús

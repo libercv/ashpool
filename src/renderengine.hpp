@@ -1,31 +1,23 @@
 /***************************************************
  * RenderEngine
  *
- * Instantiates a "RenderingMethod" template to render the
- * scene using one of the available methods.
- * Currently there are two possibilities: Deferred 
- * Shader (full OpenGL) or Hybrid Shader (OpenGL+OpenCL)
+ * Abstract class intended to be the interface every
+ * rendering method should inherit from.
+ * Currently there are three possibilities: Deferred
+ * Shader (full OpenGL), Hybrid Shader (OpenGL+OpenCL)
+ * and CPU Hybrid Shader (OpenGL+OpenMP)
  *
  * 2017 - Liberto Camús
  * **************************************************/
 #ifndef RENDERENGINE_H
 #define RENDERENGINE_H
 
-#include "hybridshader.hpp"
-#include "hybridshadercpu.hpp"
-#include "deferredshader.hpp"
-#include "renderingmethod.hpp"
 class World;
 
 class RenderEngine {
-private:
-  RenderingMethod<HybridShader> shader;
-
 public:
-  RenderEngine(World *w) : shader(RenderingMethod<HybridShader>(w)){};
-  ~RenderEngine(){};
-  void render() { shader.render(); }
-  void clear(){};
+  virtual void render() = 0;
+  virtual ~RenderEngine() {}
 };
 
 #endif // RENDERENGINE_H

@@ -50,6 +50,11 @@ float Config::ambient = 0.0f;
 // Runtime Options
 bool Config::option_shadows_enabled = true;
 bool Config::option_normal_mapping_enabled = false;
+bool Config::option_rendering_method_change_requested = false;
+bool Config::option_no_capture_mouse = false;
+
+// Rendering Method
+Config::RENDERING_METHOD Config::rendering_method = Config::HYBRID;
 
 ConfigLoader::ConfigLoader(const std::string &file) {
   std::cout << "Reading configuration file: " << file << "\n";

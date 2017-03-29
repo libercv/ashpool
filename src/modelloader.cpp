@@ -41,7 +41,8 @@ Model ModelLoader::loadModel(const std::string &path) {
   // Check for errors
   if (!scene || scene->mFlags == AI_SCENE_FLAGS_INCOMPLETE ||
       !scene->mRootNode) {
-    std::cout << "Error importing model " << importer.GetErrorString() << std::endl;
+    std::cout << "Error importing model " << importer.GetErrorString()
+              << std::endl;
     exit(2);
   }
 
@@ -88,7 +89,7 @@ std::vector<Vertex> ModelLoader::loadMeshVertices(const aiMesh *mesh) const {
 
       vertices.emplace_back(glm::vec3(vv->x, vv->y, vv->z),
                             glm::vec3(vn->x, vn->y, vn->z),
-                            glm::vec2(vt->x, vt->y));    
+                            glm::vec2(vt->x, vt->y));
     } else {
       vertices.emplace_back(glm::vec3(vv->x, vv->y, vv->z),
                             glm::vec3(vn->x, vn->y, vn->z),

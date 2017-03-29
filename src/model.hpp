@@ -33,11 +33,11 @@ public:
   ~Model() = default;
 
   void draw(const ShaderProgram &shader) const;
-    const glm::mat4 &getModelMatrix() const { return modelMatrix; }
-  
+  const glm::mat4 &getModelMatrix() const { return modelMatrix; }
+
   // Updates/sets information about its meshes into the OpenGL shader
   void refreshUniforms(const ShaderProgram &shader);
-  
+
   // Exports its geometry (the vertices of all of its meshes)
   // in a format to be used by the BVH acceleration structure
   // and exported to OpenCL

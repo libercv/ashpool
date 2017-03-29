@@ -1,7 +1,7 @@
 /***************************************************
  * World
  *
- * Main Scene object. Contains its models, lights, 
+ * Main Scene object. Contains its models, lights,
  * cameras, BVH geometry structure and options.
  *
  * 2017 - Liberto Camús
@@ -38,7 +38,7 @@ public:
   void update();
   BVH bvh;
 
-private:  
+private:
   std::unique_ptr<Camera> camera;
   std::vector<Model> models;
   // lights

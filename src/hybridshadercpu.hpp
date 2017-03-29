@@ -12,6 +12,7 @@
 #ifndef HYBRIDSHADERCPU_H
 #define HYBRIDSHADERCPU_H
 
+#include "renderengine.hpp"
 #include "shaderprogram.hpp" // for ShaderProgram
 #include <GL/glew.h>         // for GLuint
 #include <glm/glm.hpp>
@@ -22,9 +23,8 @@ class Camera;
 class Model;
 class World;
 
-class HybridShaderCPU {
+class HybridShaderCPU : public RenderEngine {
 private:
-  
   class _BVHNode {
   public:
     glm::vec3 bounds_pMin;
@@ -35,35 +35,31 @@ private:
     } uf;
     unsigned char nPrimitives; // 0 -> Interior
     unsigned char axis;        // interior node: xyz
-    
-    
-  };
-    
-  class _Triangle {
-  public :
-    glm::vec3 p0, p1, p2; 
   };
 
-  class _Ray  {
+  class _Triangle {
+  public:
+    glm::vec3 p0, p1, p2;
+  };
+
+  class _Ray {
   public:
     glm::vec3 o; // origin
     glm::vec3 d; // direction
     float mint;
     float maxt;
-  } ;
-  
-  
-  static constexpr float EPSILON=0.001f;
-  
-  
+  };
+
+  static constexpr float EPSILON = 0.001f;
+
   std::vector<_BVHNode> bvhnodes;
   std::vector<_Triangle> triangles;
-  
+
   bool intersects(const _Ray *ray);
   bool test_ray_bbox(const _Ray *ray, const _BVHNode *node,
                      const glm::vec3 *invDir);
   bool test_ray_triangle(const _Triangle *tri, const _Ray *ray);
-  
+
   // GBUFFER FRAMEBUFFER
   GLuint gBuffer;                         // Framebuffer
   GLuint gNormal, gPosition, gAlbedoSpec; // Color attachments
@@ -101,9 +97,8 @@ private:
   glm::vec3 pointLightsColor(const glm::vec3 &position, const glm::vec3 &normal,
                              const glm::vec3 &albedo, float specular,
                              const glm::vec3 &viewDir);
-  
+
   void init_geometry();
-  
 
 public:
   void render();
