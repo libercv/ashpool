@@ -16,6 +16,7 @@ const int MAX_LIGHTS = 25;
 uniform int NR_LIGHTS;
 uniform Light lights[MAX_LIGHTS];
 uniform vec3 viewPos;
+uniform float ambient;
 
 void main()
 {             
@@ -27,7 +28,7 @@ void main()
     vec3 Diffuse = texture(gAlbedoSpec, TexCoords).rgb;
     float Specular = texture(gAlbedoSpec, TexCoords).a;    
     // Then calculate lighting as usual
-    vec3 lighting  = Diffuse * 0.2; // hard-coded ambient component
+    vec3 lighting  = Diffuse * ambient; 
     
     vec3 viewDir  = normalize(viewPos - FragPos);
     for(int i = 0; i < NR_LIGHTS; ++i)

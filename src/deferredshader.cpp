@@ -105,6 +105,7 @@ void DeferredShader::init_pass2_lighting() {
   glUniform1i(lightingPassShader.getUniformLocation("gPosition"), 0);
   glUniform1i(lightingPassShader.getUniformLocation("gNormal"), 1);
   glUniform1i(lightingPassShader.getUniformLocation("gAlbedoSpec"), 2);
+  glUniform1f(lightingPassShader.getUniformLocation("ambient"), Config::ambient);
 
   GLfloat quadVertices[] = {
       // Positions        // Texture Coords
