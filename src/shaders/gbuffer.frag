@@ -23,12 +23,13 @@ uniform sampler2D texture_normal0;
 uniform bool options_normal_mapping;
 
 void main()
-{    
-    // Store the fragment position vector in the first gbuffer texture
-    gPosition = vec4(FragPos, 0.0f);
-        
-    // Store the per-fragment normals into the gbuffer
-    gNormal = vec4(normalize(Normal), 0.0f);
+{        
+    
+    // Store the per-fragment normals into the gbuffer - Change [-1..1] to [0..1]
+    gNormal = 0.5*(vec4(1.0,1.0,1.0,0.0)+vec4(normalize(Normal), 0.0f));    
+    
+    // Store position
+    gPosition = vec4(FragPos, 0);
     
     // Store albedo & specular
     gAlbedoSpec = vec4( material.diffuse, material.specular);

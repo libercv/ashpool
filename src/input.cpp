@@ -53,15 +53,18 @@ void Input::set_key_callback(GLFWwindow *window) {
       else
         std::cout << "Shadows OFF \n";
     }
-    if (key == GLFW_KEY_C && action == GLFW_PRESS) {
+    if (key == GLFW_KEY_C && action == GLFW_PRESS &&
+        Config::rendering_method != Config::HYBRID_CPU) {
       Config::option_rendering_method_change_requested = true;
       Config::rendering_method = Config::HYBRID_CPU;
     }
-    if (key == GLFW_KEY_H && action == GLFW_PRESS) {
+    if (key == GLFW_KEY_H && action == GLFW_PRESS &&
+        Config::rendering_method != Config::HYBRID) {
       Config::option_rendering_method_change_requested = true;
       Config::rendering_method = Config::HYBRID;
     }
-    if (key == GLFW_KEY_D && action == GLFW_PRESS) {
+    if (key == GLFW_KEY_D && action == GLFW_PRESS &&
+        Config::rendering_method != Config::DEFERRED) {
       Config::option_rendering_method_change_requested = true;
       Config::rendering_method = Config::DEFERRED;
     }

@@ -30,6 +30,15 @@ DeferredShader::DeferredShader(World *w)
   init_pass2_lighting();
 }
 
+DeferredShader::~DeferredShader() {
+  glDeleteTextures(1, &gPosition);
+  glDeleteTextures(1, &gNormal);
+  glDeleteTextures(1, &gAlbedoSpec);
+  glDeleteRenderbuffers(1, &rboDepth);
+  glDeleteFramebuffers(1, &gBuffer);
+  std::cout << "Deferred shader destructor called\n";
+}
+
 // Initialize GBuffer -> textures(albedo+specular, normals, positions)
 //                       and render buffer
 void DeferredShader::init_pass1_gBuffer() {
@@ -50,8 +59,9 @@ void DeferredShader::init_pass1_gBuffer() {
   // - Normal color buffer
   glGenTextures(1, &gNormal);
   glBindTexture(GL_TEXTURE_2D, gNormal);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, Config::window_width,
-               Config::window_height, 0, GL_RGBA, GL_FLOAT, nullptr);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, Config::window_width,
+               Config::window_height, 0, GL_RGBA, GL_UNSIGNED_INT_8_8_8_8,
+               nullptr);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
   glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D,
@@ -60,8 +70,9 @@ void DeferredShader::init_pass1_gBuffer() {
   // - Color + Specular color buffer
   glGenTextures(1, &gAlbedoSpec);
   glBindTexture(GL_TEXTURE_2D, gAlbedoSpec);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, Config::window_width,
-               Config::window_height, 0, GL_RGBA, GL_FLOAT, nullptr);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, Config::window_width,
+               Config::window_height, 0, GL_RGBA, GL_UNSIGNED_INT_8_8_8_8,
+               nullptr);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
   glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D,

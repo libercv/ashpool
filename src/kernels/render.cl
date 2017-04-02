@@ -221,21 +221,21 @@ render(__read_only image2d_t g_albedo_spec, __read_only image2d_t g_position,
        __global const Triangle *triangles, __global const BVHNode *nodes,
        float3 view_position, __write_only image2d_t output) {
 
-  int2 coord = (int2)(get_global_id(0), get_global_id(1));
-  float3 diffuse = read_imagef(g_albedo_spec, imageSampler, coord).xyz;
+  int2 coord = (int2)(get_global_id(0), get_global_id(1));  
+  float3 diffuse = read_imagef(g_albedo_spec, imageSampler, coord).xyz;  
   float specular = read_imagef(g_albedo_spec, imageSampler, coord).w;
   float3 pos = read_imagef(g_position, imageSampler, coord).xyz;
-  float3 normal = read_imagef(g_normal, imageSampler, coord).xyz;
-
+  float3 normal= read_imagef(g_normal, imageSampler, coord).xyz;
+  normal = normalize (2*normal -(float3)(1,1,1));
+    
   // Ambient light
   float3 color = diffuse * attribs.ambient;
-  // Point Lights (diffuse + specular)
   
+  // Point Lights (diffuse + specular)
   color += pointLightsColor(point_lights, point_lights_nr, triangles, nodes,
                             (bool)attribs.shadows_enabled, view_position, pos,
                             normal, diffuse, specular);
 
   // Write result
-  write_imagef(output, coord, (float4)(color.x, color.y, color.z, 0.0f));
-  //write_imagef(output, coord, (float4)(specular, 0.0f, 0.0f, 0.0f));
+  write_imagef(output, coord, (float4)(color.x, color.y, color.z, 0.0f));  
 }

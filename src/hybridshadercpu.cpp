@@ -49,7 +49,9 @@ void HybridShaderCPU::init_geometry() {
     bvhnodes.emplace_back(
         _BVHNode{glm::vec3(clnode.pMin.x, clnode.pMin.y, clnode.pMin.z),
                  glm::vec3(clnode.pMax.x, clnode.pMax.y, clnode.pMax.z),
-                 clnode.primitivesOffset, clnode.nPrimitives, clnode.axis});
+                 {clnode.primitivesOffset},
+                 clnode.nPrimitives,
+                 clnode.axis});
   }
 
   for (Triangle cltriangle : world->bvh.primitives) {
@@ -85,7 +87,8 @@ void HybridShaderCPU::init_pass1_gBuffer() {
   glGenTextures(1, &gNormal);
   glBindTexture(GL_TEXTURE_2D, gNormal);
   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, Config::window_width,
-               Config::window_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+               Config::window_height, 0, GL_RGBA, GL_UNSIGNED_INT_8_8_8_8,
+               nullptr);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
   glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D,
@@ -95,7 +98,8 @@ void HybridShaderCPU::init_pass1_gBuffer() {
   glGenTextures(1, &gAlbedoSpec);
   glBindTexture(GL_TEXTURE_2D, gAlbedoSpec);
   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, Config::window_width,
-               Config::window_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+               Config::window_height, 0, GL_RGBA, GL_UNSIGNED_INT_8_8_8_8,
+               nullptr);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
   glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D,
@@ -120,7 +124,7 @@ void HybridShaderCPU::init_pass1_gBuffer() {
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-// Reserve host memory for GBuffer ans Scene
+// Reserve host memory for GBuffer and Scene
 void HybridShaderCPU::init_pass2_lighting() {
   gAlbedoSpec_text.reserve(Config::window_height * Config::window_width *
                            sizeof(GLubyte) * 4);
@@ -141,7 +145,8 @@ void HybridShaderCPU::init_pass3_blit() {
   glGenTextures(1, &gSceneTexture);
   glBindTexture(GL_TEXTURE_2D, gSceneTexture);
   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, Config::window_width,
-               Config::window_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+               Config::window_height, 0, GL_RGBA, GL_UNSIGNED_INT_8_8_8_8,
+               nullptr);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
   glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
@@ -200,7 +205,7 @@ void HybridShaderCPU::pass2_lighting() {
                GL_UNSIGNED_BYTE, gAlbedoSpec_text.data());
 
   // Loop through rows and columns
-  glm::vec3 viewDir = world->getCamera()->getPosition();
+  glm::vec3 view_pos = world->getCamera()->getPosition();
 
   unsigned int yoffset = 0;
 
@@ -211,28 +216,31 @@ void HybridShaderCPU::pass2_lighting() {
       // Get vectors to albedo, normal, color...
       glm::vec3 albedo =
           glm::vec3(gAlbedoSpec_text[xoffset], gAlbedoSpec_text[xoffset + 1],
-                    gAlbedoSpec_text[xoffset + 2]);
-      float specular = (float)(gAlbedoSpec_text[xoffset + 3]); /// 255.0f;
+                    gAlbedoSpec_text[xoffset + 2]) /
+          255.0f;
+      float specular = (float)(gAlbedoSpec_text[xoffset + 3]) / 255.0f;
+
       glm::vec3 normal =
           glm::vec3(gNormal_text[xoffset], gNormal_text[xoffset + 1],
                     gNormal_text[xoffset + 2]) /
           255.0f;
+      normal = normalize(normal * 2.0f - glm::vec3(1.0f, 1.0f, 1.0f));
       glm::vec3 position =
           glm::vec3(gPosition_text[xoffset], gPosition_text[xoffset + 1],
                     gPosition_text[xoffset + 2]);
       glm::vec3 ambient = albedo * world->scene_attribs.ambient;
+      glm::vec3 viewDir = glm::normalize(view_pos - position);
 
       // Ambient light
       glm::vec3 out = ambient;
 
       // Point Lights
       out += pointLightsColor(position, normal, albedo, specular, viewDir);
-      // out += pointLightsColor(position, normal, albedo, 0.0f, viewDir);
 
       // Output
-      gScene_text[xoffset] = (GLubyte)(out.x);     // * 255);
-      gScene_text[xoffset + 1] = (GLubyte)(out.y); // * 255);
-      gScene_text[xoffset + 2] = (GLubyte)(out.z); // * 255);
+      gScene_text[xoffset] = (GLubyte)(out.x * 255);
+      gScene_text[xoffset + 1] = (GLubyte)(out.y * 255);
+      gScene_text[xoffset + 2] = (GLubyte)(out.z * 255);
       gScene_text[xoffset + 3] = 0;
     }
     yoffset += Config::window_width * 4;
@@ -242,8 +250,8 @@ void HybridShaderCPU::pass2_lighting() {
   // Update GPU Scene texture
   glBindTexture(GL_TEXTURE_2D, gSceneTexture);
   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, Config::window_width,
-               Config::window_height, 0, GL_RGBA, GL_UNSIGNED_BYTE,
-               gScene_text.data());
+               Config::window_height, 0, GL_RGBA,
+               GL_UNSIGNED_BYTE, gScene_text.data());
 }
 
 glm::vec3 HybridShaderCPU::pointLightsColor(const glm::vec3 &position,
@@ -271,14 +279,17 @@ glm::vec3 HybridShaderCPU::pointLightsColor(const glm::vec3 &position,
         albedo * glm::max(glm::dot(normal, lightDir), 0.0f) * lcol;
 
     // Specular
-    glm::vec3 halfwayDir = glm::normalize(lightDir + viewDir);
-    float spec = glm::pow(glm::max(glm::dot(normal, halfwayDir), 0.0f), 16.0f);
-    glm::vec3 l_spec = lcol * spec * specular;
+    glm::vec3 l_spec;
+    if (specular > 0) {
+      glm::vec3 halfwayDir = glm::normalize(lightDir + viewDir);
+      float spec =
+          glm::pow(glm::max(glm::dot(normal, halfwayDir), 0.0f), 16.0f);
+      l_spec = lcol * spec * specular;
+    }
 
     // Attenuation
-    float distance = glm::length(lpos - position);
     float attenuation =
-        1.0 / (1.0 + l.linear * distance + l.quadratic * distance * distance);
+        1.0 / (1.0 + l.linear * dist + l.quadratic * dist * dist);
 
     out += (diffuse + l_spec) * attenuation;
   }
@@ -294,7 +305,16 @@ void HybridShaderCPU::pass3_blit() {
                     GL_COLOR_BUFFER_BIT, GL_NEAREST);
 }
 
-HybridShaderCPU::~HybridShaderCPU() {}
+HybridShaderCPU::~HybridShaderCPU() {
+  glDeleteTextures(1, &gPosition);
+  glDeleteTextures(1, &gNormal);
+  glDeleteTextures(1, &gAlbedoSpec);
+  glDeleteTextures(1, &gSceneTexture);
+  glDeleteRenderbuffers(1, &rboDepth);
+  glDeleteFramebuffers(1, &gSceneBuffer);
+  glDeleteFramebuffers(1, &gBuffer);
+  std::cout << "Hybrid Shader CPU destructor called\n";
+}
 
 // Checks ray-triangle intersection
 // Based on algorithm in "Physically based rendering, 2nd edition"
@@ -325,13 +345,7 @@ bool HybridShaderCPU::test_ray_triangle(const _Triangle *tri, const _Ray *ray) {
   else
     return true;
 }
-/*
-void swap(float *f1, float *f2) {
-  float tmp = *f1;
-  *f1 = *f2;
-  *f2 = tmp;
-}
-*/
+
 // Checks ray-bounding box intersection
 // Based on algorithm in "Physically based rendering, 2nd edition"
 bool HybridShaderCPU::test_ray_bbox(const _Ray *ray, const _BVHNode *node,

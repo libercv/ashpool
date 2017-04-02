@@ -40,7 +40,7 @@ public:
   const ShaderProgram &getModelShader() { return gBufferShader; }
 
   DeferredShader(World *w);
-  ~DeferredShader() {}
+  ~DeferredShader();
 };
 
 #endif // DEFERREDSHADER_H

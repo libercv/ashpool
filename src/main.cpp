@@ -57,7 +57,7 @@ int main(int argc, char *argv[]) {
     std::cout << "Options:\n";
     std::cout << "  --cpu: Use Hybrid Shader on CPU\n";
     std::cout << "  --hybrid: Use Hybrid Shader with OpenCL\n";
-    std::cout << "  --deferred: User Deferred Shader\n";
+    std::cout << "  --deferred: Use Deferred Shader\n";
     std::cout
         << "  --noshadows: Do not calculate shadows with Hybrid shaders\n";
     std::cout << "  --nocapturemouse: Do not capture mouse pointer. \n\n";

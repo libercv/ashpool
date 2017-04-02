@@ -54,8 +54,6 @@ void HybridShader::init_pass1_gBuffer() {
   glBindTexture(GL_TEXTURE_2D, gPosition);
   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, Config::window_width,
                Config::window_height, 0, GL_RGBA, GL_FLOAT, nullptr);
-  // glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, Config::window_width,
-  //          Config::window_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
   glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
@@ -65,9 +63,8 @@ void HybridShader::init_pass1_gBuffer() {
   glGenTextures(1, &gNormal);
   glBindTexture(GL_TEXTURE_2D, gNormal);
   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, Config::window_width,
-               Config::window_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
-  // glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, Config::window_width,
-  //               Config::window_height, 0, GL_RGBA, GL_FLOAT, nullptr);
+               Config::window_height, 0, GL_RGBA, GL_UNSIGNED_INT_8_8_8_8,
+               nullptr);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
   glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D,
@@ -77,7 +74,8 @@ void HybridShader::init_pass1_gBuffer() {
   glGenTextures(1, &gAlbedoSpec);
   glBindTexture(GL_TEXTURE_2D, gAlbedoSpec);
   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, Config::window_width,
-               Config::window_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+               Config::window_height, 0, GL_RGBA, GL_UNSIGNED_INT_8_8_8_8,
+               nullptr);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
   glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D,
@@ -256,4 +254,13 @@ HybridShader::~HybridShader() {
   clReleaseMemObject(cl_shared_objects[CL_SHARED_OBJECTS::GSCENE]);
   clReleaseMemObject(cl_primitives);
   clReleaseMemObject(cl_nodesbvh);
+
+  glDeleteTextures(1, &gPosition);
+  glDeleteTextures(1, &gNormal);
+  glDeleteTextures(1, &gAlbedoSpec);
+  glDeleteTextures(1, &gSceneTexture);
+  glDeleteRenderbuffers(1, &rboDepth);
+  glDeleteFramebuffers(1, &gSceneBuffer);
+  glDeleteFramebuffers(1, &gBuffer);
+  std::cout << "Hybrid Shader destructor called\n";
 }

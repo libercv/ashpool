@@ -21,10 +21,11 @@ void main()
 {             
     // Retrieve data from gbuffer
     vec3 FragPos = texture(gPosition, TexCoords).rgb;
-    vec3 Normal = texture(gNormal, TexCoords).rgb;
+    vec3 Normal = texture(gNormal, TexCoords).rgb;    
+    // Change [0..1] to [-1..1]
+    Normal = normalize(2*Normal-vec3(1, 1, 1));   
     vec3 Diffuse = texture(gAlbedoSpec, TexCoords).rgb;
-    float Specular = texture(gAlbedoSpec, TexCoords).a;
-    
+    float Specular = texture(gAlbedoSpec, TexCoords).a;    
     // Then calculate lighting as usual
     vec3 lighting  = Diffuse * 0.2; // hard-coded ambient component
     
@@ -36,7 +37,7 @@ void main()
         vec3 diffuse = max(dot(Normal, lightDir), 0.0) * Diffuse * lights[i].Color;
         // Specular
         vec3 halfwayDir = normalize(lightDir + viewDir);  
-        float spec = pow(max(dot(Normal, halfwayDir), 0.0), 16.0);
+        float spec = pow(max(dot(Normal, halfwayDir), 0.0), 16.0);  
         vec3 specular = lights[i].Color * spec * Specular;
         // Attenuation
         float distance = length(lights[i].Position - FragPos);
@@ -46,5 +47,6 @@ void main()
         lighting += diffuse + specular;
     }        
     FragColor = vec4(lighting, 1.0);
+    //FragColor = vec4(Normal, 1.0);
             
 }
