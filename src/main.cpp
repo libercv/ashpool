@@ -6,15 +6,11 @@
  * 2017 - Liberto Camús
  * **************************************************/
 #include "configloader.hpp"
-#include "deferredshader.hpp"
-#include "hybridshader.hpp"
-#include "hybridshadercpu.hpp"
-#include "renderengine.hpp"
+#include "renderenginecreator.hpp"
 #include "system.hpp"
 #include "world.hpp"
 
 void parseCLI(int argc, char *argv[]) {
-
   for (int i = 1; i < (argc - 1); i++) {
     std::string option{argv[i]};
     if (option.compare("--cpu") == 0)
@@ -30,27 +26,8 @@ void parseCLI(int argc, char *argv[]) {
   }
 }
 
-std::unique_ptr<RenderEngine> createRenderEngine(World &world) {
-  std::unique_ptr<RenderEngine> ren;
-  switch (Config::rendering_method) {
-  case Config::HYBRID:
-    ren = std::make_unique<HybridShader>(&world);
-    std::cout << "Creating Hybrid Shader\n";
-    break;
-  case Config::HYBRID_CPU:
-    ren = std::make_unique<HybridShaderCPU>(&world);
-    std::cout << "Creating Hybrid CPU Shader\n";
-    break;
-  default:
-    ren = std::make_unique<DeferredShader>(&world);
-    std::cout << "Creating Deferred Shader\n";
-  }
-  Config::option_rendering_method_change_requested = false;
-  return ren;
-}
-
 int main(int argc, char *argv[]) {
-  // Check command line interface arguments
+  // Check number of command line interface arguments
   if (argc < 2) {
     std::cout << "Usage: ashpool <options> configuration_file\n";
     std::cout << "Example: ashpool --cpu --noshadows sponza.ash\n\n";
@@ -66,13 +43,14 @@ int main(int argc, char *argv[]) {
 
   // Load configuration and scene description
   ConfigLoader loadconfig(argv[argc - 1]);
+  // Check command line interface arguments
   parseCLI(argc, argv);
 
   // Initialize engine objects
   System system;
   World world;
   world.init();
-  std::unique_ptr<RenderEngine> renderer = createRenderEngine(world);
+  std::unique_ptr<RenderEngine> renderer = RenderEngineCreator::create(world);
   system.setCamera(world.getCamera());
 
   // Main loop
@@ -83,9 +61,10 @@ int main(int argc, char *argv[]) {
     world.update();
     // Render the scene
     renderer->render();
+    // Change Rendering Method if necessary
     if (Config::option_rendering_method_change_requested) {
       system.printStatistics();
-      renderer = createRenderEngine(world);
+      renderer =  RenderEngineCreator::create(world);
       system.resetStatistics();
     }
   }

@@ -25,6 +25,7 @@ add_executable(ashpool
     modelloader.cpp modelloader.hpp
     pointlight.hpp
     renderengine.hpp
+    renderenginecreator.hpp
 		shaderloader.cpp shaderloader.hpp 
 		shaderprogram.cpp shaderprogram.hpp 
     system.hpp
