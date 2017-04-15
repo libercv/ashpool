@@ -12,8 +12,6 @@
 #ifndef RENDERENGINE_H
 #define RENDERENGINE_H
 
-class World;
-
 class RenderEngine {
 public:
   virtual void render() = 0;

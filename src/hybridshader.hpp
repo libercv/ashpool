@@ -16,6 +16,7 @@
 #include "renderengine.hpp"
 #include "shaderprogram.hpp" // for ShaderProgram
 #include <GL/glew.h>         // for GLuint
+#include <glm/glm.hpp>
 #include <vector>            // for vector
 class Camera;
 class Model;
@@ -23,7 +24,7 @@ class World;
 
 class HybridShader : public RenderEngine {
 private:
-  CLKernelManager opencl;
+  CLKernelManager *opencl;
 
   // GBUFFER FRAMEBUFFER
   GLuint gBuffer;                         // Framebuffer
@@ -44,7 +45,7 @@ private:
   };
   cl_mem cl_shared_objects[CL_SHARED_OBJECTS::CL_SHARED_OBJECTS_COUNT];
 
-  cl_mem cl_nodesbvh, cl_primitives;
+  cl_mem cl_nodesbvh, cl_primitives; //, cl_output2;
   // OPENCL kernel argument: Point Lights. The might change
   // from frame to frame, so we update it.
   cl_mem cl_point_lights;
@@ -55,10 +56,13 @@ private:
   void init_pass1_gBuffer();
   void init_pass2_lighting();
   void init_pass3_blit();
+  void update_kernel_args();
   void pass1_gBuffer();
   void pass2_lighting();
   void pass3_blit();
 
+  glm::vec3 lastCameraPosition{0,0,0};
+  
   const std::string GBUFFER_POSITION_TEXTURE = "gPosition";
   const std::string GBUFFER_ALBEDO_SPEC_TEXTURE = "gAlbedoSpec";
   const std::string GBUFFER_NORMAL_TEXTURE = "gNormal";
@@ -70,9 +74,9 @@ private:
 
 public:
   void render();
-  const ShaderProgram &getModelShader() { return gBufferShader; }
+  //const ShaderProgram &getModelShader() { return gBufferShader; }
 
-  HybridShader(World *w);
+  HybridShader(World *w, CLKernelManager *cl);
   ~HybridShader();
 };
 

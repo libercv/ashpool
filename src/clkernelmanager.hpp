@@ -24,8 +24,9 @@ private:
   cl_command_queue cmdQueue;
   cl_program program;
   cl_kernel kernel;
-  void checkForCLGLSharing();
+  bool checkForCLGLSharing(cl_device_id dev_id);
   std::string readFile(const std::string &path);
+  bool createSharedContext(cl_platform_id plat_id);
 
 public:
   CLKernelManager();
@@ -35,8 +36,12 @@ public:
                              const std::string &str);
   cl_mem createFromGLBuffer(GLuint GLBuffer, cl_mem_flags mem_flags,
                             const std::string &str);
-  cl_mem createBuffer(size_t size, void *ptr) {
+  cl_mem createBufferReadOnly(size_t size, void *ptr) {
     return clCreateBuffer(ctxt, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, size,
+                          ptr, nullptr);
+  }
+  cl_mem createBuffer(size_t size, void *ptr) {
+    return clCreateBuffer(ctxt, CL_MEM_READ_WRITE, size,
                           ptr, nullptr);
   }
 
@@ -52,7 +57,7 @@ public:
 
   void loadKernelFromFile(const std::string &path);
   void setKernelArg(cl_uint index, size_t size, const void *value);
-  void executeKernel(cl_event *event);
+  void executeKernel(cl_event *event, size_t third);
 };
 
 #endif // CL_KERNELMANAGER_H

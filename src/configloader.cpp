@@ -52,6 +52,9 @@ bool Config::option_shadows_enabled = true;
 bool Config::option_normal_mapping_enabled = false;
 bool Config::option_rendering_method_change_requested = false;
 bool Config::option_no_capture_mouse = false;
+bool Config::option_opencl_available= true;
+bool Config::option_statistics_requested=false;
+bool Config::option_reset_statistics_requested=false;
 
 // Rendering Method
 Config::RENDERING_METHOD Config::rendering_method = Config::HYBRID;

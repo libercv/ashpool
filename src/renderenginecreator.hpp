@@ -19,16 +19,17 @@
 #include "hybridshader.hpp"
 #include "hybridshadercpu.hpp"
 #include "deferredshader.hpp"
+#include "system.hpp"
 class World;
 
 
 class RenderEngineCreator {
 public:
-  static std::unique_ptr<RenderEngine> create(World &world) {
+  static std::unique_ptr<RenderEngine> create(World &world, System &system) {
     std::unique_ptr<RenderEngine> ren;
     switch (Config::rendering_method) {
-    case Config::HYBRID:
-      ren = std::make_unique<HybridShader>(&world);
+    case Config::HYBRID:      
+      ren = std::make_unique<HybridShader>(&world, system.clmanager.get());
       std::cout << "Creating Hybrid Shader\n";
       break;
     case Config::HYBRID_CPU:
@@ -41,8 +42,7 @@ public:
     }
     Config::option_rendering_method_change_requested = false;
     return ren;
-  }
-    
+  }    
 };
 
 #endif // RENDERENGINECREATOR_H

@@ -13,7 +13,10 @@ __constant sampler_t imageSampler =
 // Minimum distance to avoid self-intersection
 __constant float EPSILON = 0.001f;
 // Threshold to discard light contribution
-__constant float ATTENUATION_SENSITIVITY = 0.001f;
+__constant float ATTENUATION_SENSITIVITY = 0.02f;
+#define POS 0
+#define ALB 1
+#define NOR 2
 
 // Struct of each Bounding Volume Hierarchy node
 typedef struct _BVHNode {
@@ -79,46 +82,27 @@ bool test_ray_triangle(__global const Triangle *tri, const Ray *ray) {
     return true;
 }
 
-void swap(float *f1, float *f2) {
-  float tmp = *f1;
-  *f1 = *f2;
-  *f2 = tmp;
-}
 
 // Checks ray-bounding box intersection
 // Based on algorithm in "Physically based rendering, 2nd edition"
 bool test_ray_bbox(const Ray *ray, __global const BVHNode *node,
                    const float3 *invDir) {
-  float tmin = ray->mint;
-  float tmax = ray->maxt;
-
-  float tNear = (node->bounds_pMin.x - ray->o.x) * (*invDir).x;
-  float tFar = (node->bounds_pMax.x - ray->o.x) * (*invDir).x;
-  if (tNear > tFar)
-    swap(&tNear, &tFar);
-  tmin = tNear > tmin ? tNear : tmin;
-  tmax = tFar < tmax ? tFar : tmax;
-  if (tmin > tmax)
-    return false;
-
-  tNear = (node->bounds_pMin.y - ray->o.y) * (*invDir).y;
-  tFar = (node->bounds_pMax.y - ray->o.y) * (*invDir).y;
-  if (tNear > tFar)
-    swap(&tNear, &tFar);
-  tmin = tNear > tmin ? tNear : tmin;
-  tmax = tFar < tmax ? tFar : tmax;
-  if (tmin > tmax)
-    return false;
-
-  tNear = (node->bounds_pMin.z - ray->o.z) * (*invDir).z;
-  tFar = (node->bounds_pMax.z - ray->o.z) * (*invDir).z;
-  if (tNear > tFar)
-    swap(&tNear, &tFar);
-  tmin = tNear > tmin ? tNear : tmin;
-  tmax = tFar < tmax ? tFar : tmax;
-  if (tmin > tmax)
-    return false;
-
+ 
+  float3 tNear = (node->bounds_pMin - ray->o) * (*invDir);
+  float3 tFar = (node->bounds_pMax - ray->o) * (*invDir);
+  
+  float tmin = max(ray->mint, min(tNear.x, tFar.x));
+  float tmax = min(ray->maxt, max(tNear.x, tFar.x));
+  if (tmin > tmax) return false;
+  
+  tmin = max(tmin, min(tNear.y, tFar.y));
+  tmax = min(tmax, max(tNear.y, tFar.y));
+  if (tmin > tmax) return false;  
+  
+  tmin = max(tmin, min(tNear.z, tFar.z));
+  tmax = min(tmax, max(tNear.z, tFar.z));
+  if (tmin > tmax) return false;
+  
   return true;
 }
 
@@ -132,110 +116,116 @@ bool intersects(const Ray *ray, __global const Triangle *triangles,
   int todo[64];
 
   float3 invDir = (float3)(1.0f / ray->d.x, 1.0f / ray->d.y, 1.0f / ray->d.z);
-  int dirIsNeg[3] = {invDir.x < 0, invDir.y < 0, invDir.z < 0};
+  //int dirIsNeg[3] = {invDir.x < 0, invDir.y < 0, invDir.z < 0};
 
-  while (true) {
-    const __global BVHNode *node = &nodes[nodeNum];
-    // Check ray against BVH node
-    if (test_ray_bbox(ray, node, &invDir)) {
-      if (node->nPrimitives > 0) {
-        // Intersect ray with primitives in leaf BVH node
-        for (int i = 0; i < node->nPrimitives; i++)
-          if (test_ray_triangle(&triangles[node->uf.primitivesOffset + i], ray))
-            return true;
-        if (todoOffset == 0)
-          break;
-        nodeNum = todo[--todoOffset];
-      } else {
-        // Put far BVH node on todo stack, advance to near node
-        if (dirIsNeg[node->axis]) {
-          todo[todoOffset++] = nodeNum + 1;
-          nodeNum = node->uf.secondChildOffset;
-        } else {
-          todo[todoOffset++] = node->uf.secondChildOffset;
-          nodeNum = nodeNum + 1;
-        }
-      }
-    } else {
+while (true) {
+  const __global BVHNode *node = &nodes[nodeNum];
+  // Check ray against BVH node
+  if (test_ray_bbox(ray, node, &invDir)) {
+    if (node->nPrimitives > 0) {
+      // Intersect ray with primitives in leaf BVH node
+      for (int i = 0; i < node->nPrimitives; i++)
+        if (test_ray_triangle(&triangles[node->uf.primitivesOffset + i], ray))
+          return true;
       if (todoOffset == 0)
         break;
       nodeNum = todo[--todoOffset];
+    } else {
+      // Put far BVH node on todo stack, advance to near node
+      //if (dirIsNeg[node->axis]) {
+        todo[todoOffset++] = nodeNum + 1;
+        nodeNum = node->uf.secondChildOffset;
+      //} else {
+      //  todo[todoOffset++] = node->uf.secondChildOffset;
+      //  nodeNum = nodeNum + 1;
+      //}
     }
+  } else {
+    if (todoOffset == 0)
+      break;
+    nodeNum = todo[--todoOffset];
   }
-  return false;
+}
+return false;
 }
 
 // Calculates point lights contribution to shading a specific point
 // on a surface
-float3 pointLightsColor(__constant  PointLight *point_lights,
-                        int point_lights_nr, __global const Triangle *triangles,
-                        __global const BVHNode *nodes, bool shadows_enabled,
-                        float3 view_pos, float3 surface_pos,
-                        float3 surface_normal, float3 surface_diffuse,
-                        float surface_specular) {
+float3 pointLightsColor(__constant PointLight *point_lights,
+                        const int point_lights_nr, const float3 view_pos,                        
+                        const float3 surface_pos, const float3 surface_normal,
+                        const float3 surface_diffuse,
+                        const float surface_specular,
+                        bool shadows_enabled,
+                        __global const Triangle *triangles,
+                        __global const BVHNode *nodes) {
 
   float3 color = (float3)(0.0f, 0.0f, 0.0f);
-  float3 view_dir = normalize(view_pos - surface_pos);
+  const float3 view_dir = fast_normalize(view_pos - surface_pos);
+  
 
   for (int i = 0; i < point_lights_nr; i++) {
     __constant PointLight *pLight = &point_lights[i];
 
     // Attenuation
-    float3 light_pos = pLight->p_position;
-    float dist = distance(light_pos, surface_pos);
-    float attenuation = 1.0f / (1.0f + (pLight->linear * dist) +
-                                (pLight->quadratic * dist * dist));
-    //if (attenuation < ATTENUATION_SENSITIVITY)
-    //  continue;
+    const float dist = fast_distance(pLight->p_position, surface_pos);
+    const float attenuation = 1.0f / (1.0f + (pLight->linear * dist) +
+                                      (pLight->quadratic * dist * dist));
+    if (attenuation < ATTENUATION_SENSITIVITY && shadows_enabled)
+      continue;
 
-    float3 light_dir = normalize(light_pos - surface_pos);
-    float3 light_color = pLight->p_color;
-
-    // Check if shadowed
+    const float3 light_dir = fast_normalize(pLight->p_position - surface_pos);
     if (shadows_enabled) {
-      Ray r = (Ray){surface_pos, light_dir, EPSILON, dist};      
-      if (intersects(&r, triangles, nodes))
-        continue;
+       Ray r = (Ray){surface_pos, light_dir, EPSILON, dist};      
+       if (intersects(&r, triangles, nodes))
+          continue;
     }
 
     // Diffuse Lambertian
-    float ang = max(dot(surface_normal, light_dir), 0.0f);
-    float3 diffuse = ang * surface_diffuse * light_color;
+    const float ang = max(dot(surface_normal, light_dir), 0.0f);
+    const float3 diffuse = ang * surface_diffuse * pLight->p_color;
+    color += diffuse * attenuation;
 
     // Specular Blinn-Phong
-    float3 halfway_dir = normalize(light_dir + view_dir);
-    float spec = pow(max(dot(surface_normal, halfway_dir), 0.0f), 16.0f);
-    float3 specular = light_color * spec * surface_specular;
-
-    color += (diffuse + specular) * attenuation;
+    if (surface_specular > 0.0f) {
+      const float3 halfway_dir = fast_normalize(light_dir + view_dir);      
+      const float spec =
+          pow(max(dot(surface_normal, halfway_dir), 0.0f), 16.0f);
+      const float3 specular = pLight->p_color * spec * surface_specular;
+      color += specular * attenuation;
+    }
   }
+
   return color;
 }
 
 //
 //
-__kernel void
-render(__read_only image2d_t g_albedo_spec, __read_only image2d_t g_position,
-       __read_only image2d_t g_normal, __constant PointLight *point_lights,
-       int point_lights_nr, const SceneAttribs attribs,
-       __global const Triangle *triangles, __global const BVHNode *nodes,
-       float3 view_position, __write_only image2d_t output) {
+__kernel void render(__read_only image2d_t g_albedo_spec,
+                     __read_only image2d_t g_position,
+                     __read_only image2d_t g_normal,
+                     __write_only image2d_t output,
+                     const SceneAttribs attribs, const float3 view_position,
+                     __constant PointLight *point_lights, const int point_lights_nr,
+                     __global const Triangle *triangles, __global const BVHNode *nodes
+                     ) {
 
-  int2 coord = (int2)(get_global_id(0), get_global_id(1));  
-  float3 diffuse = read_imagef(g_albedo_spec, imageSampler, coord).xyz;  
-  float specular = read_imagef(g_albedo_spec, imageSampler, coord).w;
-  float3 pos = read_imagef(g_position, imageSampler, coord).xyz;
-  float3 normal= read_imagef(g_normal, imageSampler, coord).xyz;
-  normal = normalize (2*normal -(float3)(1,1,1));
-    
+  int2 coord = (int2)(get_global_id(0), get_global_id(1));
+  const float3 diffuse = read_imagef(g_albedo_spec, imageSampler, coord).xyz;  
+  const float specular = read_imagef(g_albedo_spec, imageSampler, coord).w;  
+  const float3 pos = read_imagef(g_position, imageSampler, coord).xyz;
+  const float3 norm = read_imagef(g_normal, imageSampler, coord).xyz;
+  const float3 normal = normalize(2 * norm - (float3)(1, 1, 1));
+
   // Ambient light
   float3 color = diffuse * attribs.ambient;
-  
+
   // Point Lights (diffuse + specular)
-  color += pointLightsColor(point_lights, point_lights_nr, triangles, nodes,
-                            (bool)attribs.shadows_enabled, view_position, pos,
-                            normal, diffuse, specular);
+  color += pointLightsColor(point_lights, point_lights_nr, view_position,                               
+                            pos, normal, diffuse, 
+                            specular, (bool)attribs.shadows_enabled,                             
+                            triangles, nodes);
 
   // Write result
-  write_imagef(output, coord, (float4)(color.x, color.y, color.z, 0.0f));  
+  write_imagef(output, coord, (float4)(color.x, color.y, color.z, 0.0f));
 }

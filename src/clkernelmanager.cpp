@@ -34,40 +34,37 @@ typedef CL_API_ENTRY cl_int(CL_API_CALL *clGetGLContextInfoKHR_fn)(
 static clGetGLContextInfoKHR_fn clGetGLContextInfoKHR;
 
 CLKernelManager::CLKernelManager() {
+
   auto plat_ids = CL_Platform::get_platforms_ids();
   if (plat_ids.size() == 0) {
     std::cout << "No OpenCL platforms detected\n";
-    return;
+    std::exit(1);
   }
 
-  // cl_platform_id plat_id=plat_ids[0];
+  Config::option_opencl_available= false;
   for (cl_platform_id &plat_id : plat_ids) {
-    std::cout << "Detecting devices on platform " << plat_id << std::endl;
-#ifdef linux
-    cl_context_properties properties[] = {
-        CL_GL_CONTEXT_KHR,
-        (cl_context_properties)glfwGetGLXContext(glfwGetCurrentContext()),
-        CL_GLX_DISPLAY_KHR,
-        (cl_context_properties)glfwGetX11Display(),
-        CL_CONTEXT_PLATFORM,
-        (cl_context_properties)plat_id,
-        0};
-#elif defined _WIN32
-    cl_context_properties properties[] = {
-        CL_GL_CONTEXT_KHR,
-        (cl_context_properties)wglGetCurrentContext(),
-        CL_WGL_HDC_KHR,
-        (cl_context_properties)wglGetCurrentDC(),
-        CL_CONTEXT_PLATFORM,
-        (cl_context_properties)plat_id,
-        0};
-#elif defined TARGET_OS_MAC
-    CGLContextObj glContext = CGLGetCurrentContext();
-    CGLShareGroupObj shareGroup = CGLGetShareGroup(glContext);
-    cl_context_properties properties[] = {
-        CL_CONTEXT_PROPERTY_USE_CGL_SHAREGROUP_APPLE,
-        (cl_context_properties)shareGroup, 0};
-#endif
+    std::cout << "Detecting devices on platform \n";
+    CL_Platform plat(plat_id);
+
+    // Try to find a device which supports cl_khr_gl_sharing in this
+    // platform
+    bool platform_has_capable_devices = false;
+    for (cl_device_id &dev_id : CL_Device::get_devices_ids(plat_id)) {
+      CL_Device dev(dev_id);
+      if (checkForCLGLSharing(dev_id) == true) {
+        platform_has_capable_devices = true;
+        break;
+      }
+    }
+
+    // Didn't find one.  Skip this platform
+    if (!platform_has_capable_devices) {
+      std::cout << "Couldn't find sharing extension in platform.\n";
+      continue;
+     }
+
+
+    // Try to get proc address for clGetGLContextInfoKHR
     if (!clGetGLContextInfoKHR) {
       clGetGLContextInfoKHR =
           (clGetGLContextInfoKHR_fn)clGetExtensionFunctionAddressForPlatform(
@@ -78,33 +75,66 @@ CLKernelManager::CLKernelManager() {
       }
     }
 
-    cl_device_id cl_dev;
-    size_t size;
-    cl_int result =
-        clGetGLContextInfoKHR(properties, CL_CURRENT_DEVICE_FOR_GL_CONTEXT_KHR,
-                              sizeof(cl_device_id), &cl_dev, &size);
-    if (result != CL_SUCCESS) {
-      std::cout << "Failed to obtain OpenCL Device from GL Device\n";
+    // Try to create a shared context with OpenGL
+    if (!createSharedContext(plat_id))
       continue;
-    }
-    device = CL_Device(cl_dev);
+
+    // Create Command Queue
     cl_int status;
-    ctxt = clCreateContext(properties, 1, &device.getId(), nullptr, nullptr,
-                           &status);
-    if (status != CL_SUCCESS) {
-      std::cout << "Error creating OpenCL Context\n";
-      continue;
-    } else {
-      std::cout << "CL Context created\n";
-    }
     cmdQueue =
         clCreateCommandQueueWithProperties(ctxt, device.getId(), 0, &status);
     if (status != CL_SUCCESS) {
       std::cout << "Error creating OpenCL command queue\n";
       continue;
     }
-    return;
+    Config::option_opencl_available=true;
+    break;
   }
+}
+
+bool CLKernelManager::createSharedContext(cl_platform_id plat_id) {
+
+#ifdef linux
+  cl_context_properties properties[] = {
+      CL_GL_CONTEXT_KHR,
+      (cl_context_properties)glfwGetGLXContext(glfwGetCurrentContext()),
+      CL_GLX_DISPLAY_KHR,
+      (cl_context_properties)glfwGetX11Display(),
+      CL_CONTEXT_PLATFORM,
+      (cl_context_properties)plat_id,
+      0};
+#elif defined _WIN32
+  cl_context_properties properties[] = {
+      CL_GL_CONTEXT_KHR,
+      (cl_context_properties)wglGetCurrentContext(),
+      CL_WGL_HDC_KHR,
+      (cl_context_properties)wglGetCurrentDC(),
+      CL_CONTEXT_PLATFORM,
+      (cl_context_properties)plat_id,
+      0};
+#elif defined TARGET_OS_MAC
+  CGLContextObj glContext = CGLGetCurrentContext();
+  CGLShareGroupObj shareGroup = CGLGetShareGroup(glContext);
+  cl_context_properties properties[] = {
+      CL_CONTEXT_PROPERTY_USE_CGL_SHAREGROUP_APPLE,
+      (cl_context_properties)shareGroup, 0};
+#endif
+
+  cl_device_id cl_dev;
+  size_t size;
+  cl_int result =
+      clGetGLContextInfoKHR(properties, CL_CURRENT_DEVICE_FOR_GL_CONTEXT_KHR,
+                            sizeof(cl_device_id), &cl_dev, &size);
+  if (result != CL_SUCCESS) {
+    std::cout << "Failed to obtain OpenCL Device from GL Device\n";
+    return false;
+  }
+
+  device = CL_Device(cl_dev);
+  cl_int status;
+  this->ctxt = clCreateContext(properties, 1, &device.getId(), nullptr, nullptr, &status);
+
+  return status == CL_SUCCESS;
 }
 
 cl_mem CLKernelManager::createFromGLBuffer(GLuint GLBuffer,
@@ -158,29 +188,22 @@ cl_mem CLKernelManager::createFromGLTexture(GLuint GLtexture,
   return texture;
 }
 
-void CLKernelManager::checkForCLGLSharing() {
-  /*
-    auto dev_ids = CL_Device::get_devices_ids(plat_id);
-    if (dev_ids.size() == 0) {
-      std::cout << "No OpenCL devices found\n";
-      continue;
-    }
+bool CLKernelManager::checkForCLGLSharing(cl_device_id dev_id) {
+  std::string extension_string(1024, ' ');
+  cl_int status = clGetDeviceInfo(dev_id, CL_DEVICE_EXTENSIONS,
+                                  1024*sizeof(char),
+                                  (void *)extension_string.data(), nullptr);
 
-    std::memset(extension_string, ' ', 1024);
-    device = std::make_unique<CL_Device>(dev_ids[0]);
-    platform = std::make_unique<CL_Platform>(plat_id);
-    cl_int status =
-        clGetDeviceInfo(dev_ids[0], CL_DEVICE_EXTENSIONS,
-                        sizeof(extension_string), extension_string, nullptr);
-    char *extStringStart = nullptr;
-    extStringStart = strstr(extension_string, "cl_khr_gl_sharing");
-    std::cout << extension_string << "\n";
-    if (extStringStart != nullptr) {
-      std::cout << "Platform does support cl_khr_gl_sharing\n";
-    } else {
-      std::cout << "Platform doesn't support cl_khr_gl_sharing\n";
-    }
-  */
+  if (status!=CL_SUCCESS) {
+      std::cout << "Error querying for cl_khr_gl_sharing extension\n";
+      return false;
+  }
+  
+  std::string::size_type n = extension_string.find("cl_khr_gl_sharing");
+  if (n == std::string::npos)
+    return false;
+
+  return true;
 }
 
 CLKernelManager::~CLKernelManager() {
@@ -203,7 +226,7 @@ void CLKernelManager::loadKernelFromFile(const std::string &path) {
   }
 
   status =
-      clBuildProgram(program, 1, &device.getId(), nullptr, nullptr, nullptr);
+      clBuildProgram(program, 1, &device.getId(), "-cl-fast-relaxed-math", nullptr, nullptr);
   if (status != CL_SUCCESS) {
     std::cout << "Error building program: " << path << "\n";
 
@@ -234,10 +257,13 @@ void CLKernelManager::setKernelArg(cl_uint index, size_t size,
   clSetKernelArg(kernel, index, size, value);
 }
 
-void CLKernelManager::executeKernel(cl_event *event) {
-  size_t globalWorkSize[2] = {Config::window_width, Config::window_height};
-  cl_int status = clEnqueueNDRangeKernel(cmdQueue, kernel, 2, nullptr,
-                                         globalWorkSize, nullptr, 0, 0, event);
+void CLKernelManager::executeKernel(cl_event *event, size_t third) {
+  size_t globalWorkSize[] = {Config::window_width, Config::window_height,third};
+  //size_t localWorkSize[] = {1, 1, third};
+  cl_int status = clEnqueueNDRangeKernel(
+      cmdQueue, kernel, 3, nullptr, globalWorkSize, 
+                    nullptr, //localWorkSize, 
+                    0, 0, event);
   if (status != CL_SUCCESS) {
     std::cout << "Error running kernel\n";
   }

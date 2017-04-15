@@ -51,6 +51,7 @@ private:
   };
 
   static constexpr float EPSILON = 0.001f;
+  static constexpr float ATTENUATION_SENSIBILITY = 0.02f;
 
   std::vector<_BVHNode> bvhnodes;
   std::vector<_Triangle> triangles;
@@ -99,10 +100,10 @@ private:
                              const glm::vec3 &viewDir);
 
   void init_geometry();
-
+  //unsigned int checks=0;
 public:
   void render();
-  const ShaderProgram &getModelShader() { return gBufferShader; }
+  //const ShaderProgram &getModelShader() { return gBufferShader; }
 
   HybridShaderCPU(World *w);
   ~HybridShaderCPU();

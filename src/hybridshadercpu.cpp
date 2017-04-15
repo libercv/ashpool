@@ -23,6 +23,8 @@
 #include <utility>
 //#include <omp.h>
 
+
+
 HybridShaderCPU::HybridShaderCPU(World *w)
     : gBufferShader{Config::gbuffer_shader_vert.c_str(),
                     Config::gbuffer_shader_frag.c_str()},
@@ -210,21 +212,20 @@ void HybridShaderCPU::pass2_lighting() {
   unsigned int yoffset = 0;
 
   for (unsigned int y = 0; y < Config::window_height; y++) {
-#pragma omp parallel for schedule(dynamic)
+    #pragma omp parallel for schedule(dynamic)
     for (unsigned int x = 0; x < Config::window_width; x++) {
       unsigned int xoffset = yoffset + x * 4;
       // Get vectors to albedo, normal, color...
       glm::vec3 albedo =
           glm::vec3(gAlbedoSpec_text[xoffset], gAlbedoSpec_text[xoffset + 1],
-                    gAlbedoSpec_text[xoffset + 2]) /
-          255.0f;
+                    gAlbedoSpec_text[xoffset + 2]) /  255.0f;
       float specular = (float)(gAlbedoSpec_text[xoffset + 3]) / 255.0f;
 
       glm::vec3 normal =
           glm::vec3(gNormal_text[xoffset], gNormal_text[xoffset + 1],
-                    gNormal_text[xoffset + 2]) /
-          255.0f;
-      normal = normalize(normal * 2.0f - glm::vec3(1.0f, 1.0f, 1.0f));
+                    gNormal_text[xoffset + 2]) /   255.0f;
+      normal = glm::normalize(normal * 2.0f - glm::vec3(1.0f, 1.0f, 1.0f));
+      
       glm::vec3 position =
           glm::vec3(gPosition_text[xoffset], gPosition_text[xoffset + 1],
                     gPosition_text[xoffset + 2]);
@@ -243,15 +244,20 @@ void HybridShaderCPU::pass2_lighting() {
       gScene_text[xoffset + 2] = (GLubyte)(out.z * 255);
       gScene_text[xoffset + 3] = 0;
     }
+
     yoffset += Config::window_width * 4;
   }
 
-#pragma omp critical
+
+  //std::cout << "BVH bounding box checks this frame:" << checks << "\n";
+  //checks=0;
   // Update GPU Scene texture
   glBindTexture(GL_TEXTURE_2D, gSceneTexture);
   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, Config::window_width,
                Config::window_height, 0, GL_RGBA,
                GL_UNSIGNED_BYTE, gScene_text.data());
+  
+ 
 }
 
 glm::vec3 HybridShaderCPU::pointLightsColor(const glm::vec3 &position,
@@ -262,13 +268,17 @@ glm::vec3 HybridShaderCPU::pointLightsColor(const glm::vec3 &position,
   glm::vec3 out{0.0f, 0.0f, 0.0f};
 
   // Compute each point light contribution
-  for (PointLight l : world->getPointLights()) {
+  for (const PointLight &l : world->getPointLights()) {
 
     glm::vec3 lpos = cltoglm(l.position);
     glm::vec3 lcol = cltoglm(l.color);
     glm::vec3 lightDir = glm::normalize(lpos - position);
     float dist = glm::distance(lpos, position);
-    if (world->scene_attribs.shadowsEnabled) {
+    // Attenuation
+    float attenuation =
+        1.0 / (1.0 + l.linear * dist + l.quadratic * dist * dist);
+    
+    if (world->scene_attribs.shadowsEnabled && attenuation>ATTENUATION_SENSIBILITY) {
       _Ray r = _Ray{position, lightDir, EPSILON, dist};
       if (intersects(&r))
         continue;
@@ -286,10 +296,6 @@ glm::vec3 HybridShaderCPU::pointLightsColor(const glm::vec3 &position,
           glm::pow(glm::max(glm::dot(normal, halfwayDir), 0.0f), 16.0f);
       l_spec = lcol * spec * specular;
     }
-
-    // Attenuation
-    float attenuation =
-        1.0 / (1.0 + l.linear * dist + l.quadratic * dist * dist);
 
     out += (diffuse + l_spec) * attenuation;
   }
@@ -350,35 +356,28 @@ bool HybridShaderCPU::test_ray_triangle(const _Triangle *tri, const _Ray *ray) {
 // Based on algorithm in "Physically based rendering, 2nd edition"
 bool HybridShaderCPU::test_ray_bbox(const _Ray *ray, const _BVHNode *node,
                                     const glm::vec3 *invDir) {
+  
+  //checks++;
   float tmin = ray->mint;
   float tmax = ray->maxt;
 
-  float tNear = (node->bounds_pMin.x - ray->o.x) * (*invDir).x;
-  float tFar = (node->bounds_pMax.x - ray->o.x) * (*invDir).x;
-  if (tNear > tFar)
-    std::swap(tNear, tFar);
-  tmin = tNear > tmin ? tNear : tmin;
-  tmax = tFar < tmax ? tFar : tmax;
-  if (tmin > tmax)
-    return false;
+  glm::vec3 tNear = (node->bounds_pMin - ray->o) * (*invDir);
+  glm::vec3 tFar = (node->bounds_pMax - ray->o) * (*invDir);
+  
+  if (tNear.x > tFar.x)  std::swap(tNear.x, tFar.x);
+  tmin = tNear.x > tmin ? tNear.x : tmin;
+  tmax = tFar.x < tmax ? tFar.x : tmax; 
+  if (tmin > tmax) return false;
+    
+  if (tNear.y > tFar.y)  std::swap(tNear.y, tFar.y);
+  tmin = tNear.y > tmin ? tNear.y : tmin;
+  tmax = tFar.y < tmax ? tFar.y : tmax;
+  if (tmin > tmax)  return false;
 
-  tNear = (node->bounds_pMin.y - ray->o.y) * (*invDir).y;
-  tFar = (node->bounds_pMax.y - ray->o.y) * (*invDir).y;
-  if (tNear > tFar)
-    std::swap(tNear, tFar);
-  tmin = tNear > tmin ? tNear : tmin;
-  tmax = tFar < tmax ? tFar : tmax;
-  if (tmin > tmax)
-    return false;
-
-  tNear = (node->bounds_pMin.z - ray->o.z) * (*invDir).z;
-  tFar = (node->bounds_pMax.z - ray->o.z) * (*invDir).z;
-  if (tNear > tFar)
-    std::swap(tNear, tFar);
-  tmin = tNear > tmin ? tNear : tmin;
-  tmax = tFar < tmax ? tFar : tmax;
-  if (tmin > tmax)
-    return false;
+  if (tNear.z > tFar.z)   std::swap(tNear.z, tFar.z);
+  tmin = tNear.z > tmin ? tNear.z : tmin;
+  tmax = tFar.z < tmax ? tFar.z : tmax;
+  if (tmin > tmax) return false;
 
   return true;
 }

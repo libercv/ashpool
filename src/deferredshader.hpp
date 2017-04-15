@@ -37,7 +37,7 @@ private:
 
 public:
   void render();
-  const ShaderProgram &getModelShader() { return gBufferShader; }
+  //const ShaderProgram &getModelShader() { return gBufferShader; }
 
   DeferredShader(World *w);
   ~DeferredShader();

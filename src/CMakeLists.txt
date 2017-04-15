@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.1)
 
 project(ashpool)
 set(CMAKE_CXX_STANDARD 14)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -Wall -Wextra -pedantic -fno-omit-frame-pointer")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -Wall -Wextra -pedantic -fno-omit-frame-pointer -fno-rtti -ggdb")
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH}
                       ${CMAKE_CURRENT_SOURCE_DIR}/../cmake/)
 add_executable(ashpool 
@@ -38,7 +38,7 @@ add_executable(ashpool
     world.cpp world.hpp
 		)
 find_package(PkgConfig REQUIRED)
-find_package (glfw3 REQUIRED)
+find_package (glfw3 3.2 REQUIRED)
 find_package(OpenGL REQUIRED)
 find_package(GLEW REQUIRED)
 #find_package(glm REQUIRED)
@@ -64,8 +64,10 @@ include_directories( ${OPENGL_INCLUDE_DIRS}
 
 target_link_libraries(ashpool 
 	${OPENGL_LIBRARIES} 
-	${GLFW_LIBRARIES} 
-	${GLEW_LIBRARY} 
+  ${OPENGL_gl_LIBRARY}
+	glfw ${GLFW_LIBRARIES} 
+  GLEW::GLEW
+#	${GLEW_LIBRARY} 
 #	${GLM_LIBRARY}
 	${ASSIMP_LIBRARIES}
 	${FREEIMAGE_LIBRARIES}

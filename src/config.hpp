@@ -49,6 +49,9 @@ public:
   static bool option_normal_mapping_enabled;
   static bool option_rendering_method_change_requested;
   static bool option_no_capture_mouse;
+  static bool option_opencl_available;
+  static bool option_statistics_requested;
+  static bool option_reset_statistics_requested;
 
   // Rendering method
   static RENDERING_METHOD rendering_method;

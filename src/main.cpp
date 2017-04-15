@@ -48,10 +48,13 @@ int main(int argc, char *argv[]) {
 
   // Initialize engine objects
   System system;
+  system.initOpenCL();
   World world;
   world.init();
-  std::unique_ptr<RenderEngine> renderer = RenderEngineCreator::create(world);
+  
+  std::unique_ptr<RenderEngine> renderer = RenderEngineCreator::create(world, system);
   system.setCamera(world.getCamera());
+  
 
   // Main loop
   while (!system.exitRequested()) {
@@ -63,11 +66,11 @@ int main(int argc, char *argv[]) {
     renderer->render();
     // Change Rendering Method if necessary
     if (Config::option_rendering_method_change_requested) {
-      system.printStatistics();
-      renderer =  RenderEngineCreator::create(world);
+      renderer.reset(nullptr);      
+      renderer =  RenderEngineCreator::create(world, system);
       system.resetStatistics();
     }
-  }
-  system.printStatistics();
+  }  
+  system.clmanager.reset(nullptr);
   return 0;
 }

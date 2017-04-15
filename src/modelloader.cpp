@@ -65,8 +65,9 @@ std::vector<Mesh> ModelLoader::loadMeshes(const aiScene *scene,
                             mat, aiTextureType_SPECULAR, directory),
                         mTextureManager.loadMaterialTextures(
                             mat, aiTextureType_DIFFUSE, directory),
-                        mTextureManager.loadMaterialTextures(
-                            mat, aiTextureType_HEIGHT, directory),
+                        //mTextureManager.loadMaterialTextures(
+                        //    mat, aiTextureType_HEIGHT, directory),
+                        std::vector<Texture>(),
                         loadMaterial(mat));
   }
 
