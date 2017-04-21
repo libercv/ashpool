@@ -49,6 +49,10 @@ int main(int argc, char *argv[]) {
   // Initialize engine objects
   System system;
   system.initOpenCL();
+  if(Config::rendering_method==Config::HYBRID && !Config::option_opencl_available) {
+      std::cout << "Required OpenCL capabilities not available. \n";
+      exit(1);
+  }
   World world;
   world.init();
   

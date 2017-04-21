@@ -59,7 +59,7 @@ CLKernelManager::CLKernelManager() {
 
     // Didn't find one.  Skip this platform
     if (!platform_has_capable_devices) {
-      std::cout << "Couldn't find sharing extension in platform.\n";
+      std::cout << "Couldn't find extension cl_khr_gl_sharing in platform.\n";
       continue;
      }
 
@@ -207,10 +207,12 @@ bool CLKernelManager::checkForCLGLSharing(cl_device_id dev_id) {
 }
 
 CLKernelManager::~CLKernelManager() {
-  clReleaseProgram(program);
-  clReleaseKernel(kernel);
-  clReleaseCommandQueue(cmdQueue);
-  clReleaseContext(ctxt);
+  if (Config::option_opencl_available) {
+    clReleaseProgram(program);
+    clReleaseKernel(kernel);
+    clReleaseCommandQueue(cmdQueue);
+    clReleaseContext(ctxt);
+  }
 }
 
 void CLKernelManager::loadKernelFromFile(const std::string &path) {

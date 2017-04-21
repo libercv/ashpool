@@ -19,9 +19,9 @@ class TextureLoader {
 public:
   explicit TextureLoader(const std::string &filename);
   ~TextureLoader();
-  const GLbyte *getImagePtr() const { return img_ptr.get(); };
-  unsigned int getWidth() { return width; };
-  unsigned int getHeight() { return height; };
+  const GLbyte *getImagePtr() const; //{ return img_ptr.get(); };
+  unsigned int getWidth() { return width; }
+  unsigned int getHeight() { return height; }
 
 private:
   std::unique_ptr<GLbyte[]> img_ptr;

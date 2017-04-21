@@ -29,6 +29,11 @@ public:
     std::unique_ptr<RenderEngine> ren;
     switch (Config::rendering_method) {
     case Config::HYBRID:      
+      if (!Config::option_opencl_available) {
+          std::cout << "OpenCL not available\n";
+          exit(1);
+      }
+
       ren = std::make_unique<HybridShader>(&world, system.clmanager.get());
       std::cout << "Creating Hybrid Shader\n";
       break;

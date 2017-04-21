@@ -45,12 +45,13 @@ TextureLoader::TextureLoader(const std::string &filename) {
   if ((bits == nullptr) || (width == 0) || (height == 0))
     return;
 
-  // Texture is vertically flipped. Fix it
+  // Texture is vertically flipped. Fix it  
   constexpr int bytes_per_pixel = 4;
   img_ptr = std::make_unique<GLbyte[]>(width * height * bytes_per_pixel);
 
-  auto line_length = width * bytes_per_pixel;
-  unsigned int src_offset = (line_length * (height - 1));
+  //auto line_length = width * bytes_per_pixel;
+  //unsigned int src_offset = (line_length * (height - 1));
+  unsigned int src_offset = 0;
   auto dst_ptr = img_ptr.get();
   for (unsigned int i = 0; i < height; i++) {
     for (unsigned int j = 0; j < width; ++j) {
@@ -64,8 +65,13 @@ TextureLoader::TextureLoader(const std::string &filename) {
       dst_ptr++;
       src_offset += bytes_per_pixel;
     }
-    src_offset -= line_length * 2;
+    //src_offset -= line_length * 2;
   }
+}
+
+const GLbyte *TextureLoader::getImagePtr() const {
+  //return FreeImage_GetBits(dib);
+  return img_ptr.get(); 
 }
 
 TextureLoader::~TextureLoader() {

@@ -183,7 +183,7 @@ float3 pointLightsColor(__constant PointLight *point_lights,
 
     // Diffuse Lambertian
     const float ang = max(dot(surface_normal, light_dir), 0.0f);
-    const float3 diffuse = ang * surface_diffuse * pLight->p_color;
+    const float3 diffuse = ang * surface_diffuse * pLight->p_color; // * 2.5f;
     color += diffuse * attenuation;
 
     // Specular Blinn-Phong

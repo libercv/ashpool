@@ -35,8 +35,26 @@ Model ModelLoader::loadModel(const std::string &path) {
   std::cout << "Start importing model" << std::endl;
   Assimp::Importer importer;
   auto directory = path.substr(0, path.find_last_of('/'));
+  /*
+  importer.SetPropertyFloat(AI_CONFIG_PP_GSN_MAX_SMOOTHING_ANGLE, 45.0f);
+  //importer.SetPropertyInteger(AI_CONFIG_PP_SBP_REMOVE, aiPrimitiveType_LINE | aiPrimitiveType_POINT);
+  const aiScene *scene= importer.ReadFile(
+      path,
+      aiProcess_Triangulate           |
+      aiProcess_GenUVCoords           |
+      aiProcess_GenSmoothNormals      |
+      aiProcess_OptimizeMeshes        |
+      aiProcess_OptimizeGraph         |
+      aiProcess_FixInfacingNormals    |
+      aiProcess_JoinIdenticalVertices |
+      aiProcess_SortByPType
+  );
+  */
+  
+  
   const aiScene *scene = importer.ReadFile(
-      path, aiProcess_GenNormals | aiProcess_Triangulate | aiProcess_FlipUVs);
+      //path, aiProcess_GenNormals | aiProcess_Triangulate | aiProcess_FlipUVs);
+                           path, aiProcess_GenSmoothNormals | aiProcess_Triangulate );
 
   // Check for errors
   if (!scene || scene->mFlags == AI_SCENE_FLAGS_INCOMPLETE ||
