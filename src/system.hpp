@@ -41,7 +41,8 @@ public:
 
   void initOpenCL() {
     clmanager=std::make_unique<CLKernelManager>();
-    clmanager->loadKernelFromFile(Config::lighting_kernel);
+    if(Config::option_opencl_available)
+        clmanager->loadKernelFromFile(Config::lighting_kernel);
   }
   
   void resetStatistics() {
