@@ -37,7 +37,8 @@ Model ModelLoader::loadModel(const std::string &path) {
   auto directory = path.substr(0, path.find_last_of('/'));
   /*
   importer.SetPropertyFloat(AI_CONFIG_PP_GSN_MAX_SMOOTHING_ANGLE, 45.0f);
-  //importer.SetPropertyInteger(AI_CONFIG_PP_SBP_REMOVE, aiPrimitiveType_LINE | aiPrimitiveType_POINT);
+  //importer.SetPropertyInteger(AI_CONFIG_PP_SBP_REMOVE, aiPrimitiveType_LINE |
+  aiPrimitiveType_POINT);
   const aiScene *scene= importer.ReadFile(
       path,
       aiProcess_Triangulate           |
@@ -50,11 +51,11 @@ Model ModelLoader::loadModel(const std::string &path) {
       aiProcess_SortByPType
   );
   */
-  
-  
+
   const aiScene *scene = importer.ReadFile(
-      //path, aiProcess_GenNormals | aiProcess_Triangulate | aiProcess_FlipUVs);
-                           path, aiProcess_GenSmoothNormals | aiProcess_Triangulate );
+      // path, aiProcess_GenNormals | aiProcess_Triangulate |
+      // aiProcess_FlipUVs);
+      path, aiProcess_GenSmoothNormals | aiProcess_Triangulate);
 
   // Check for errors
   if (!scene || scene->mFlags == AI_SCENE_FLAGS_INCOMPLETE ||
@@ -83,10 +84,9 @@ std::vector<Mesh> ModelLoader::loadMeshes(const aiScene *scene,
                             mat, aiTextureType_SPECULAR, directory),
                         mTextureManager.loadMaterialTextures(
                             mat, aiTextureType_DIFFUSE, directory),
-                        //mTextureManager.loadMaterialTextures(
+                        // mTextureManager.loadMaterialTextures(
                         //    mat, aiTextureType_HEIGHT, directory),
-                        std::vector<Texture>(),
-                        loadMaterial(mat));
+                        std::vector<Texture>(), loadMaterial(mat));
   }
 
   std::cout << "Model successfully imported." << std::endl;

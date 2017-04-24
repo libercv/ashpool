@@ -23,8 +23,6 @@
 #include <utility>
 //#include <omp.h>
 
-
-
 HybridShaderCPU::HybridShaderCPU(World *w)
     : gBufferShader{Config::gbuffer_shader_vert.c_str(),
                     Config::gbuffer_shader_frag.c_str()},
@@ -212,20 +210,22 @@ void HybridShaderCPU::pass2_lighting() {
   unsigned int yoffset = 0;
 
   for (unsigned int y = 0; y < Config::window_height; y++) {
-    #pragma omp parallel for schedule(dynamic)
+#pragma omp parallel for schedule(dynamic)
     for (unsigned int x = 0; x < Config::window_width; x++) {
       unsigned int xoffset = yoffset + x * 4;
       // Get vectors to albedo, normal, color...
       glm::vec3 albedo =
           glm::vec3(gAlbedoSpec_text[xoffset], gAlbedoSpec_text[xoffset + 1],
-                    gAlbedoSpec_text[xoffset + 2]) /  255.0f;
+                    gAlbedoSpec_text[xoffset + 2]) /
+          255.0f;
       float specular = (float)(gAlbedoSpec_text[xoffset + 3]) / 255.0f;
 
       glm::vec3 normal =
           glm::vec3(gNormal_text[xoffset], gNormal_text[xoffset + 1],
-                    gNormal_text[xoffset + 2]) /   255.0f;
+                    gNormal_text[xoffset + 2]) /
+          255.0f;
       normal = glm::normalize(normal * 2.0f - glm::vec3(1.0f, 1.0f, 1.0f));
-      
+
       glm::vec3 position =
           glm::vec3(gPosition_text[xoffset], gPosition_text[xoffset + 1],
                     gPosition_text[xoffset + 2]);
@@ -248,16 +248,13 @@ void HybridShaderCPU::pass2_lighting() {
     yoffset += Config::window_width * 4;
   }
 
-
-  //std::cout << "BVH bounding box checks this frame:" << checks << "\n";
-  //checks=0;
+  // std::cout << "BVH bounding box checks this frame:" << checks << "\n";
+  // checks=0;
   // Update GPU Scene texture
   glBindTexture(GL_TEXTURE_2D, gSceneTexture);
   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, Config::window_width,
-               Config::window_height, 0, GL_RGBA,
-               GL_UNSIGNED_BYTE, gScene_text.data());
-  
- 
+               Config::window_height, 0, GL_RGBA, GL_UNSIGNED_BYTE,
+               gScene_text.data());
 }
 
 glm::vec3 HybridShaderCPU::pointLightsColor(const glm::vec3 &position,
@@ -277,8 +274,9 @@ glm::vec3 HybridShaderCPU::pointLightsColor(const glm::vec3 &position,
     // Attenuation
     float attenuation =
         1.0 / (1.0 + l.linear * dist + l.quadratic * dist * dist);
-    
-    if (world->scene_attribs.shadowsEnabled && attenuation>ATTENUATION_SENSIBILITY) {
+
+    if (world->scene_attribs.shadowsEnabled &&
+        attenuation > ATTENUATION_SENSIBILITY) {
       _Ray r = _Ray{position, lightDir, EPSILON, dist};
       if (intersects(&r))
         continue;
@@ -356,28 +354,34 @@ bool HybridShaderCPU::test_ray_triangle(const _Triangle *tri, const _Ray *ray) {
 // Based on algorithm in "Physically based rendering, 2nd edition"
 bool HybridShaderCPU::test_ray_bbox(const _Ray *ray, const _BVHNode *node,
                                     const glm::vec3 *invDir) {
-  
-  //checks++;
+
+  // checks++;
   float tmin = ray->mint;
   float tmax = ray->maxt;
 
   glm::vec3 tNear = (node->bounds_pMin - ray->o) * (*invDir);
   glm::vec3 tFar = (node->bounds_pMax - ray->o) * (*invDir);
-  
-  if (tNear.x > tFar.x)  std::swap(tNear.x, tFar.x);
+
+  if (tNear.x > tFar.x)
+    std::swap(tNear.x, tFar.x);
   tmin = tNear.x > tmin ? tNear.x : tmin;
-  tmax = tFar.x < tmax ? tFar.x : tmax; 
-  if (tmin > tmax) return false;
-    
-  if (tNear.y > tFar.y)  std::swap(tNear.y, tFar.y);
+  tmax = tFar.x < tmax ? tFar.x : tmax;
+  if (tmin > tmax)
+    return false;
+
+  if (tNear.y > tFar.y)
+    std::swap(tNear.y, tFar.y);
   tmin = tNear.y > tmin ? tNear.y : tmin;
   tmax = tFar.y < tmax ? tFar.y : tmax;
-  if (tmin > tmax)  return false;
+  if (tmin > tmax)
+    return false;
 
-  if (tNear.z > tFar.z)   std::swap(tNear.z, tFar.z);
+  if (tNear.z > tFar.z)
+    std::swap(tNear.z, tFar.z);
   tmin = tNear.z > tmin ? tNear.z : tmin;
   tmax = tFar.z < tmax ? tFar.z : tmax;
-  if (tmin > tmax) return false;
+  if (tmin > tmax)
+    return false;
 
   return true;
 }

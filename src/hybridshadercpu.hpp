@@ -100,10 +100,10 @@ private:
                              const glm::vec3 &viewDir);
 
   void init_geometry();
-  //unsigned int checks=0;
+  // unsigned int checks=0;
 public:
   void render();
-  //const ShaderProgram &getModelShader() { return gBufferShader; }
+  // const ShaderProgram &getModelShader() { return gBufferShader; }
 
   HybridShaderCPU(World *w);
   ~HybridShaderCPU();

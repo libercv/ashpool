@@ -52,9 +52,9 @@ bool Config::option_shadows_enabled = true;
 bool Config::option_normal_mapping_enabled = false;
 bool Config::option_rendering_method_change_requested = false;
 bool Config::option_no_capture_mouse = false;
-bool Config::option_opencl_available= true;
-bool Config::option_statistics_requested=false;
-bool Config::option_reset_statistics_requested=false;
+bool Config::option_opencl_available = true;
+bool Config::option_statistics_requested = false;
+bool Config::option_reset_statistics_requested = false;
 
 // Rendering Method
 Config::RENDERING_METHOD Config::rendering_method = Config::HYBRID;
@@ -151,6 +151,8 @@ void ConfigLoader::setPointLight(const std::vector<std::string> &v) {
   v_f.push_back((float)std::atof(v.at(7).c_str())); // diffuse
   v_f.push_back((float)std::atof(v.at(8).c_str())); // linear
   v_f.push_back((float)std::atof(v.at(9).c_str())); // quadratic
+  if (v.size() > 10)
+    v_f.push_back((float)std::atof(v.at(10).c_str())); // shininess
 
   Config::point_lights.emplace_back(v_f);
 }

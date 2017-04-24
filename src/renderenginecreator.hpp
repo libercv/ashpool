@@ -1,7 +1,7 @@
 /***************************************************
  * RenderEngineCreator
  *
- * Factory Method to create the a rendering engine  
+ * Factory Method to create the a rendering engine
  * based on Config::rendering_method enum.
  * Currently there are three possibilities: Deferred
  * Shader (full OpenGL), Hybrid Shader (OpenGL+OpenCL)
@@ -12,26 +12,25 @@
 #ifndef RENDERENGINECREATOR_H
 #define RENDERENGINECREATOR_H
 
-#include <memory>
-#include <iostream>
-#include "renderengine.hpp"
 #include "config.hpp"
+#include "deferredshader.hpp"
 #include "hybridshader.hpp"
 #include "hybridshadercpu.hpp"
-#include "deferredshader.hpp"
+#include "renderengine.hpp"
 #include "system.hpp"
+#include <iostream>
+#include <memory>
 class World;
-
 
 class RenderEngineCreator {
 public:
   static std::unique_ptr<RenderEngine> create(World &world, System &system) {
     std::unique_ptr<RenderEngine> ren;
     switch (Config::rendering_method) {
-    case Config::HYBRID:      
+    case Config::HYBRID:
       if (!Config::option_opencl_available) {
-          std::cout << "OpenCL not available\n";
-          exit(1);
+        std::cout << "OpenCL not available\n";
+        exit(1);
       }
 
       ren = std::make_unique<HybridShader>(&world, system.clmanager.get());
@@ -47,7 +46,7 @@ public:
     }
     Config::option_rendering_method_change_requested = false;
     return ren;
-  }    
+  }
 };
 
 #endif // RENDERENGINECREATOR_H

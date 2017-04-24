@@ -41,8 +41,7 @@ public:
                           ptr, nullptr);
   }
   cl_mem createBuffer(size_t size, void *ptr) {
-    return clCreateBuffer(ctxt, CL_MEM_READ_WRITE, size,
-                          ptr, nullptr);
+    return clCreateBuffer(ctxt, CL_MEM_READ_WRITE, size, ptr, nullptr);
   }
 
   void enqueueAcquireGLObjects(uint count, const cl_mem *cl_shared_objects) {

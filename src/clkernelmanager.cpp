@@ -41,7 +41,7 @@ CLKernelManager::CLKernelManager() {
     std::exit(1);
   }
 
-  Config::option_opencl_available= false;
+  Config::option_opencl_available = false;
   for (cl_platform_id &plat_id : plat_ids) {
     std::cout << "Detecting devices on platform \n";
     CL_Platform plat(plat_id);
@@ -61,8 +61,7 @@ CLKernelManager::CLKernelManager() {
     if (!platform_has_capable_devices) {
       std::cout << "Couldn't find extension cl_khr_gl_sharing in platform.\n";
       continue;
-     }
-
+    }
 
     // Try to get proc address for clGetGLContextInfoKHR
     if (!clGetGLContextInfoKHR) {
@@ -87,7 +86,7 @@ CLKernelManager::CLKernelManager() {
       std::cout << "Error creating OpenCL command queue\n";
       continue;
     }
-    Config::option_opencl_available=true;
+    Config::option_opencl_available = true;
     break;
   }
 }
@@ -132,7 +131,8 @@ bool CLKernelManager::createSharedContext(cl_platform_id plat_id) {
 
   device = CL_Device(cl_dev);
   cl_int status;
-  this->ctxt = clCreateContext(properties, 1, &device.getId(), nullptr, nullptr, &status);
+  this->ctxt = clCreateContext(properties, 1, &device.getId(), nullptr, nullptr,
+                               &status);
 
   return status == CL_SUCCESS;
 }
@@ -190,15 +190,15 @@ cl_mem CLKernelManager::createFromGLTexture(GLuint GLtexture,
 
 bool CLKernelManager::checkForCLGLSharing(cl_device_id dev_id) {
   std::string extension_string(1024, ' ');
-  cl_int status = clGetDeviceInfo(dev_id, CL_DEVICE_EXTENSIONS,
-                                  1024*sizeof(char),
-                                  (void *)extension_string.data(), nullptr);
+  cl_int status =
+      clGetDeviceInfo(dev_id, CL_DEVICE_EXTENSIONS, 1024 * sizeof(char),
+                      (void *)extension_string.data(), nullptr);
 
-  if (status!=CL_SUCCESS) {
-      std::cout << "Error querying for cl_khr_gl_sharing extension\n";
-      return false;
+  if (status != CL_SUCCESS) {
+    std::cout << "Error querying for cl_khr_gl_sharing extension\n";
+    return false;
   }
-  
+
   std::string::size_type n = extension_string.find("cl_khr_gl_sharing");
   if (n == std::string::npos)
     return false;
@@ -227,8 +227,8 @@ void CLKernelManager::loadKernelFromFile(const std::string &path) {
     return;
   }
 
-  status =
-      clBuildProgram(program, 1, &device.getId(), "-cl-fast-relaxed-math", nullptr, nullptr);
+  status = clBuildProgram(program, 1, &device.getId(), "-cl-fast-relaxed-math",
+                          nullptr, nullptr);
   if (status != CL_SUCCESS) {
     std::cout << "Error building program: " << path << "\n";
 
@@ -260,12 +260,13 @@ void CLKernelManager::setKernelArg(cl_uint index, size_t size,
 }
 
 void CLKernelManager::executeKernel(cl_event *event, size_t third) {
-  size_t globalWorkSize[] = {Config::window_width, Config::window_height,third};
-  //size_t localWorkSize[] = {1, 1, third};
-  cl_int status = clEnqueueNDRangeKernel(
-      cmdQueue, kernel, 3, nullptr, globalWorkSize, 
-                    nullptr, //localWorkSize, 
-                    0, 0, event);
+  size_t globalWorkSize[] = {Config::window_width, Config::window_height,
+                             third};
+  // size_t localWorkSize[] = {1, 1, third};
+  cl_int status =
+      clEnqueueNDRangeKernel(cmdQueue, kernel, 3, nullptr, globalWorkSize,
+                             nullptr, // localWorkSize,
+                             0, 0, event);
   if (status != CL_SUCCESS) {
     std::cout << "Error running kernel\n";
   }

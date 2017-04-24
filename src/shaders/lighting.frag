@@ -11,6 +11,7 @@ struct Light {
     vec3 Color;
     float Linear;
     float Quadratic;
+    float Shininess;
 };
 const int MAX_LIGHTS = 25;
 uniform int NR_LIGHTS;
@@ -35,7 +36,7 @@ void main()
     {
         // Diffuse
         vec3 lightDir = normalize(lights[i].Position - FragPos);
-        vec3 diffuse = max(dot(Normal, lightDir), 0.0) * Diffuse * lights[i].Color;
+        vec3 diffuse = max(dot(Normal, lightDir), 0.0) * Diffuse * lights[i].Color * lights[i].Shininess;
         // Specular
         vec3 halfwayDir = normalize(lightDir + viewDir);  
         float spec = pow(max(dot(Normal, halfwayDir), 0.0), 16.0);  

@@ -13,7 +13,8 @@
 
 enum class TextureType { diffuse, specular, normal };
 
-struct Texture {
+class Texture {
+public:
   GLuint id;
   GLuint uniformId;
 };

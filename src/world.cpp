@@ -47,6 +47,8 @@ void World::init() {
     p.diffuse = result[6];
     p.linear = result[7];
     p.quadratic = result[8];
+    if (result.size() > 9)
+      p.shininess = result[9];
     PointLights.push_back(p);
   }
 }

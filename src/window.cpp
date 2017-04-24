@@ -51,9 +51,9 @@ Window::Window() {
   glViewport(0, 0, WIDTH, HEIGHT);
 
   glEnable(GL_CULL_FACE);
-  glEnable(GL_ALPHA);   
-  //glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-  //glEnable(GL_BLEND);
+  glEnable(GL_ALPHA);
+  // glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+  // glEnable(GL_BLEND);
   glCullFace(GL_FRONT);
   glFrontFace(GL_CW);
 

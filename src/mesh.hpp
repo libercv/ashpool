@@ -60,7 +60,7 @@ private:
   std::vector<Texture> specular_textures;
   std::vector<Texture> diffuse_textures;
   std::vector<Texture> normal_textures;
-  struct Material material;
+  Material material;
   GLuint VAO{0}, VBO{0}, EBO{0};
   GLuint indicesSize{0};
 

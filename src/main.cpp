@@ -49,16 +49,17 @@ int main(int argc, char *argv[]) {
   // Initialize engine objects
   System system;
   system.initOpenCL();
-  if(Config::rendering_method==Config::HYBRID && !Config::option_opencl_available) {
-      std::cout << "Required OpenCL capabilities not available. \n";
-      exit(1);
+  if (Config::rendering_method == Config::HYBRID &&
+      !Config::option_opencl_available) {
+    std::cout << "Required OpenCL capabilities not available. \n";
+    exit(1);
   }
   World world;
   world.init();
-  
-  std::unique_ptr<RenderEngine> renderer = RenderEngineCreator::create(world, system);
+
+  std::unique_ptr<RenderEngine> renderer =
+      RenderEngineCreator::create(world, system);
   system.setCamera(world.getCamera());
-  
 
   // Main loop
   while (!system.exitRequested()) {
@@ -70,11 +71,11 @@ int main(int argc, char *argv[]) {
     renderer->render();
     // Change Rendering Method if necessary
     if (Config::option_rendering_method_change_requested) {
-      renderer.reset(nullptr);      
-      renderer =  RenderEngineCreator::create(world, system);
+      renderer.reset(nullptr);
+      renderer = RenderEngineCreator::create(world, system);
       system.resetStatistics();
     }
-  }  
+  }
   system.clmanager.reset(nullptr);
   return 0;
 }

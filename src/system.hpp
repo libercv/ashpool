@@ -8,16 +8,16 @@
 #ifndef SYSTEM_H
 #define SYSTEM_H
 
+#include "clkernelmanager.hpp"
 #include "input.hpp"
 #include "timer.hpp"
 #include "window.hpp"
-#include "clkernelmanager.hpp"
 #include <memory>
 
 class System {
 public:
   std::unique_ptr<CLKernelManager> clmanager;
-  
+
   System() : input{window.createInput()} {}
 
   void update() {
@@ -26,25 +26,25 @@ public:
     window.swapBuffers();
     input.move(timer.getDelta());
     updateStatistics();
-    
-    if (Config::option_statistics_requested){
-      Config::option_statistics_requested=false;
+
+    if (Config::option_statistics_requested) {
+      Config::option_statistics_requested = false;
       printStatistics();
     }
     if (Config::option_reset_statistics_requested) {
       resetStatistics();
-      Config::option_reset_statistics_requested=false;
+      Config::option_reset_statistics_requested = false;
     }
-    
+
     nr_frames++;
   }
 
   void initOpenCL() {
-    clmanager=std::make_unique<CLKernelManager>();
-    if(Config::option_opencl_available)
-        clmanager->loadKernelFromFile(Config::lighting_kernel);
+    clmanager = std::make_unique<CLKernelManager>();
+    if (Config::option_opencl_available)
+      clmanager->loadKernelFromFile(Config::lighting_kernel);
   }
-  
+
   void resetStatistics() {
     max_time = 0;
     min_time = 999999;
@@ -55,18 +55,18 @@ public:
   void setCamera(Camera *c) { input.setCamera(c); };
   bool exitRequested() { return window.shouldClose(); }
   void printStatistics() {
-    //nr_frames -= 1;
+    // nr_frames -= 1;
     std::cout << "Rendering method: ";
     switch (Config::rendering_method) {
-      case Config::DEFERRED:
-        std::cout << "Deferred OpenGL shader\n";        
-        break;
-      case Config::HYBRID:
-        std::cout << "Hybrid OpenCL shader\n";        
-        break;
-      default:
-        std::cout << "Hybrid CPU shader\n";        
-        break;
+    case Config::DEFERRED:
+      std::cout << "Deferred OpenGL shader\n";
+      break;
+    case Config::HYBRID:
+      std::cout << "Hybrid OpenCL shader\n";
+      break;
+    default:
+      std::cout << "Hybrid CPU shader\n";
+      break;
     }
     std::cout << "Average FPS: "
               << (double)nr_frames * 1000 / (double)total_time << "\n";
@@ -79,7 +79,7 @@ private:
   Window window;
   Input input;
   Timer timer;
-    
+
   unsigned int max_time = 0;
   unsigned int min_time = 999999;
   unsigned int total_time = 0;

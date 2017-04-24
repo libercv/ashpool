@@ -22,7 +22,7 @@ struct aiMesh;
 struct aiMaterial;
 class Model;
 class Mesh;
-struct Material;
+class Material;
 
 class ModelLoader {
 

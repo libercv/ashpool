@@ -17,7 +17,7 @@
 #include "shaderprogram.hpp" // for ShaderProgram
 #include <GL/glew.h>         // for GLuint
 #include <glm/glm.hpp>
-#include <vector>            // for vector
+#include <vector> // for vector
 class Camera;
 class Model;
 class World;
@@ -61,8 +61,8 @@ private:
   void pass2_lighting();
   void pass3_blit();
 
-  glm::vec3 lastCameraPosition{0,0,0};
-  
+  glm::vec3 lastCameraPosition{0, 0, 0};
+
   const std::string GBUFFER_POSITION_TEXTURE = "gPosition";
   const std::string GBUFFER_ALBEDO_SPEC_TEXTURE = "gAlbedoSpec";
   const std::string GBUFFER_NORMAL_TEXTURE = "gNormal";
@@ -74,7 +74,7 @@ private:
 
 public:
   void render();
-  //const ShaderProgram &getModelShader() { return gBufferShader; }
+  // const ShaderProgram &getModelShader() { return gBufferShader; }
 
   HybridShader(World *w, CLKernelManager *cl);
   ~HybridShader();

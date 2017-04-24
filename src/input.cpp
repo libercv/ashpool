@@ -60,11 +60,11 @@ void Input::set_key_callback(GLFWwindow *window) {
     }
     if (key == GLFW_KEY_H && action == GLFW_PRESS &&
         Config::rendering_method != Config::HYBRID) {
-      if(Config::option_opencl_available) {
+      if (Config::option_opencl_available) {
         Config::option_rendering_method_change_requested = true;
-        Config::rendering_method = Config::HYBRID;        
+        Config::rendering_method = Config::HYBRID;
       } else {
-        std::cout << "OpenCL Shader not available\n";        
+        std::cout << "OpenCL Shader not available\n";
       }
     }
     if (key == GLFW_KEY_D && action == GLFW_PRESS &&
@@ -73,14 +73,15 @@ void Input::set_key_callback(GLFWwindow *window) {
       Config::rendering_method = Config::DEFERRED;
     }
     if (key == GLFW_KEY_P && action == GLFW_PRESS) {
-      Config::option_statistics_requested=true;      
+      Config::option_statistics_requested = true;
     }
     if (key == GLFW_KEY_R && action == GLFW_PRESS) {
-      Config::option_reset_statistics_requested=true;      
+      Config::option_reset_statistics_requested = true;
     }
     if (key == GLFW_KEY_L && action == GLFW_PRESS) {
       glm::vec3 pos = thiz->camera->getPosition();
-      std::cout << "Position: " << pos.x << ", " << pos.y << ", " << pos.z << "\n";
+      std::cout << "Position: " << pos.x << ", " << pos.y << ", " << pos.z
+                << "\n";
     }
     if (key == GLFW_KEY_N && action == GLFW_PRESS) {
       Config::option_normal_mapping_enabled =

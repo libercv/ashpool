@@ -23,9 +23,8 @@
 #include <string>
 
 HybridShader::HybridShader(World *w, CLKernelManager *cl)
-    : opencl{cl},
-      gBufferShader{Config::gbuffer_shader_vert.c_str(),
-                    Config::gbuffer_shader_frag.c_str()},
+    : opencl{cl}, gBufferShader{Config::gbuffer_shader_vert.c_str(),
+                                Config::gbuffer_shader_frag.c_str()},
       world{w} {
 
   // Initialize uniforms for the newly created Shaders
@@ -104,13 +103,13 @@ void HybridShader::init_pass1_gBuffer() {
 
 // Load OpenCL program and compile it, initialize CL memory objects,
 // kernel arguments...
-void HybridShader::init_pass2_lighting() {  
+void HybridShader::init_pass2_lighting() {
   // Make accessible to OpenCL textures created with OpenGL
   cl_shared_objects[CL_SHARED_OBJECTS::GPOSITION] = opencl->createFromGLTexture(
       gPosition, CL_MEM_READ_ONLY, GBUFFER_POSITION_TEXTURE);
   cl_shared_objects[CL_SHARED_OBJECTS::GALBEDOSPEC] =
       opencl->createFromGLTexture(gAlbedoSpec, CL_MEM_READ_ONLY,
-                                 GBUFFER_ALBEDO_SPEC_TEXTURE);
+                                  GBUFFER_ALBEDO_SPEC_TEXTURE);
   cl_shared_objects[CL_SHARED_OBJECTS::GNORMAL] = opencl->createFromGLTexture(
       gNormal, CL_MEM_READ_ONLY, GBUFFER_NORMAL_TEXTURE);
   cl_shared_objects[CL_SHARED_OBJECTS::GSCENE] = opencl->createFromGLTexture(
@@ -118,39 +117,40 @@ void HybridShader::init_pass2_lighting() {
 
   // Create point lights memory structure
   auto lPos = world->getPointLights();
-  cl_point_lights =
-      opencl->createBufferReadOnly(sizeof(PointLight) * lPos.size(), lPos.data());
+  cl_point_lights = opencl->createBufferReadOnly(
+      sizeof(PointLight) * lPos.size(), lPos.data());
   cl_int nr_point_lights = world->getPointLightsNr();
 
   // Create geometry memory structures (BVH Nodes + Triangles)
-  cl_nodesbvh =
-      opencl->createBufferReadOnly(world->bvh.totalNodes * sizeof(BVH::LinearBVHNode),
-                          (void *)&world->bvh.nodes[0]);
-  cl_primitives =
-      opencl->createBufferReadOnly(world->bvh.primitives.size() * sizeof(Triangle),
-                          (void *)world->bvh.primitives.data());
-  
-  //cl_output2 = opencl->createBuffer(4*sizeof(cl_uchar)*Config::window_height*
-  //                                  Config::window_width*world->getPointLightsNr(), nullptr);
+  cl_nodesbvh = opencl->createBufferReadOnly(world->bvh.totalNodes *
+                                                 sizeof(BVH::LinearBVHNode),
+                                             (void *)&world->bvh.nodes[0]);
+  cl_primitives = opencl->createBufferReadOnly(
+      world->bvh.primitives.size() * sizeof(Triangle),
+      (void *)world->bvh.primitives.data());
+
+  // cl_output2 = opencl->createBuffer(4*sizeof(cl_uchar)*Config::window_height*
+  //                                  Config::window_width*world->getPointLightsNr(),
+  //                                  nullptr);
 
   // Set kernel arguments
   opencl->setKernelArg(0, sizeof(cl_mem),
-                      &cl_shared_objects[CL_SHARED_OBJECTS::GALBEDOSPEC]);
+                       &cl_shared_objects[CL_SHARED_OBJECTS::GALBEDOSPEC]);
   opencl->setKernelArg(1, sizeof(cl_mem),
-                      &cl_shared_objects[CL_SHARED_OBJECTS::GPOSITION]);
+                       &cl_shared_objects[CL_SHARED_OBJECTS::GPOSITION]);
   opencl->setKernelArg(2, sizeof(cl_mem),
-                      &cl_shared_objects[CL_SHARED_OBJECTS::GNORMAL]);
+                       &cl_shared_objects[CL_SHARED_OBJECTS::GNORMAL]);
   opencl->setKernelArg(3, sizeof(cl_mem),
-                      &cl_shared_objects[CL_SHARED_OBJECTS::GSCENE]);
+                       &cl_shared_objects[CL_SHARED_OBJECTS::GSCENE]);
   opencl->setKernelArg(4, sizeof(world->scene_attribs),
-                      (void *)&world->scene_attribs);
+                       (void *)&world->scene_attribs);
   opencl->setKernelArg(6, sizeof(cl_mem), &cl_point_lights);
   opencl->setKernelArg(7, sizeof(cl_int), &nr_point_lights);
   opencl->setKernelArg(8, sizeof(cl_mem), &cl_primitives);
-  opencl->setKernelArg(9, sizeof(cl_mem), &cl_nodesbvh);   
-  //int number_of_triangles=world->bvh.primitives.size();
-  //opencl->setKernelArg(10, sizeof(cl_int), &number_of_triangles);   
-  //opencl->setKernelArg(10, sizeof(cl_mem), &cl_output2);   
+  opencl->setKernelArg(9, sizeof(cl_mem), &cl_nodesbvh);
+  // int number_of_triangles=world->bvh.primitives.size();
+  // opencl->setKernelArg(10, sizeof(cl_int), &number_of_triangles);
+  // opencl->setKernelArg(10, sizeof(cl_mem), &cl_output2);
 }
 
 // Initialize the framebuffer which will show the scene
@@ -181,22 +181,22 @@ void HybridShader::init_pass3_blit() {
 void HybridShader::update_kernel_args() {
   // Update scene attributes
   opencl->setKernelArg(4, sizeof(world->scene_attribs),
-                      (void *)&world->scene_attribs);
+                       (void *)&world->scene_attribs);
 
   // Update camera position
   glm::vec3 pos = world->getCamera()->getPosition();
-  if(lastCameraPosition!=pos) {  
+  if (lastCameraPosition != pos) {
     cl_float3 p = cl_float3{{pos.x, pos.y, pos.z}};
-    lastCameraPosition=pos;    
+    lastCameraPosition = pos;
     opencl->setKernelArg(5, sizeof(cl_float3), &p);
-  }  
+  }
 }
 
 // Update the GBuffer
 void HybridShader::pass1_gBuffer() {
   glBindFramebuffer(GL_FRAMEBUFFER, gBuffer);
   glClearColor(0.00f, 0.00f, 0.00f, 0.00f);
-  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);  
+  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   gBufferShader.use();
 
   const Camera *camera = world->getCamera();
@@ -210,10 +210,11 @@ void HybridShader::pass1_gBuffer() {
   auto projLoc = gBufferShader.getUniformLocation(UNIFORM_PROJECTION_MATRIX);
   glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(projMatrix));
 
-  auto uniform_model_matrix=gBufferShader.getUniformLocation(UNIFORM_MODEL_MATRIX);
+  auto uniform_model_matrix =
+      gBufferShader.getUniformLocation(UNIFORM_MODEL_MATRIX);
   for (auto &m : *models) {
-    glUniformMatrix4fv(uniform_model_matrix,
-                       1, GL_FALSE, glm::value_ptr(m.getModelMatrix()));
+    glUniformMatrix4fv(uniform_model_matrix, 1, GL_FALSE,
+                       glm::value_ptr(m.getModelMatrix()));
     m.draw(gBufferShader);
   }
 }
@@ -221,21 +222,21 @@ void HybridShader::pass1_gBuffer() {
 // Generate final image from GBuffer + Geometry & Light information
 // Update variable kernel arguments
 void HybridShader::pass2_lighting() {
-  // Sync with OpenGL  
+  // Sync with OpenGL
   glFinish();
   opencl->enqueueAcquireGLObjects(CL_SHARED_OBJECTS::CL_SHARED_OBJECTS_COUNT,
-                                 cl_shared_objects);
+                                  cl_shared_objects);
 
   // Execute kernel
   cl_event kernel_event;
-  //opencl->executeKernel(&kernel_event, world->getPointLightsNr());
+  // opencl->executeKernel(&kernel_event, world->getPointLightsNr());
   opencl->executeKernel(&kernel_event, 1);
   opencl->enqueueReleaseGLObjects(CL_SHARED_OBJECTS::CL_SHARED_OBJECTS_COUNT,
-                                 cl_shared_objects);
-  
+                                  cl_shared_objects);
+
   // Sync with OpenGL
-  clWaitForEvents(1, &kernel_event);  
-  clReleaseEvent(kernel_event);  
+  clWaitForEvents(1, &kernel_event);
+  clReleaseEvent(kernel_event);
 }
 
 // Copy the final image to the framebuffer
@@ -255,7 +256,7 @@ HybridShader::~HybridShader() {
   clReleaseMemObject(cl_primitives);
   clReleaseMemObject(cl_nodesbvh);
   clReleaseMemObject(cl_point_lights);
-  //clReleaseMemObject(cl_output2);
+  // clReleaseMemObject(cl_output2);
 
   glDeleteTextures(1, &gPosition);
   glDeleteTextures(1, &gNormal);

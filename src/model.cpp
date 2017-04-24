@@ -36,17 +36,17 @@ std::vector<Triangle> Model::ExportTriangles() {
   for (Mesh &mesh : meshes) {
     std::vector<GLuint> ind = mesh.getIndices();
     std::vector<Vertex> vertices = mesh.getVertices();
-    n_vertices+=vertices.size();
-    n_triangles+=ind.size()/3;
+    n_vertices += vertices.size();
+    n_triangles += ind.size() / 3;
     for (size_t i = 0; i < ind.size() - 3; i += 3) {
       t.emplace_back(Triangle{vertices[ind[i]].Position,
                               vertices[ind[i + 1]].Position,
                               vertices[ind[i + 2]].Position});
     }
   }
-  
+
   std::cout << "Triangles: " << n_triangles << "\n";
   std::cout << "Vertices: " << n_vertices << "\n";
-  
+
   return t;
 }
