@@ -199,12 +199,12 @@ bool ConfigLoader::setMovement(const std::vector<std::string> &v) {
 
 bool ConfigLoader::setPointLight(const std::vector<std::string> &v) {
   enum pos : size_t {
-    pos_x = 1, pos_y, pos_z, color_r, color_g, color_b, shininess, linear,
+    pos_x = 1, pos_y, pos_z, color_r, color_g, color_b, intensity, linear,
     quadratic, pos_end };
   if (v.size() < pos_end) {
     std::cout << "Too few arguments for point light parameters. Expected \n";
     std::cout << "pointlight <pos_x> <pos_y> <pos_z> <color_r> <color_g> "
-              << "<color_b> <shininess> <linear> <quadratic>\n";
+              << "<color_b> <intensity> <linear> <quadratic>\n";
     return false;
   }
 
@@ -215,7 +215,7 @@ bool ConfigLoader::setPointLight(const std::vector<std::string> &v) {
   v_f.push_back((float)std::atof(v.at(color_r).c_str()));   // color_r
   v_f.push_back((float)std::atof(v.at(color_g).c_str()));   // color_g
   v_f.push_back((float)std::atof(v.at(color_b).c_str()));   // color_b
-  v_f.push_back((float)std::atof(v.at(shininess).c_str())); // shininess
+  v_f.push_back((float)std::atof(v.at(intensity).c_str())); // intensity
   v_f.push_back((float)std::atof(v.at(linear).c_str()));    // linear
   v_f.push_back((float)std::atof(v.at(quadratic).c_str())); // quadratic
 

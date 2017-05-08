@@ -41,12 +41,12 @@ void World::initModelsUniforms(ShaderProgram &shader) {
 void World::init() {
   // Load Point Lights from "Config"
   enum pos : size_t { pos_x = 0, pos_y, pos_z, color_r, color_g, color_b,
-    shininess, linear, quadratic, pos_end };
+    intensity, linear, quadratic, pos_end };
 
   for (std::vector<float> result : Config::point_lights) {
     PointLight p(result[pos_x], result[pos_y], result[pos_z]);
     p.color = cl_float3{{result[color_r], result[color_g], result[color_b]}};
-    p.intensity = result[shininess];
+    p.intensity = result[intensity];
     p.linear = result[linear];
     p.quadratic = result[quadratic];
     PointLights.push_back(p);
