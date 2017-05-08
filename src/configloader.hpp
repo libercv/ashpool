@@ -17,16 +17,20 @@ public:
   ConfigLoader(const std::string &file);
   ~ConfigLoader();
 
+  enum CONFIG_LOADER_POINT_LIGHT {
+
+  };
+
 private:
-  void setWindow(const std::vector<std::string> &);
-  void setModel(const std::vector<std::string> &);
-  void setGBufferShader(const std::vector<std::string> &);
-  void setLightingShader(const std::vector<std::string> &);
-  void setLightingKernel(const std::vector<std::string> &);
-  void setCamera(const std::vector<std::string> &);
-  void setMovement(const std::vector<std::string> &);
-  void setPointLight(const std::vector<std::string> &);
-  void setAmbientLightIntensity(const std::vector<std::string> &);
+  bool setWindow(const std::vector<std::string> &);
+  bool setModel(const std::vector<std::string> &);
+  bool setGBufferShader(const std::vector<std::string> &);
+  bool setLightingShader(const std::vector<std::string> &);
+  bool setLightingKernel(const std::vector<std::string> &);
+  bool setCamera(const std::vector<std::string> &);
+  bool setMovement(const std::vector<std::string> &);
+  bool setPointLight(const std::vector<std::string> &);
+  bool setAmbientLightIntensity(const std::vector<std::string> &);
 
   std::vector<std::string> readFile(const std::string &path);
 };

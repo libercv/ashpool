@@ -36,7 +36,6 @@ DeferredShader::~DeferredShader() {
   glDeleteTextures(1, &gAlbedoSpec);
   glDeleteRenderbuffers(1, &rboDepth);
   glDeleteFramebuffers(1, &gBuffer);
-  std::cout << "Deferred shader destructor called\n";
 }
 
 // Initialize GBuffer -> textures(albedo+specular, normals, positions)
@@ -108,10 +107,12 @@ void DeferredShader::init_pass2_lighting() {
   glUniform1f(lightingPassShader.getUniformLocation("ambient"),
               Config::ambient);
 
-  GLfloat quadVertices[] = {
-      // Positions        // Texture Coords
-      -1.0f, 1.0f, 0.0f, 0.0f, 1.0f, -1.0f, -1.0f, 0.0f, 0.0f, 0.0f,
-      1.0f,  1.0f, 0.0f, 1.0f, 1.0f, 1.0f,  -1.0f, 0.0f, 1.0f, 0.0f,
+  constexpr GLfloat quadVertices[] = {
+      // Positions         // Texture Coords
+      -1.0f,  1.0f, 0.0f,  0.0f, 1.0f,
+      -1.0f, -1.0f, 0.0f,  0.0f, 0.0f,
+      1.0f,   1.0f, 0.0f,  1.0f, 1.0f,
+      1.0f,  -1.0f, 0.0f,  1.0f, 0.0f,
   };
   // Setup plane VAO
   glGenVertexArrays(1, &quadVAO);
@@ -130,7 +131,7 @@ void DeferredShader::init_pass2_lighting() {
   // Pass point light information to the shader
   auto pLights = world->getPointLights();
   glUniform1i(lightingPassShader.getUniformLocation("NR_LIGHTS"),
-              world->getPointLightsNr());
+              static_cast<GLint>(world->getPointLightsNr()));
   for (unsigned int i = 0; i < pLights.size(); i++) {
     PointLight p = pLights[i];
     glm::vec3 lightPos = {p.position.x, p.position.y, p.position.z};
@@ -149,8 +150,8 @@ void DeferredShader::init_pass2_lighting() {
                     "lights[" + std::to_string(i) + "].Quadratic"),
                 p.quadratic);
     glUniform1f(lightingPassShader.getUniformLocation(
-                    "lights[" + std::to_string(i) + "].Shininess"),
-                p.shininess);
+                    "lights[" + std::to_string(i) + "].Intensity"),
+                p.intensity);
   }
 }
 

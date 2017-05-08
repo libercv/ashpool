@@ -28,7 +28,6 @@ HybridShaderCPU::HybridShaderCPU(World *w)
                     Config::gbuffer_shader_frag.c_str()},
       world{w} {
 
-  // omp_set_num_threads(6);
   // Initialize uniforms for the newly created Shaders
   world->initModelsUniforms(gBufferShader);
 
@@ -44,7 +43,7 @@ HybridShaderCPU::HybridShaderCPU(World *w)
 
 void HybridShaderCPU::init_geometry() {
   for (unsigned int i = 0; i < world->bvh.totalNodes; i++) {
-    BVH::LinearBVHNode clnode = world->bvh.nodes[i];
+    linear_bvh_node clnode = world->bvh.nodes_array[i];
 
     bvhnodes.emplace_back(
         _BVHNode{glm::vec3(clnode.pMin.x, clnode.pMin.y, clnode.pMin.z),
@@ -54,7 +53,7 @@ void HybridShaderCPU::init_geometry() {
                  clnode.axis});
   }
 
-  for (Triangle cltriangle : world->bvh.primitives) {
+  for (Triangle cltriangle : world->bvh.triangles) {
     triangles.emplace_back(_Triangle{
         glm::vec3(cltriangle.v1.x, cltriangle.v1.y, cltriangle.v1.z),
         glm::vec3(cltriangle.v2.x, cltriangle.v2.y, cltriangle.v2.z),
@@ -272,8 +271,8 @@ glm::vec3 HybridShaderCPU::pointLightsColor(const glm::vec3 &position,
     glm::vec3 lightDir = glm::normalize(lpos - position);
     float dist = glm::distance(lpos, position);
     // Attenuation
-    float attenuation =
-        1.0 / (1.0 + l.linear * dist + l.quadratic * dist * dist);
+    float attenuation = static_cast<float>(
+        1.0 / (1.0 + l.linear * dist + l.quadratic * dist * dist));
 
     if (world->scene_attribs.shadowsEnabled &&
         attenuation > ATTENUATION_SENSIBILITY) {
@@ -317,7 +316,6 @@ HybridShaderCPU::~HybridShaderCPU() {
   glDeleteRenderbuffers(1, &rboDepth);
   glDeleteFramebuffers(1, &gSceneBuffer);
   glDeleteFramebuffers(1, &gBuffer);
-  std::cout << "Hybrid Shader CPU destructor called\n";
 }
 
 // Checks ray-triangle intersection

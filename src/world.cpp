@@ -25,12 +25,11 @@ World::World()
   // Export its geometry to the BVH acceleration structure
   for (auto &m : models) {
     auto t = m.ExportTriangles();
-    std::copy_n(t.data(), t.size(), back_inserter(bvh.primitives));
+    std::copy_n(t.data(), t.size(), back_inserter(bvh.triangles));
   }
 
   // Initialize BVH
   bvh.init();
-  std::cout << "Triangles: " << bvh.primitives.size() << "\n";
 }
 
 void World::initModelsUniforms(ShaderProgram &shader) {
@@ -41,14 +40,15 @@ void World::initModelsUniforms(ShaderProgram &shader) {
 
 void World::init() {
   // Load Point Lights from "Config"
+  enum pos : size_t { pos_x = 0, pos_y, pos_z, color_r, color_g, color_b,
+    shininess, linear, quadratic, pos_end };
+
   for (std::vector<float> result : Config::point_lights) {
-    PointLight p(result[0], result[1], result[2]);
-    p.color = cl_float3{{result[3], result[4], result[5]}};
-    p.diffuse = result[6];
-    p.linear = result[7];
-    p.quadratic = result[8];
-    if (result.size() > 9)
-      p.shininess = result[9];
+    PointLight p(result[pos_x], result[pos_y], result[pos_z]);
+    p.color = cl_float3{{result[color_r], result[color_g], result[color_b]}};
+    p.intensity = result[shininess];
+    p.linear = result[linear];
+    p.quadratic = result[quadratic];
     PointLights.push_back(p);
   }
 }

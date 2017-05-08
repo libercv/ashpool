@@ -30,8 +30,8 @@ private:
     glm::vec3 bounds_pMin;
     glm::vec3 bounds_pMax;
     union {
-      uint primitivesOffset;  // leaf
-      uint secondChildOffset; // interior
+      unsigned int primitivesOffset;  // leaf
+      unsigned int secondChildOffset; // interior
     } uf;
     unsigned char nPrimitives; // 0 -> Interior
     unsigned char axis;        // interior node: xyz

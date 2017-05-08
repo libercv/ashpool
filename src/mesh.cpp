@@ -107,7 +107,7 @@ void Mesh::draw(const ShaderProgram &shader) const {
 }
 
 void Mesh::setupMesh() {
-  this->indicesSize = indices.size();
+  this->indicesSize = static_cast<GLsizei>(indices.size());
 
   // Create buffers/arrays
   glGenVertexArrays(1, &this->VAO);
@@ -130,15 +130,15 @@ void Mesh::setupMesh() {
   // Vertex Positions
   glEnableVertexAttribArray(0);
   glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof_vertex,
-                        (GLvoid *)nullptr);
+                        (const GLvoid *)nullptr);
   // Vertex Normals
   glEnableVertexAttribArray(1);
   glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof_vertex,
-                        (GLvoid *)offsetof(Vertex, Normal));
+                        (const GLvoid *)offsetof(Vertex, Normal));
   // Vertex Texture Coords
   glEnableVertexAttribArray(2);
   glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof_vertex,
-                        (GLvoid *)offsetof(Vertex, TexCoords));
+                        (const GLvoid *)offsetof(Vertex, TexCoords));
 
   glBindVertexArray(0);
 }

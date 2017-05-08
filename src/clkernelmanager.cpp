@@ -24,6 +24,7 @@
 #include <cstring>
 #include <string>
 
+// Use extension cl_khr_gl_sharing
 typedef CL_API_ENTRY cl_int(CL_API_CALL *clGetGLContextInfoKHR_fn)(
     const cl_context_properties *properties, cl_gl_context_info param_name,
     size_t param_value_size, void *param_value, size_t *param_value_size_ret);
@@ -33,15 +34,18 @@ typedef CL_API_ENTRY cl_int(CL_API_CALL *clGetGLContextInfoKHR_fn)(
 #define clGetGLContextInfoKHR clGetGLContextInfoKHR_proc
 static clGetGLContextInfoKHR_fn clGetGLContextInfoKHR;
 
+/**
+ * @brief CLKernelManager::CLKernelManager
+ */
 CLKernelManager::CLKernelManager() {
+  Config::option_opencl_available = false;
 
   auto plat_ids = CL_Platform::get_platforms_ids();
   if (plat_ids.size() == 0) {
     std::cout << "No OpenCL platforms detected\n";
-    std::exit(1);
+    return;
   }
 
-  Config::option_opencl_available = false;
   for (cl_platform_id &plat_id : plat_ids) {
     std::cout << "Detecting devices on platform \n";
     CL_Platform plat(plat_id);
@@ -91,6 +95,11 @@ CLKernelManager::CLKernelManager() {
   }
 }
 
+/**
+ * @brief CLKernelManager::createSharedContext
+ * @param plat_id
+ * @return
+ */
 bool CLKernelManager::createSharedContext(cl_platform_id plat_id) {
 
 #ifdef linux

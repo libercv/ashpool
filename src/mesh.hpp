@@ -62,7 +62,7 @@ private:
   std::vector<Texture> normal_textures;
   Material material;
   GLuint VAO{0}, VBO{0}, EBO{0};
-  GLuint indicesSize{0};
+  GLsizei indicesSize{0};
 
   void setupMesh();
 };

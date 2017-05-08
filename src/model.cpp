@@ -32,7 +32,7 @@ void Model::refreshUniforms(const ShaderProgram &shader) {
 // and exported to OpenCL
 std::vector<Triangle> Model::ExportTriangles() {
   std::vector<Triangle> t;
-  unsigned int n_vertices{0}, n_triangles{0};
+  size_t n_vertices{0}, n_triangles{0};
   for (Mesh &mesh : meshes) {
     std::vector<GLuint> ind = mesh.getIndices();
     std::vector<Vertex> vertices = mesh.getVertices();

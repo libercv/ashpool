@@ -15,60 +15,38 @@
 #define BVH_H
 
 #include "bbox.hpp"
-#include "triangle.hpp"
-
-#include "CL/cl.h"
-#include <glm/glm.hpp>
+#include "bvhlinearnode.hpp"
 #include <memory>
 #include <vector>
 
-struct BVHBuildNode;
-
-struct BVHPrimitiveInfo {
-  BVHPrimitiveInfo(int pn, const BBox &b) : primitiveNumber(pn), bounds(b) {
-    centroid = .5f * b.pMin + .5f * b.pMax;
-  }
-  int primitiveNumber;
-  glm::vec3 centroid;
-  BBox bounds;
-};
+class Triangle;
+struct BVHTreeNode;
+class BVHPrimitiveInfo;
 
 class BVH {
 public:
-  struct LinearBVHNode {
-    // BBox bounds;
-    cl_float3 pMin;
-    cl_float3 pMax;
-    union {
-      cl_uint primitivesOffset;  // leaf
-      cl_uint secondChildOffset; // interior
-    };
-    cl_uchar nPrimitives; // 0 -> Interior
-    cl_uchar axis;        // interior node: xyz
-  };
-
-  uint32_t totalNodes = 0;
-
-  std::vector<Triangle> primitives;
-  std::vector<BVHPrimitiveInfo> buildData;
-  std::unique_ptr<LinearBVHNode[]> nodes;
-
+  size_t totalNodes = 0;
+  std::vector<Triangle> triangles;
+  std::unique_ptr<linear_bvh_node[]> nodes_array;
   void init();
 
 private:
-  const unsigned int PRIMITIVES_PER_NODE = 4;
-  std::vector<Triangle> orderedPrims;
-  void recursiveBuild(BVHBuildNode *node,
-                      std::vector<BVHPrimitiveInfo> &buildData, uint32_t start,
-                      uint32_t end, uint32_t *totalNodes,
-                      std::vector<Triangle> &orderedPrims);
+  static constexpr unsigned int PRIMITIVES_PER_NODE = 4;
 
-  void createLeaf(BVHBuildNode *node, std::vector<BVHPrimitiveInfo> &buildData,
-                  uint32_t start, uint32_t end,
-                  std::vector<Triangle> &orderedPrims, BBox &bbox,
-                  uint32_t nPrimitives);
-  uint32_t flattenBVHTree(const BVHBuildNode *node, uint32_t *offset,
-                          int *maxlevel, int level);
+  // Recursive method to build the BVH tree. Uses "createLeaf"
+  void recursiveBuild(BVHTreeNode *node,
+                      std::vector<BVHPrimitiveInfo> &buildData, size_t start,
+                      size_t end, std::vector<Triangle> &orderedPrims);
+
+  // Creates a leaf for the tree structure
+  void createLeaf(BVHTreeNode *node, std::vector<BVHPrimitiveInfo> &buildData,
+                  size_t start, size_t end, std::vector<Triangle> &orderedPrims,
+                  BBox &bbox, unsigned char nPrimitives);
+
+  // Recursive method that fills "nodes_array" with the contents of the
+  // BVH tree.
+  size_t flattenBVHTree(const BVHTreeNode *node, size_t &offset,
+                        size_t &max_depth, size_t depth);
 };
 
 #endif // BVH_H

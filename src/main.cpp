@@ -10,6 +10,17 @@
 #include "system.hpp"
 #include "world.hpp"
 
+constexpr const char *USAGE_STR = "\
+Usage: ashpool <options> configuration_file                 \n\
+Example: ashpool --cpu --noshadows sponza.ash               \n\n\
+Options:                                                    \n\
+  --cpu: Use Hybrid Shader on CPU                           \n\
+  --hybrid: Use Hybrid Shader with OpenCL                   \n\
+  --deferred: Use Deferred Shader                           \n\
+  --noshadows: Do not calculate shadows with Hybrid shaders \n\
+  --nocapturemouse: Do not capture mouse pointer.           \n\n\
+";
+
 void parseCLI(int argc, char *argv[]) {
   for (int i = 1; i < (argc - 1); i++) {
     std::string option{argv[i]};
@@ -29,15 +40,7 @@ void parseCLI(int argc, char *argv[]) {
 int main(int argc, char *argv[]) {
   // Check number of command line interface arguments
   if (argc < 2) {
-    std::cout << "Usage: ashpool <options> configuration_file\n";
-    std::cout << "Example: ashpool --cpu --noshadows sponza.ash\n\n";
-    std::cout << "Options:\n";
-    std::cout << "  --cpu: Use Hybrid Shader on CPU\n";
-    std::cout << "  --hybrid: Use Hybrid Shader with OpenCL\n";
-    std::cout << "  --deferred: Use Deferred Shader\n";
-    std::cout
-        << "  --noshadows: Do not calculate shadows with Hybrid shaders\n";
-    std::cout << "  --nocapturemouse: Do not capture mouse pointer. \n\n";
+    std::cout << USAGE_STR;
     exit(-1);
   }
 
@@ -56,7 +59,6 @@ int main(int argc, char *argv[]) {
   }
   World world;
   world.init();
-
   std::unique_ptr<RenderEngine> renderer =
       RenderEngineCreator::create(world, system);
   system.setCamera(world.getCamera());

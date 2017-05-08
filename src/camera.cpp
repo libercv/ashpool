@@ -13,78 +13,84 @@
 #include "camera.hpp"
 #include <iostream>
 
-// Processes input received from any keyboard-like input system. Accepts input
-// parameter in the form of camera defined ENUM (to abstract it from windowing
-// systems)
-void Camera::move(Camera_Movement direction, GLfloat deltaTime) {
-  GLfloat velocity = this->MovementSpeed * deltaTime;
-  if (direction == FORWARD)
-    this->Position += this->Front * velocity;
-  if (direction == BACKWARD)
-    this->Position -= this->Front * velocity;
-  if (direction == LEFT)
-    this->Position -= this->Right * velocity;
-  if (direction == RIGHT)
-    this->Position += this->Right * velocity;
+/**
+ * @brief Camera::move Update Camera position
+ * Processes input received from any keyboard-like input system. Accepts input
+ * parameter in the form of camera defined ENUM (to abstract it from windowing
+ * systems
+ * @param direction camara defined enumeration
+ * @param delta_time time in milliseconds since last movement
+ */
+void Camera::move(camera_movement direction, GLfloat delta_time) {
+  glm::vec3 movement_vector;
 
-  this->updateCameraVectors();
-  /*
-  std::cout << "x: " << Position.x << ", y: " << Position.y
-            << ", z: " << Position.z << "\n";
-  */
+  if (direction == FORWARD)
+    movement_vector = this->front_vector;
+  else if (direction == BACKWARD)
+    movement_vector = -this->front_vector;
+  else if (direction == LEFT)
+    movement_vector = -this->right_vector;
+  else if (direction == RIGHT)
+    movement_vector = this->right_vector;
+
+  this->position += this->mov_speed * delta_time * movement_vector;
+  this->update_vectors();
 }
 
-// Processes input received from a mouse input system. Expects the offset value
-// in both the x and y direction.
-void Camera::changeOrientation(GLfloat delta_yaw, GLfloat delta_pitch,
-                               GLboolean constrainPitch) {
-
-  delta_yaw *= this->MouseSensitivity;
-  delta_pitch *= this->MouseSensitivity;
-
-  this->Yaw += delta_yaw;
-  this->Pitch += delta_pitch;
-
+//
+/**
+ * @brief Camera::rotate Rotate Camera
+ * Processes input received from a mouse input system. Expects the offset value
+ * in both the x and y direction.
+ * @param delta_yaw
+ * @param delta_pitch
+ */
+void Camera::rotate(GLfloat delta_yaw, GLfloat delta_pitch) {
+  // Update Camera's Eurler angles
+  this->yaw += delta_yaw;
   // Make sure that when pitch is out of bounds, screen doesn't get flipped
-  if (constrainPitch) {
-    if (this->Pitch > 89.0f)
-      this->Pitch = 89.0f;
-    if (this->Pitch < -89.0f)
-      this->Pitch = -89.0f;
-  }
+  this->pitch = glm::clamp(this->pitch + delta_pitch, MIN_PITCH, MAX_PITCH);
 
   // Update Front, Right and Up Vectors using the updated Euler angles
-  this->updateCameraVectors();
+  this->update_vectors();
 }
 
-// Processes input received from a mouse scroll-wheel event. Only requires input
-// on the vertical wheel-axis
-void Camera::changeFovy(GLfloat yoffset) {
-  if (this->fovy >= 1.0f && this->fovy <= 45.0f)
-    this->fovy -= 3 * yoffset;
-  if (this->fovy <= 1.0f)
-    this->fovy = 1.0f;
-  if (this->fovy >= 45.0f)
-    this->fovy = 45.0f;
+/**
+ * @brief Camera::change_fovy
+ * Changes the vertical field of view angle. Equivalent to zooming
+ * @param delta_fovy Signed value to shrink or stretch angle (sexagesimal)
+ * Valid angle values are 1 to 45
+ */
+void Camera::change_fovy(GLfloat delta_fovy) {
+  /// Update field of view angle. Clamp to 1-45 degrees
+  this->fovy = glm::clamp(this->fovy - delta_fovy, MIN_FOVY, MAX_FOVY);
 
-  projMatrix =
-      glm::perspective(glm::radians(fovy), Config::window_ratio, zNear, zFar);
+  /// Update projection matrix with new fov angle
+  proj_matrix =
+      glm::perspective(glm::radians(fovy), Config::window_ratio, z_near, z_far);
 }
 
-// Calculates the front vector from the Camera's (updated) Euler Angles
-void Camera::updateCameraVectors() {
+/**
+ * @brief Camera::update_vectors
+ * Updates viewMatrix and the front, right and up vector based on
+ * the Camera's Euler angles
+ */
+void Camera::update_vectors() {
+  constexpr glm::vec3 upVector = glm::vec3(0.0f, 1.0f, 0.0f);
 
-  // Calculate the new Front vector
+  /// Calculate the new Front vector
   glm::vec3 front = {
-      cos(glm::radians(this->Yaw)) * cos(glm::radians(this->Pitch)),
-      sin(glm::radians(this->Pitch)),
-      sin(glm::radians(this->Yaw)) * cos(glm::radians(this->Pitch))};
-  this->Front = glm::normalize(front);
+      cos(glm::radians(this->yaw)) * cos(glm::radians(this->pitch)),
+      sin(glm::radians(this->pitch)),
+      sin(glm::radians(this->yaw)) * cos(glm::radians(this->pitch))};
+  this->front_vector = glm::normalize(front);
 
-  // Also re-calculate the Right and Up vector
-  this->Right = glm::normalize(glm::cross(this->Front, this->WorldUp));
-  this->Up = glm::normalize(glm::cross(this->Right, this->Front));
+  /// Also re-calculate the Right and Up vector
+  this->right_vector = glm::normalize(glm::cross(this->front_vector, upVector));
+  this->up_vector =
+      glm::normalize(glm::cross(this->right_vector, this->front_vector));
 
-  this->viewMatrix =
-      glm::lookAt(this->Position, this->Position + this->Front, this->Up);
+  /// Update view matrix
+  this->view_matrix = glm::lookAt(
+      this->position, this->position + this->front_vector, this->up_vector);
 }

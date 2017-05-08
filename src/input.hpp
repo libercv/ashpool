@@ -14,12 +14,8 @@
 
 #include <iostream>
 #include <memory>
-
-// GLEW
 #define GLEW_STATIC
 #include <GL/glew.h>
-
-// GLFW
 #include <GLFW/glfw3.h>
 
 #include "camera.hpp"
@@ -28,15 +24,15 @@ class Input {
 public:
   Input(GLFWwindow *w);
   Input(GLFWwindow *w, Camera *c);
-  ~Input(){};
-  void setCamera(Camera *c) { camera = c; };
-  void move(GLfloat deltaTime);
+  ~Input() {}
+  void setCamera(Camera *c) { camera = c; }
+  void move(GLfloat delta_time);
 
 private:
   Camera *camera;
-  bool keys[1024];
-  GLfloat lastX = 400, lastY = 300;
-  bool firstMouse = true;
+  bool key_pressed[1024];
+  static constexpr double NOT_INITIALIZED = -1;
+  double lastX = NOT_INITIALIZED, lastY = NOT_INITIALIZED;
 
   void init(GLFWwindow *window);
   void set_key_callback(GLFWwindow *window);

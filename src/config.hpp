@@ -16,8 +16,8 @@ public:
   enum RENDERING_METHOD { HYBRID, DEFERRED, HYBRID_CPU };
 
   // window
-  static uint window_width;
-  static uint window_height;
+  static unsigned int window_width;
+  static unsigned int window_height;
   static float window_ratio;
 
   // Shaders / kernels
@@ -37,6 +37,7 @@ public:
   // Movement
   static float movement_speed;
   static float movement_zoom;
+  static float movement_fovy_step;
   static float movement_sensitivity;
 
   // Scene

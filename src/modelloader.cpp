@@ -35,26 +35,7 @@ Model ModelLoader::loadModel(const std::string &path) {
   std::cout << "Start importing model" << std::endl;
   Assimp::Importer importer;
   auto directory = path.substr(0, path.find_last_of('/'));
-  /*
-  importer.SetPropertyFloat(AI_CONFIG_PP_GSN_MAX_SMOOTHING_ANGLE, 45.0f);
-  //importer.SetPropertyInteger(AI_CONFIG_PP_SBP_REMOVE, aiPrimitiveType_LINE |
-  aiPrimitiveType_POINT);
-  const aiScene *scene= importer.ReadFile(
-      path,
-      aiProcess_Triangulate           |
-      aiProcess_GenUVCoords           |
-      aiProcess_GenSmoothNormals      |
-      aiProcess_OptimizeMeshes        |
-      aiProcess_OptimizeGraph         |
-      aiProcess_FixInfacingNormals    |
-      aiProcess_JoinIdenticalVertices |
-      aiProcess_SortByPType
-  );
-  */
-
   const aiScene *scene = importer.ReadFile(
-      // path, aiProcess_GenNormals | aiProcess_Triangulate |
-      // aiProcess_FlipUVs);
       path, aiProcess_GenSmoothNormals | aiProcess_Triangulate);
 
   // Check for errors
@@ -84,8 +65,6 @@ std::vector<Mesh> ModelLoader::loadMeshes(const aiScene *scene,
                             mat, aiTextureType_SPECULAR, directory),
                         mTextureManager.loadMaterialTextures(
                             mat, aiTextureType_DIFFUSE, directory),
-                        // mTextureManager.loadMaterialTextures(
-                        //    mat, aiTextureType_HEIGHT, directory),
                         std::vector<Texture>(), loadMaterial(mat));
   }
 
@@ -152,9 +131,6 @@ Material ModelLoader::loadMaterial(const aiMaterial *mtl) const {
 
   if (AI_SUCCESS == aiGetMaterialColor(mtl, AI_MATKEY_COLOR_EMISSIVE, &color))
     mat.emissive = glm::vec4(color.r, color.g, color.b, color.a);
-
-  // unsigned int max;
-  // aiGetMaterialFloatArray(mtl, AI_MATKEY_SHININESS, &mat.shininess, &max);
 
   return mat;
 }

@@ -14,9 +14,6 @@ __constant sampler_t imageSampler =
 __constant float EPSILON = 0.001f;
 // Threshold to discard light contribution
 __constant float ATTENUATION_SENSITIVITY = 0.02f;
-#define POS 0
-#define ALB 1
-#define NOR 2
 
 // Struct of each Bounding Volume Hierarchy node
 typedef struct _BVHNode {
@@ -42,10 +39,9 @@ typedef struct _Triangle { float3 p0, p1, p2; } Triangle;
 typedef struct _PointLight {
   float3 p_position;
   float3 p_color;
-  float diffuse;
+  float intensity;
   float linear;
   float quadratic;
-  float shininess;
 } PointLight;
 
 typedef struct _SceneAttribs {
@@ -185,7 +181,7 @@ float3 pointLightsColor(__constant PointLight *point_lights,
     // Diffuse Lambertian
     const float ang = max(dot(surface_normal, light_dir), 0.0f);
     const float3 diffuse =
-        ang * surface_diffuse * pLight->p_color * pLight->shininess;
+        ang * surface_diffuse * pLight->p_color * pLight->intensity;
     color += diffuse * attenuation;
 
     // Specular Blinn-Phong
@@ -202,6 +198,7 @@ float3 pointLightsColor(__constant PointLight *point_lights,
 }
 
 //
+// Main function. Kernel "render"
 //
 __kernel void
 render(__read_only image2d_t g_albedo_spec, __read_only image2d_t g_position,
@@ -215,7 +212,7 @@ render(__read_only image2d_t g_albedo_spec, __read_only image2d_t g_position,
   const float specular = read_imagef(g_albedo_spec, imageSampler, coord).w;
   const float3 pos = read_imagef(g_position, imageSampler, coord).xyz;
   const float3 norm = read_imagef(g_normal, imageSampler, coord).xyz;
-  const float3 normal = normalize(2 * norm - (float3)(1, 1, 1));
+  const float3 normal = fast_normalize(2 * norm - (float3)(1, 1, 1));
 
   // Ambient light
   float3 color = diffuse * attribs.ambient;

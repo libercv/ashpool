@@ -13,7 +13,7 @@ public:
 
   cl_float3 v1, v2, v3;
 
-  BBox WorldBound() const {
+  BBox getBbox() const {
     return Union(BBox(glm::vec3(v1.x, v1.y, v1.z), glm::vec3(v2.x, v2.y, v2.z)),
                  glm::vec3(v3.x, v3.y, v3.z));
   }

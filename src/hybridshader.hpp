@@ -36,7 +36,7 @@ private:
   GLuint gSceneTexture; // Color attachment
 
   // OPENGL-OPENCL Shared Textures
-  enum CL_SHARED_OBJECTS : uint {
+  enum CL_SHARED_OBJECTS : unsigned int {
     GPOSITION = 0,
     GALBEDOSPEC,
     GNORMAL,
@@ -45,7 +45,7 @@ private:
   };
   cl_mem cl_shared_objects[CL_SHARED_OBJECTS::CL_SHARED_OBJECTS_COUNT];
 
-  cl_mem cl_nodesbvh, cl_primitives; //, cl_output2;
+  cl_mem cl_nodesbvh, cl_primitives;
   // OPENCL kernel argument: Point Lights. The might change
   // from frame to frame, so we update it.
   cl_mem cl_point_lights;
@@ -74,8 +74,6 @@ private:
 
 public:
   void render();
-  // const ShaderProgram &getModelShader() { return gBufferShader; }
-
   HybridShader(World *w, CLKernelManager *cl);
   ~HybridShader();
 };

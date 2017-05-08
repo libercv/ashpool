@@ -27,8 +27,8 @@ public:
   Model &operator=(const Model &other) = delete;
   Model(const Model &other) = delete;
   Model(Model &&other)
-      : meshes{std::move(other.meshes)},
-        modelMatrix{std::move(other.modelMatrix)} {}
+      : meshes{std::move(other.meshes)}, modelMatrix{
+                                             std::move(other.modelMatrix)} {}
 
   ~Model() = default;
 

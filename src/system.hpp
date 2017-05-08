@@ -24,7 +24,7 @@ public:
     window.pollEvents();
     timer.update();
     window.swapBuffers();
-    input.move(timer.getDelta());
+    input.move(static_cast<GLfloat>(timer.getDelta()) * 1000); /// We need ms
     updateStatistics();
 
     if (Config::option_statistics_requested) {
@@ -92,7 +92,7 @@ private:
     double delta = timer.getDelta() * 1000; // ms
     max_time = max_time > delta ? max_time : (unsigned int)delta;
     min_time = min_time < delta ? min_time : (unsigned int)delta;
-    total_time += delta;
+    total_time += static_cast<unsigned int>(delta);
   }
 };
 #endif // SYSTEM_H

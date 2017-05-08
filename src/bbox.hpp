@@ -5,27 +5,36 @@
  *
  * 2017 - Liberto Camús
  * **************************************************/
-
 #ifndef BBOX_H
 #define BBOX_H
 
-#include <GL/glew.h>      // for GLuint
-#include <algorithm>      // for move
-#include <assimp/types.h> // for aiString
+#include <algorithm>
 #include <glm/glm.hpp>
-#include <string> // for string
-#include <vector> // for vector
 
+/**
+ * @brief The BBox class
+ *
+ * Contains a bounding box volume and related methods
+ */
 class BBox {
 public:
-  glm::vec3 pMin, pMax;
+  glm::vec3 pMin, pMax; /// Further apart vertices
+
   BBox()
-      : pMin{INFINITY, INFINITY, INFINITY},
-        pMax{-INFINITY, -INFINITY, -INFINITY} {}
+      : pMin{INFINITY, INFINITY, INFINITY}, pMax{-INFINITY, -INFINITY,
+                                                 -INFINITY} {}
+
   BBox(const glm::vec3 &p1, const glm::vec3 &p2)
       : pMin{std::min(p1.x, p2.x), std::min(p1.y, p2.y), std::min(p1.z, p2.z)},
         pMax{std::max(p1.x, p2.x), std::max(p1.y, p2.y), std::max(p1.z, p2.z)} {
   }
+
+  /**
+   * @brief Union of a bounding box and a point
+   * @param b Bounding box
+   * @param p Point to stretch the bounding box to
+   * @return New bounding box with the union
+   */
   friend BBox Union(const BBox &b, const glm::vec3 &p) {
     BBox ret = b;
     ret.pMin.x = std::min(b.pMin.x, p.x);
@@ -36,6 +45,13 @@ public:
     ret.pMax.z = std::max(b.pMax.z, p.z);
     return ret;
   }
+
+  /**
+   * @brief Union of two bounding boxes
+   * @param b First bbox
+   * @param b2 Second bbox
+   * @return New bbox which is the union of the two
+   */
   friend BBox Union(const BBox &b, const BBox &b2) {
     BBox ret = b;
     ret.pMin.x = std::min(b.pMin.x, b2.pMin.x);
@@ -46,18 +62,14 @@ public:
     ret.pMax.z = std::max(b.pMax.z, b2.pMax.z);
     return ret;
   }
-  bool Overlaps(const BBox &b) const {
-    bool x = (pMax.x >= b.pMin.x) && (pMin.x <= b.pMax.x);
-    bool y = (pMax.y >= b.pMin.y) && (pMin.y <= b.pMax.y);
-    bool z = (pMax.z >= b.pMin.z) && (pMin.z <= b.pMax.z);
-    return (x && y && z);
-  }
-  bool Inside(const glm::vec3 &pt) const {
-    return (pt.x >= pMin.x && pt.x <= pMax.x && pt.y >= pMin.y &&
-            pt.y <= pMax.y && pt.z >= pMin.z && pt.z <= pMax.z);
-  }
-  int MaximumExtent() const {
-    glm::vec3 diag = pMax - pMin;
+
+  /**
+   * @brief MaximumExtent
+   * Calculates the largest dimension of the cube
+   * @return 0 -> x, 1 -> and 2 -> z
+   */
+  unsigned char MaximumExtent() const {
+    glm::vec3 diag = pMax - pMin; /// Diagonal
     if (diag.x > diag.y && diag.x > diag.z)
       return 0;
     else if (diag.y > diag.z)

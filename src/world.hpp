@@ -33,7 +33,7 @@ public:
 
   Camera *getCamera() const { return camera.get(); }
   const std::vector<Model> *getModels() const { return &models; }
-  int getPointLightsNr() const { return PointLights.size(); }
+  size_t getPointLightsNr() const { return PointLights.size(); }
   const std::vector<PointLight> &getPointLights() const { return PointLights; }
   void update();
   BVH bvh;

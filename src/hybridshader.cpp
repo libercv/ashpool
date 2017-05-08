@@ -119,19 +119,15 @@ void HybridShader::init_pass2_lighting() {
   auto lPos = world->getPointLights();
   cl_point_lights = opencl->createBufferReadOnly(
       sizeof(PointLight) * lPos.size(), lPos.data());
-  cl_int nr_point_lights = world->getPointLightsNr();
+  cl_int nr_point_lights = static_cast<cl_int>(world->getPointLightsNr());
 
   // Create geometry memory structures (BVH Nodes + Triangles)
-  cl_nodesbvh = opencl->createBufferReadOnly(world->bvh.totalNodes *
-                                                 sizeof(BVH::LinearBVHNode),
-                                             (void *)&world->bvh.nodes[0]);
+  cl_nodesbvh = opencl->createBufferReadOnly(
+      world->bvh.totalNodes * sizeof(linear_bvh_node),
+      (void *)&world->bvh.nodes_array[0]);
   cl_primitives = opencl->createBufferReadOnly(
-      world->bvh.primitives.size() * sizeof(Triangle),
-      (void *)world->bvh.primitives.data());
-
-  // cl_output2 = opencl->createBuffer(4*sizeof(cl_uchar)*Config::window_height*
-  //                                  Config::window_width*world->getPointLightsNr(),
-  //                                  nullptr);
+      world->bvh.triangles.size() * sizeof(Triangle),
+      (void *)world->bvh.triangles.data());
 
   // Set kernel arguments
   opencl->setKernelArg(0, sizeof(cl_mem),
@@ -148,9 +144,6 @@ void HybridShader::init_pass2_lighting() {
   opencl->setKernelArg(7, sizeof(cl_int), &nr_point_lights);
   opencl->setKernelArg(8, sizeof(cl_mem), &cl_primitives);
   opencl->setKernelArg(9, sizeof(cl_mem), &cl_nodesbvh);
-  // int number_of_triangles=world->bvh.primitives.size();
-  // opencl->setKernelArg(10, sizeof(cl_int), &number_of_triangles);
-  // opencl->setKernelArg(10, sizeof(cl_mem), &cl_output2);
 }
 
 // Initialize the framebuffer which will show the scene
@@ -229,7 +222,6 @@ void HybridShader::pass2_lighting() {
 
   // Execute kernel
   cl_event kernel_event;
-  // opencl->executeKernel(&kernel_event, world->getPointLightsNr());
   opencl->executeKernel(&kernel_event, 1);
   opencl->enqueueReleaseGLObjects(CL_SHARED_OBJECTS::CL_SHARED_OBJECTS_COUNT,
                                   cl_shared_objects);
@@ -256,7 +248,6 @@ HybridShader::~HybridShader() {
   clReleaseMemObject(cl_primitives);
   clReleaseMemObject(cl_nodesbvh);
   clReleaseMemObject(cl_point_lights);
-  // clReleaseMemObject(cl_output2);
 
   glDeleteTextures(1, &gPosition);
   glDeleteTextures(1, &gNormal);
@@ -265,5 +256,4 @@ HybridShader::~HybridShader() {
   glDeleteRenderbuffers(1, &rboDepth);
   glDeleteFramebuffers(1, &gSceneBuffer);
   glDeleteFramebuffers(1, &gBuffer);
-  std::cout << "Hybrid Shader destructor called\n";
 }
