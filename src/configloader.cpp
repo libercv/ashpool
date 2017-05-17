@@ -248,4 +248,3 @@ std::vector<std::string> ConfigLoader::readFile(const std::string &path) {
   return res;
 }
 
-ConfigLoader::~ConfigLoader() {}

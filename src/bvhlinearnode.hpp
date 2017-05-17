@@ -1,5 +1,5 @@
 /***************************************************
- * linear_bvh_node
+ * BVHLinearNode
  *
  * Contains a node of the "linear" BVH structure,
  * prepared to be stored in an array and passed to
@@ -13,7 +13,7 @@
 
 #include "CL/cl.h"
 
-class linear_bvh_node {
+class BVHLinearNode {
 public:
   // BBox bounds;
   cl_float3 pMin;              // 16 bytes

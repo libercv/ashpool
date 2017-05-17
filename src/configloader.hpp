@@ -15,11 +15,7 @@
 class ConfigLoader {
 public:
   ConfigLoader(const std::string &file);
-  ~ConfigLoader();
 
-  enum CONFIG_LOADER_POINT_LIGHT {
-
-  };
 
 private:
   bool setWindow(const std::vector<std::string> &);

@@ -123,7 +123,7 @@ void HybridShader::init_pass2_lighting() {
 
   // Create geometry memory structures (BVH Nodes + Triangles)
   cl_nodesbvh = opencl->createBufferReadOnly(
-      world->bvh.totalNodes * sizeof(linear_bvh_node),
+      world->bvh.totalNodes * sizeof(BVHLinearNode),
       (void *)&world->bvh.nodes_array[0]);
   cl_primitives = opencl->createBufferReadOnly(
       world->bvh.triangles.size() * sizeof(Triangle),

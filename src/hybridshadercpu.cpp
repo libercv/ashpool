@@ -43,7 +43,7 @@ HybridShaderCPU::HybridShaderCPU(World *w)
 
 void HybridShaderCPU::init_geometry() {
   for (unsigned int i = 0; i < world->bvh.totalNodes; i++) {
-    linear_bvh_node clnode = world->bvh.nodes_array[i];
+    BVHLinearNode clnode = world->bvh.nodes_array[i];
 
     bvhnodes.emplace_back(
         _BVHNode{glm::vec3(clnode.pMin.x, clnode.pMin.y, clnode.pMin.z),

@@ -61,15 +61,15 @@ void BVH::init() {
   triangles.swap(orderedPrims);
 
   // Compute representation of depth-first traversal of BVH tree
-  nodes_array = std::make_unique<linear_bvh_node[]>(totalNodes);
+  nodes_array = std::make_unique<BVHLinearNode[]>(totalNodes);
   size_t offset{0}, maxlevel{1};
   flattenBVHTree(root.get(), offset, maxlevel, 1);
 
   // Print info
-  std::cout << "Size of each BVH node:" << sizeof(linear_bvh_node)
+  std::cout << "Size of each BVH node:" << sizeof(BVHLinearNode)
             << " bytes \n";
   std::cout << "Size of BVH structure:"
-            << totalNodes * sizeof(linear_bvh_node) / 1024 << " KB\n";
+            << totalNodes * sizeof(BVHLinearNode) / 1024 << " KB\n";
   std::cout << "Size of primitives:"
             << triangles.size() * sizeof(Triangle) / 1024 << " KB\n";
   std::cout << "Max levels:" << maxlevel << "\n";
@@ -84,7 +84,7 @@ size_t BVH::flattenBVHTree(const BVHTreeNode *node, size_t &offset,
     max_depth = depth;
 
   // Ponter to current node in the array
-  linear_bvh_node *linearNode = &nodes_array[offset];
+  BVHLinearNode *linearNode = &nodes_array[offset];
   auto my_offset = offset;
   ++offset;
 

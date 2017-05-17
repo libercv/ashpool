@@ -27,7 +27,7 @@ class BVH {
 public:
   size_t totalNodes = 0;
   std::vector<Triangle> triangles;
-  std::unique_ptr<linear_bvh_node[]> nodes_array;
+  std::unique_ptr<BVHLinearNode[]> nodes_array;
   void init();
 
 private:
