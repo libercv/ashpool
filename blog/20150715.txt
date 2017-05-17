@@ -1,5 +1,0 @@
-2015/07/15
-
-Configuro un proyecto con cmake y empiezo a seguir las instrucciones de learnopengl. Consigo que funcione la lectura de shaders de archivos.
-
-Creo un repositorio con git para tener un histórico de todo lo que voy haciendo.
