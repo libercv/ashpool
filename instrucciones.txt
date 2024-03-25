@@ -1,0 +1,77 @@
+El proyecto ha sido desarrollado usando el sistema operativo GNU/Linux, sin 
+embargo está compuesto únicamente por componentes portables, por lo que es posible 
+construirlo y ejecutarlo al menos en los sistemas operativos GNU/Linux, Mac OS X y 
+Microsoft Windows.
+Se ha realizado la compilación tanto en GNU/Linux como en Microsoft Windows y a 
+continuación se detalla el proceso seguido.
+
+GNU/Linux
+---------
+Partiendo de la base de que hay un entorno gráfico instalado y los drivers y el runtime de OpenCL
+adecuados para la tarjeta gráfica a utilizar, el primer paso es instalar las bibliotecas de terceros 
+y los compiladores. En la distribución utilizada, ArchLinux, el comando a utilizar es el siguiente:
+
+# pacman -S base-devel clang gcc cmake glew glfw-x11 freeimage assimp openmp 
+
+Después es necesario copiar el código fuente a un directorio, por ejemplo ~/proyecto/src y crear el 
+directorio en el que se construirá el proyecto:
+
+# mkdir ~/proyecto/build
+
+Lo siguiente es generar el archivo que servirá para construir el proyecto. En este caso, usando «makefile»:
+
+# cd ~/proyecto/build
+# cmake -G Unix Makefiles ../src
+
+Este proceso debe detectar que todas las dependencias están instaladas y generar el «makefile» adecuado. 
+Si no ha dado ningún error:
+
+# make
+
+Y el proyecto se compilará y enlazará.
+
+
+Microsoft Windows
+-----------------
+En este caso no hay un comando para instalar todas las dependencias, por lo que el proceso es más complicado 
+y susceptible a errores. Puesto que es muy dependiente de la tarjeta gráfica a utilizar, también partimos del 
+punto en el que están instalados los drivers y el runtime de OpenCL.
+
+Se ha realizado la compilación utilizando Visual Studio Community 2017 en el sistema operativo Microsoft Windows 10 64 bits. 
+Para cada una de las dependencias descritas en el capítulo 3.6, descargar el código fuente de la página del proyecto y 
+descomprimirlo en una ruta temporal.  Lanzar cmake-gui, indicando como ruta de entrada el archivo descargado descomprimido 
+y como ruta de salida otra carpeta temporal. Pulsar en configurar. Seleccionar un generador adecuado, por ejemplo Visual 
+Studio 15 64bit y configurar la ruta de instalación. Seleccionar el mismo prefijo para todas las dependencias. Por ejemplo, 
+usar C:\lab\libs Pulsar en generar y luego en abrir proyecto. Se abrirá Visual Studio. Pinchar el “Construir” y luego 
+construir en el proyecto “INSTALL”. 
+
+Una vez estén todas las dependencias instaladas en la misma ruta, editar el archivo CmakeLists.txt que se encuentra en el 
+directorio del código fuente para actualizar esta variable, llamada LIBS_PREFIX. Copiar también la carpeta “cmake” que se 
+proporciona junto con el código fuente a la misma carpeta en la que se han instalado las dependencias. En esta carpeta se 
+encuentran archivos para que Cmake pueda encontrar las dependencias que no proporcionan integración con Cmake.
+
+Finalmente, volver a ejecutar cmake-gui, esta vez tomando como origen la carpeta «src» del proyecto y realizar los mismos pasos 
+de configuración y apertura del proyecto realizados hasta ahora. En este punto se debería poder construir el proyecto obteniendo 
+como resultado un ejecutable.
+
+
+Ejecución del programa
+----------------------
+Una vez generado el ejecutable, se podrá lanzar pasándole como último parámetro el nombre de un archivo de descripción de escena, 
+cuya especificación se encuentra en el anexo 11.4.
+
+El programa admite los siguientes parámetros:
+--deferred : Utiliza el método diferido de renderizado
+--hybrid : Utiliza la técnica híbrida de renderizado codificada en OpenCL ejecutándose en GPU.
+--cpu : Utiliza la técnica híbrida de renderizado codificada en C++ ejecutándose en CPU.
+--noshadows : No realiza el cálculo de sombras proyectadas en los métodos de técnica híbrida
+--nocapturemouse : No captura el puntero del ratón. Útil para depuración.
+
+El dispositivo OpenCL debe soportar la extensión «cl_krh_gl_sharing» para poder ejecutar el programa usando la técnica híbrida 
+ejecutada en GPU.
+
+Durante la ejecución del programa es posible rotar la cámara utilizando el ratón y moverla utilizando los  cursores del teclado. 
+Además, pulsando “l” mostrará en consola la localización de la cámara, “p” mostrará las estadísticas de rendimiento, “r” reseteará 
+las estadísticas, “s” activará/desactivará el cálculo de sombras, “d” pasará al vuelo a usar el método diferido, “h” pasará a usar 
+el método híbrido y “c” pasará a utilizar el método híbrido en CPU.
+

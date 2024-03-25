@@ -7,6 +7,11 @@ bvh
   BVH tree and if flattens it to an array.
   Based on algorith from "Physically based Rendering,
   2nd edition"
+bvhlinearnode
+  Node (branch or leaf) of the serialized representation
+  of the BVH. Ready to pass to OpenCL
+bvhprimitiveinfo
+  Information about a primitive used to build BVH tree
 camera
   Controls camera position, orientation and related
   matrices (Projection and View).
@@ -39,6 +44,15 @@ hybridshader
        lighting information
     - Blit the result of the second pass to the render 
        buffer (openGL)
+hybridshadercpu
+  Renders the scene in 3 passes:
+    - Generate GBuffer with OpenGL
+    - Generate final Scene texture with C++ and OpenMP 
+        using GBuffer from previous pass and geometry (BVH) and 
+       lighting information. Copies from Gbuffer GPU to CPU
+       and result back to GPU
+    - Blit the result of the second pass to the render 
+       buffer (openGL)
 input
   Manages input from keyboard and mouse. Calls Camera 
   methods to update its position and orientation.
@@ -65,11 +79,14 @@ pointlight
   suitable to be shared with OpenCL.
   Stores position, color, attenuation values...
 renderengine
-  Instantiates a "RenderingMethod" template to render the
-  scene using one of the available methods.
-  Currently there are two possibilities: Deferred 
-  Shader (full OpenGL) or Hybrid Shader (OpenGL+OpenCL)
-renderingmethod
+  Abstract class of which each rendering method must be
+  a subclass
+renderenginecreator
+  Implements the Factory Method pattern used to instantiate
+  the rendering engine, acconding to a value in "Config".
+  Currently there are three possibilities: Deferred 
+  Shader (full OpenGL) Hybrid Shader (OpenGL+OpenCL) or
+  Hybrid Shader CPU (OpenGL + C++ OpenMP)
   Template to be able to use one of the available methods.  
 shaderloader
   Loads a GLSL OpenGL shader from a disk file and
